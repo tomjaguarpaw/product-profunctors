@@ -8,7 +8,7 @@ import Data.Profunctor.Product.Flatten
 -- vv and these
 import Data.Profunctor.Product.Tuples
 import Control.Category (id)
-import Control.Arrow (Arrow, (***))
+import Control.Arrow (Arrow, (***), (<<<), arr, (&&&))
 
 class Profunctor p => ProductProfunctor p where
   empty :: p () ()
@@ -25,6 +25,15 @@ instance ProductProfunctor (->) where
 instance Arrow arr => ProductProfunctor (WrappedArrow arr) where
   empty = id
   (***!) = (***)
+
+data AndArrow arr z a b = AndArrow { runAndArrow :: arr z b }
+
+instance Arrow arr => Profunctor (AndArrow arr z) where
+  dimap _ f (AndArrow g) = AndArrow (arr f <<< g)
+
+instance Arrow arr => ProductProfunctor (AndArrow arr z) where
+  empty = AndArrow (arr (const ()))
+  (AndArrow f) ***! (AndArrow f') = AndArrow (f &&& f')
 
 pT0 :: ProductProfunctor p => T0 -> p T0 T0
 pT0 = const empty
