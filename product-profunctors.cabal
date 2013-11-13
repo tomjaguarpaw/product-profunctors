@@ -11,8 +11,10 @@ Description: Product profunctors
 
 library
   build-depends:   base >= 4 && < 5, profunctors >= 4.0 && < 4.1,
-                   contravariant >= 0.4 && < 0.5
+                   contravariant >= 0.4 && < 0.5,
+                   template-haskell
   exposed-modules: Data.Profunctor.Product,
                    Data.Profunctor.Product.Flatten,
+                   Data.Profunctor.Product.TH,
                    Data.Profunctor.Product.Tuples
   ghc-options:     -Wall
