@@ -84,8 +84,8 @@ makeRecord r = return decs
                 pClass = (mkName "ProductProfunctor", [varTS "p"])
                 defClasses = map (\fn -> (mkName "Default",
                                           [varTS "p",
-                                           varTS (fn ++ "0"),
-                                           varTS (fn ++ "1")])) tyVars
+                                           mkTySuffix "0" fn,
+                                           mkTySuffix "1" fn])) tyVars
 
                 instanceType = conTS "Default" `AppT` varTS "p"
                                                `AppT` pArg "0" `AppT` pArg "1"
@@ -101,6 +101,9 @@ makeRecord r = return decs
 
                 conTS :: String -> Type
                 conTS = ConT . mkName
+
+                mkTySuffix :: String -> String -> Type
+                mkTySuffix s = varTS . (++s)
 
 {-
 Note that we can also do the instance definition like this, but it would
