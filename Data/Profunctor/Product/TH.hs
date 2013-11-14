@@ -60,19 +60,21 @@ makeRecord r = return decs
 
         pullerDefinition = FunD pullerName [clause]
           where clause = Clause [] body wheres
-                toTuple = varS "toTuple"
-                theDimap = varS "dimap" `AppE` toTuple `AppE` varS "fromTuple"
+                toTupleN = mkName "toTuple"
+                fromTupleN = mkName "fromTuple"
+                toTuple = VarE toTupleN
+                theDimap = varS "dimap" `AppE` toTuple `AppE` VarE fromTupleN
                 pN = VarE (mkName ("p" ++ show (length tyVars)))
                 body = NormalB (theDimap `o` pN `o` toTuple)
                 o :: Exp -> Exp -> Exp
                 o x y = InfixE (Just x) (varS ".") (Just y)
                 wheres = [whereToTuple, whereFromTuple]
-                whereFromTuple = FunD (mkName "fromTuple") [fromTupleClause]
+                whereFromTuple = FunD fromTupleN [fromTupleClause]
                   where fromTupleClause = Clause [fromTuplePat] fromTupleBody []
                         fromTuplePat = TupP (map (VarP . mkName) tyVars)
                         cone = ConE (mkName conName)
                         fromTupleBody=NormalB(foldl AppE cone (map varS tyVars))
-                whereToTuple = FunD (mkName "toTuple") [toTupleClause]
+                whereToTuple = FunD toTupleN [toTupleClause]
                   where toTupleClause = Clause [toTuplePat] toTupleBody []
                         toTuplePat = (conp (map (VarP . mkName) tyVars))
                         conp = ConP (mkName conName)
