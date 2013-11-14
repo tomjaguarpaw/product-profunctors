@@ -60,7 +60,7 @@ makeRecord r = return decs
                 body = NormalB (theDimap `o` pN `o` toTuple)
                 wheres = [whereToTuple, whereFromTuple]
                 varPats :: [Pat]
-                varPats = map (VarP . mkName) tyVars
+                varPats = map varPS tyVars
                 whereFromTuple = FunD fromTupleN [fromTupleClause]
                   where fromTupleClause = Clause [fromTuplePat] fromTupleBody []
                         fromTuplePat = TupP varPats
@@ -115,6 +115,9 @@ conES = ConE . mkName
 
 conPS :: String -> [Pat] -> Pat
 conPS = ConP . mkName
+
+varPS :: String -> Pat
+varPS = VarP . mkName
 
 mkTyVarsuffix :: String -> String -> TyVarBndr
 mkTyVarsuffix s = PlainTV . mkName . (++s)
