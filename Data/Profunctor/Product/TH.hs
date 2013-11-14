@@ -78,8 +78,8 @@ makeRecord r = return decs
                                            mkTySuffix "0" fn,
                                            mkTySuffix "1" fn])) tyVars
 
-                instanceType = conTS "Default" `AppT` varTS "p"
-                                               `AppT` pArg "0" `AppT` pArg "1"
+                instanceType = appTAll (conTS "Default")
+                                       [varTS "p", pArg "0", pArg "1"]
 
                 defDefinition = FunD (mkName "def") [Clause [] defBody []]
                 defBody = NormalB (VarE pullerName
