@@ -6,7 +6,7 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD),
                             Type(VarT, ForallT, AppT, ArrowT, ConT),
                             Body(NormalB), Q, Pred(ClassP),
                             Exp(ConE, VarE, InfixE, AppE, TupE),
-                            Pat(TupP, VarP, ConP))
+                            Pat(TupP, VarP, ConP), Name)
 
 data MakeRecordT = MakeRecordT { typeName :: String
                                , constructorName :: String
@@ -73,10 +73,13 @@ makeRecord r = return decs
         instanceDefinition = InstanceD instanceCxt instanceType [defDefinition]
           where instanceCxt = map (uncurry ClassP) (pClass:defClasses)
                 pClass = (mkName "ProductProfunctor", [varTS "p"])
-                defClasses = map (\fn -> (mkName "Default",
-                                          [varTS "p",
-                                           mkTySuffix "0" fn,
-                                           mkTySuffix "1" fn])) tyVars
+
+                defaultPredOfVar :: String -> (Name, [Type])
+                defaultPredOfVar fn = (mkName "Default", [varTS "p",
+                                                          mkTySuffix "0" fn,
+                                                          mkTySuffix "1" fn])
+
+                defClasses = map defaultPredOfVar tyVars
 
                 instanceType = appTAll (conTS "Default")
                                        [varTS "p", pArg "0", pArg "1"]
