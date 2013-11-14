@@ -58,16 +58,15 @@ makeRecord tyName conName tyVars derivings = return decs
                 body = NormalB (theDimap `o` pN `o` toTuple)
                 o x y = InfixE (Just x) (varS ".") (Just y)
                 wheres = [whereToTuple, whereFromTuple]
-                -- FIXME: names the wrong way round!
-                whereToTuple = FunD (mkName "fromTuple") [toTupleClause]
-                  where toTupleClause = Clause [toTuplePat] toTupleBody []
-                        toTuplePat = TupP (map (VarP . mkName) tyVars)
-                        cone = ConE (mkName conName)
-                        toTupleBody =NormalB (foldl AppE cone (map varS tyVars))
-                whereFromTuple = FunD (mkName "toTuple") [fromTupleClause]
+                whereFromTuple = FunD (mkName "fromTuple") [fromTupleClause]
                   where fromTupleClause = Clause [fromTuplePat] fromTupleBody []
-                        fromTuplePat = (conp (map (VarP . mkName) tyVars))
+                        fromTuplePat = TupP (map (VarP . mkName) tyVars)
+                        cone = ConE (mkName conName)
+                        fromTupleBody=NormalB(foldl AppE cone (map varS tyVars))
+                whereToTuple = FunD (mkName "toTuple") [toTupleClause]
+                  where toTupleClause = Clause [toTuplePat] toTupleBody []
+                        toTuplePat = (conp (map (VarP . mkName) tyVars))
                         conp = ConP (mkName conName)
-                        fromTupleBody = NormalB (TupE (map varS tyVars))
+                        toTupleBody = NormalB (TupE (map varS tyVars))
                 varS :: String -> Exp
                 varS = VarE . mkName
