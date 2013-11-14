@@ -59,14 +59,16 @@ makeRecord r = return decs
                 pN = VarE (mkName ("p" ++ show (length tyVars)))
                 body = NormalB (theDimap `o` pN `o` toTuple)
                 wheres = [whereToTuple, whereFromTuple]
+                varPats :: [Pat]
+                varPats = map (VarP . mkName) tyVars
                 whereFromTuple = FunD fromTupleN [fromTupleClause]
                   where fromTupleClause = Clause [fromTuplePat] fromTupleBody []
-                        fromTuplePat = TupP (map (VarP . mkName) tyVars)
+                        fromTuplePat = TupP varPats
                         cone = conES conName
                         fromTupleBody = NormalB (appEAll cone (map varS tyVars))
                 whereToTuple = FunD toTupleN [toTupleClause]
                   where toTupleClause = Clause [toTuplePat] toTupleBody []
-                        toTuplePat = (conp (map (VarP . mkName) tyVars))
+                        toTuplePat = conp varPats
                         conp = ConP (mkName conName)
                         toTupleBody = NormalB (TupE (map varS tyVars))
 
