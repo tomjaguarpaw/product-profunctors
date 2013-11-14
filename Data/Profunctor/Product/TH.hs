@@ -27,11 +27,9 @@ makeRecord r = return decs
         tyName' = mkName tyName
 
         pArg :: String -> Type
-        pArg = foldl AppT (ConT tyName') . conArgs
+        pArg = appTAll (ConT tyName') . conArgs
                where conArgs :: String -> [Type]
                      conArgs s = map (mkVarTsuffix s) tyVars
-        mkVarTsuffix :: String -> String -> Type
-        mkVarTsuffix s = VarT . mkName . (++s)
 
         pullerName = mkName (adaptorName r)
 
@@ -48,15 +46,9 @@ makeRecord r = return decs
 
                 after = pType `AppT` (pArg "0") `AppT` (pArg "1")
 
-                mkTyVarsuffix :: String -> String -> TyVarBndr
-                mkTyVarsuffix s = PlainTV . mkName . (++s)
-
                 scope = concat [ [PlainTV (mkName "p")]
                                , map (mkTyVarsuffix "0") tyVars
                                , map (mkTyVarsuffix "1") tyVars ]
-
-        varS :: String -> Exp
-        varS = VarE . mkName
 
         pullerDefinition = FunD pullerName [clause]
           where clause = Clause [] body wheres
@@ -66,8 +58,6 @@ makeRecord r = return decs
                 theDimap = varS "dimap" `AppE` toTuple `AppE` VarE fromTupleN
                 pN = VarE (mkName ("p" ++ show (length tyVars)))
                 body = NormalB (theDimap `o` pN `o` toTuple)
-                o :: Exp -> Exp -> Exp
-                o x y = InfixE (Just x) (varS ".") (Just y)
                 wheres = [whereToTuple, whereFromTuple]
                 whereFromTuple = FunD fromTupleN [fromTupleClause]
                   where fromTupleClause = Clause [fromTuplePat] fromTupleBody []
@@ -93,18 +83,9 @@ makeRecord r = return decs
 
                 defDefinition = FunD (mkName "def") [Clause [] defBody []]
                 defBody = NormalB (VarE pullerName
-                                   `AppE` foldl AppE
-                                                ((ConE . mkName) conName) defsN)
+                                   `AppE` appEAll
+                                          ((ConE . mkName) conName) defsN)
                 defsN = map (const (varS "def")) tyVars
-
-                varTS :: String -> Type
-                varTS = VarT . mkName
-
-                conTS :: String -> Type
-                conTS = ConT . mkName
-
-                mkTySuffix :: String -> String -> Type
-                mkTySuffix s = varTS . (++s)
 
 {-
 Note that we can also do the instance definition like this, but it would
@@ -117,3 +98,30 @@ instance (ProductProfunctor p, Default p a a', Default p b b',
                       (LedgerRow' a' b' c' d' e' f' g' h') where
   def = dimap tupleOfLedgerRow lRowOfTuple def
 -}
+
+o :: Exp -> Exp -> Exp
+o x y = InfixE (Just x) (varS ".") (Just y)
+
+varS :: String -> Exp
+varS = VarE . mkName
+
+mkTyVarsuffix :: String -> String -> TyVarBndr
+mkTyVarsuffix s = PlainTV . mkName . (++s)
+
+mkTySuffix :: String -> String -> Type
+mkTySuffix s = varTS . (++s)
+
+mkVarTsuffix :: String -> String -> Type
+mkVarTsuffix s = VarT . mkName . (++s)
+
+varTS :: String -> Type
+varTS = VarT . mkName
+
+conTS :: String -> Type
+conTS = ConT . mkName
+
+appTAll :: Type -> [Type] -> Type
+appTAll = foldl AppT
+
+appEAll :: Exp -> [Exp] -> Exp
+appEAll = foldl AppE
