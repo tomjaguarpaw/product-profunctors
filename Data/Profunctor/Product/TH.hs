@@ -131,4 +131,3 @@ appEAll = foldl AppE
 
 appArrow :: Type -> Type -> Type
 appArrow l r = appTAll ArrowT [l, r]
-
