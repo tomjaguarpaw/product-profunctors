@@ -44,7 +44,7 @@ makeRecord r = return decs
                                     [mkVarTsuffix "0" v, mkVarTsuffix "1" v]))
                             tyVars
 
-                after = pType `AppT` (pArg "0") `AppT` (pArg "1")
+                after = appTAll pType [pArg "0", pArg "1"]
 
                 scope = concat [ [PlainTV (mkName "p")]
                                , map (mkTyVarsuffix "0") tyVars
@@ -55,7 +55,7 @@ makeRecord r = return decs
                 toTupleN = mkName "toTuple"
                 fromTupleN = mkName "fromTuple"
                 toTuple = VarE toTupleN
-                theDimap = varS "dimap" `AppE` toTuple `AppE` VarE fromTupleN
+                theDimap = appEAll (varS "dimap") [toTuple, VarE fromTupleN]
                 pN = VarE (mkName ("p" ++ show (length tyVars)))
                 body = NormalB (theDimap `o` pN `o` toTuple)
                 wheres = [whereToTuple, whereFromTuple]
