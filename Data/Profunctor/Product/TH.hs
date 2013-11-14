@@ -1,13 +1,16 @@
 module Data.Profunctor.Product.TH where
 
-import Language.Haskell.TH (Dec(DataD, SigD), mkName, TyVarBndr(PlainTV),
-                            Con(RecC), Strict(NotStrict),
+import Language.Haskell.TH (Dec(DataD, SigD, FunD), mkName, TyVarBndr(PlainTV),
+                            Con(RecC), Strict(NotStrict), Clause(Clause),
                             Type(VarT, ForallT, AppT, ArrowT, ConT),
-                            Q, Pred(ClassP))
+                            Body(NormalB), Q, Pred(ClassP),
+                            Exp(ConE, VarE, InfixE, AppE, TupE),
+                            Pat(TupP, VarP, ConP))
 
 makeRecord :: String -> String -> [String] -> [String] -> Q [Dec]
-makeRecord tyName conName tyVars derivings = return [datatype, pullerSig]
-  where datatype = DataD [] tyName' tyVars' [con] derivings'
+makeRecord tyName conName tyVars derivings = return decs
+  where decs = [datatype, pullerSig, pullerDefinition]
+        datatype = DataD [] tyName' tyVars' [con] derivings'
           where fields = map toField tyVars
                 tyVars' = map (PlainTV . mkName) tyVars
                 con = RecC (mkName conName) fields
@@ -44,3 +47,27 @@ makeRecord tyName conName tyVars derivings = return [datatype, pullerSig]
                 scope = concat [ [PlainTV (mkName "p")]
                                , map (mkTyVarsuffix "0") tyVars
                                , map (mkTyVarsuffix "1") tyVars ]
+
+        pullerDefinition = FunD (mkName ("p" ++ conName)) [clause]
+          where clause = Clause [] body wheres
+                toTuple = varS "toTuple"
+                theDimap = varS "dimap"
+                           `AppE` toTuple
+                           `AppE` varS "fromTuple"
+                pN = VarE (mkName ("p" ++ show (length tyVars)))
+                body = NormalB (theDimap `o` pN `o` toTuple)
+                o x y = InfixE (Just x) (varS ".") (Just y)
+                wheres = [whereToTuple, whereFromTuple]
+                -- FIXME: names the wrong way round!
+                whereToTuple = FunD (mkName "fromTuple") [toTupleClause]
+                  where toTupleClause = Clause [toTuplePat] toTupleBody []
+                        toTuplePat = TupP (map (VarP . mkName) tyVars)
+                        cone = ConE (mkName conName)
+                        toTupleBody =NormalB (foldl AppE cone (map varS tyVars))
+                whereFromTuple = FunD (mkName "toTuple") [fromTupleClause]
+                  where fromTupleClause = Clause [fromTuplePat] fromTupleBody []
+                        fromTuplePat = (conp (map (VarP . mkName) tyVars))
+                        conp = ConP (mkName conName)
+                        fromTupleBody = NormalB (TupE (map varS tyVars))
+                varS :: String -> Exp
+                varS = VarE . mkName
