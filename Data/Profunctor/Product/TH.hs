@@ -38,6 +38,9 @@ makeRecord tyName conName tyVars derivings = return [datatype, pullerSig]
                 mkVarTsuffix :: String -> String -> Type
                 mkVarTsuffix s = VarT . mkName . (++s)
 
+                mkTyVarsuffix :: String -> String -> TyVarBndr
+                mkTyVarsuffix s = PlainTV . mkName . (++s)
+
                 scope = concat [ [PlainTV (mkName "p")]
-                               , map (PlainTV . mkName . (++"0")) tyVars
-                               , map (PlainTV . mkName . (++"1")) tyVars ]
+                               , map (mkTyVarsuffix "0") tyVars
+                               , map (mkTyVarsuffix "1") tyVars ]
