@@ -8,9 +8,16 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD),
                             Exp(ConE, VarE, InfixE, AppE, TupE),
                             Pat(TupP, VarP, ConP))
 
-makeRecord :: String -> String -> [String] -> [String] -> Q [Dec]
-makeRecord tyName conName tyVars derivings = return decs
-  where decs = [datatype, pullerSig, pullerDefinition, instanceDefinition]
+data MakeRecordT = MakeRecordT { typeName :: String
+                               , constructorName :: String
+                               , fieldNames :: [String]
+                               , deriving_ :: [String]
+                               , adaptorName :: String }
+
+makeRecord :: MakeRecordT -> Q [Dec]
+makeRecord r = return decs
+  where MakeRecordT tyName conName tyVars derivings _ = r
+        decs = [datatype, pullerSig, pullerDefinition, instanceDefinition]
         datatype = DataD [] tyName' tyVars' [con] derivings'
           where fields = map toField tyVars
                 tyVars' = map (PlainTV . mkName) tyVars
@@ -26,9 +33,10 @@ makeRecord tyName conName tyVars derivings = return decs
         mkVarTsuffix :: String -> String -> Type
         mkVarTsuffix s = VarT . mkName . (++s)
 
+        pullerName = mkName (adaptorName r)
+
         pullerSig = SigD pullerName pullerType
-          where pullerName = mkName ("p" ++ conName)
-                pullerType = ForallT scope pullerCxt pullerAfterCxt
+          where pullerType = ForallT scope pullerCxt pullerAfterCxt
                 pullerAfterCxt = ArrowT `AppT` before `AppT` after
                 pullerCxt = [ClassP (mkName "ProductProfunctor")
                                     [VarT (mkName "p")]]
@@ -50,7 +58,7 @@ makeRecord tyName conName tyVars derivings = return decs
         varS :: String -> Exp
         varS = VarE . mkName
 
-        pullerDefinition = FunD (mkName ("p" ++ conName)) [clause]
+        pullerDefinition = FunD pullerName [clause]
           where clause = Clause [] body wheres
                 toTuple = varS "toTuple"
                 theDimap = varS "dimap"
@@ -83,7 +91,7 @@ makeRecord tyName conName tyVars derivings = return decs
                                                `AppT` pArg "0" `AppT` pArg "1"
 
                 defDefinition = FunD (mkName "def") [Clause [] defBody []]
-                defBody = NormalB (varS ("p" ++ conName)
+                defBody = NormalB (VarE pullerName
                                    `AppE` foldl AppE
                                                 ((ConE . mkName) conName) defsN)
                 defsN = map (const (varS "def")) tyVars
