@@ -101,3 +101,15 @@ makeRecord r = return decs
 
                 conTS :: String -> Type
                 conTS = ConT . mkName
+
+{-
+Note that we can also do the instance definition like this, but it would
+require pulling the to/fromTuples to the top level
+
+instance (ProductProfunctor p, Default p a a', Default p b b',
+          Default p c c', Default p d d', Default p e e',
+          Default p f f', Default p g g', Default p h h')
+         => Default p (LedgerRow' a b c d e f g h)
+                      (LedgerRow' a' b' c' d' e' f' g' h') where
+  def = dimap tupleOfLedgerRow lRowOfTuple def
+-}
