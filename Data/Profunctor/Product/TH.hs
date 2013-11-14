@@ -38,7 +38,7 @@ makeRecord r = return decs
                 pullerAfterCxt = before `appArrow` after
                 pullerCxt = [ClassP (mkName "ProductProfunctor")
                                     [VarT (mkName "p")]]
-                before = foldl AppT (ConT tyName') pArgs
+                before = appTAll (ConT tyName') pArgs
                 pType = VarT (mkName "p")
                 pArgs = map (\v -> (appTAll pType
                                     [mkVarTsuffix "0" v, mkVarTsuffix "1" v]))
@@ -63,7 +63,7 @@ makeRecord r = return decs
                   where fromTupleClause = Clause [fromTuplePat] fromTupleBody []
                         fromTuplePat = TupP (map (VarP . mkName) tyVars)
                         cone = ConE (mkName conName)
-                        fromTupleBody=NormalB(foldl AppE cone (map varS tyVars))
+                        fromTupleBody=NormalB(appEAll cone (map varS tyVars))
                 whereToTuple = FunD toTupleN [toTupleClause]
                   where toTupleClause = Clause [toTuplePat] toTupleBody []
                         toTuplePat = (conp (map (VarP . mkName) tyVars))
