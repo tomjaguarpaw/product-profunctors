@@ -62,7 +62,7 @@ makeRecord r = return decs
                 whereFromTuple = FunD fromTupleN [fromTupleClause]
                   where fromTupleClause = Clause [fromTuplePat] fromTupleBody []
                         fromTuplePat = TupP (map (VarP . mkName) tyVars)
-                        cone = ConE (mkName conName)
+                        cone = conES conName
                         fromTupleBody = NormalB (appEAll cone (map varS tyVars))
                 whereToTuple = FunD toTupleN [toTupleClause]
                   where toTupleClause = Clause [toTuplePat] toTupleBody []
@@ -87,7 +87,7 @@ makeRecord r = return decs
                 defDefinition = FunD (mkName "def") [Clause [] defBody []]
                 defBody = NormalB (VarE pullerName
                                    `AppE` appEAll
-                                          ((ConE . mkName) conName) defsN)
+                                          (conES conName) defsN)
                 defsN = map (const (varS "def")) tyVars
 
 {-
@@ -107,6 +107,9 @@ o x y = InfixE (Just x) (varS ".") (Just y)
 
 varS :: String -> Exp
 varS = VarE . mkName
+
+conES :: String -> Exp
+conES = ConE . mkName
 
 mkTyVarsuffix :: String -> String -> TyVarBndr
 mkTyVarsuffix s = PlainTV . mkName . (++s)
