@@ -40,9 +40,9 @@ makeRecord r = return decs
                                     [VarT (mkName "p")]]
                 before = foldl AppT (ConT tyName') pArgs
                 pType = VarT (mkName "p")
-                pArgs = map (\v -> (pType
-                                    `AppT` (mkVarTsuffix "0" v)
-                                    `AppT` (mkVarTsuffix "1" v))) tyVars
+                pArgs = map (\v -> (appTAll pType
+                                    [mkVarTsuffix "0" v, mkVarTsuffix "1" v]))
+                            tyVars
 
                 after = pType `AppT` (pArg "0") `AppT` (pArg "1")
 
