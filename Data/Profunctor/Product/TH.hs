@@ -69,7 +69,7 @@ makeRecord r = return decs
                 whereToTuple = FunD toTupleN [toTupleClause]
                   where toTupleClause = Clause [toTuplePat] toTupleBody []
                         toTuplePat = conp varPats
-                        conp = ConP (mkName conName)
+                        conp = conPS conName
                         toTupleBody = NormalB (TupE (map varS tyVars))
 
         instanceDefinition = InstanceD instanceCxt instanceType [defDefinition]
@@ -112,6 +112,9 @@ varS = VarE . mkName
 
 conES :: String -> Exp
 conES = ConE . mkName
+
+conPS :: String -> [Pat] -> Pat
+conPS = ConP . mkName
 
 mkTyVarsuffix :: String -> String -> TyVarBndr
 mkTyVarsuffix s = PlainTV . mkName . (++s)
