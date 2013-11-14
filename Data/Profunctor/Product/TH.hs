@@ -66,6 +66,7 @@ makeRecord r = return decs
                            `AppE` varS "fromTuple"
                 pN = VarE (mkName ("p" ++ show (length tyVars)))
                 body = NormalB (theDimap `o` pN `o` toTuple)
+                o :: Exp -> Exp -> Exp
                 o x y = InfixE (Just x) (varS ".") (Just y)
                 wheres = [whereToTuple, whereFromTuple]
                 whereFromTuple = FunD (mkName "fromTuple") [fromTupleClause]
