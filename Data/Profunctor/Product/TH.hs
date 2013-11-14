@@ -61,9 +61,7 @@ makeRecord r = return decs
         pullerDefinition = FunD pullerName [clause]
           where clause = Clause [] body wheres
                 toTuple = varS "toTuple"
-                theDimap = varS "dimap"
-                           `AppE` toTuple
-                           `AppE` varS "fromTuple"
+                theDimap = varS "dimap" `AppE` toTuple `AppE` varS "fromTuple"
                 pN = VarE (mkName ("p" ++ show (length tyVars)))
                 body = NormalB (theDimap `o` pN `o` toTuple)
                 o :: Exp -> Exp -> Exp
