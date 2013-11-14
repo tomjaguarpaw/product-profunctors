@@ -5,14 +5,14 @@ import Language.Haskell.TH (Dec(DataD, SigD), mkName, TyVarBndr(PlainTV),
                             Type(VarT, ForallT, AppT, ArrowT, ConT),
                             Q, Pred(ClassP))
 
-makeRecord :: String -> String -> [String] -> Q [Dec]
-makeRecord tyName conName tyVars = return [datatype, pullerSig]
-  where datatype = DataD [] tyName' tyVars' [con] derivings
+makeRecord :: String -> String -> [String] -> [String] -> Q [Dec]
+makeRecord tyName conName tyVars derivings = return [datatype, pullerSig]
+  where datatype = DataD [] tyName' tyVars' [con] derivings'
           where fields = map toField tyVars
                 tyVars' = map (PlainTV . mkName) tyVars
                 con = RecC (mkName conName) fields
                 toField s = (mkName s, NotStrict, VarT (mkName s))
-                derivings = map mkName ["Generic", "Eq", "Show"]
+                derivings' = map mkName derivings
         tyName' = mkName tyName
 
         pullerSig = SigD pullerName pullerType
