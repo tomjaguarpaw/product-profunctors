@@ -35,7 +35,7 @@ makeRecord r = return decs
 
         pullerSig = SigD pullerName pullerType
           where pullerType = ForallT scope pullerCxt pullerAfterCxt
-                pullerAfterCxt = appTAll ArrowT [before, after]
+                pullerAfterCxt = before `appArrow` after
                 pullerCxt = [ClassP (mkName "ProductProfunctor")
                                     [VarT (mkName "p")]]
                 before = foldl AppT (ConT tyName') pArgs
@@ -125,3 +125,6 @@ appTAll = foldl AppT
 
 appEAll :: Exp -> [Exp] -> Exp
 appEAll = foldl AppE
+
+appArrow :: Type -> Type -> Type
+appArrow l r = appTAll ArrowT [l, r]
