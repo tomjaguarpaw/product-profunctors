@@ -71,7 +71,7 @@ makeRecord r = return decs
                         toTupleBody = NormalB (TupE (map varS tyVars))
 
         instanceDefinition = InstanceD instanceCxt instanceType [defDefinition]
-          where instanceCxt = map (\(x, y) -> ClassP x y) (pClass:defClasses)
+          where instanceCxt = map (uncurry ClassP) (pClass:defClasses)
                 pClass = (mkName "ProductProfunctor", [varTS "p"])
                 defClasses = map (\fn -> (mkName "Default",
                                           [varTS "p",
