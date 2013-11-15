@@ -81,19 +81,23 @@ makeRecord r = return decs
                                           (conES conName) defsN)
                 defsN = map (const (varS "def")) tyVars
 
+xTuple :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> (Name, [String], t) -> Dec
+xTuple patCon retCon (funN, tyVars, _) = FunD funN [clause]
+  where clause = Clause [pat] body []
+        pat = patCon varPats
+        body = NormalB (retCon varExps)
+        varPats = map varPS tyVars
+        varExps = map varS tyVars
+
 whereFromTuple :: (Name, [String], String) -> Dec
-whereFromTuple (fromTupleN, tyVars, conName) = FunD fromTupleN [fromTupleClause]
-  where fromTupleClause = Clause [fromTuplePat] fromTupleBody []
-        fromTuplePat = TupP (map varPS tyVars)
-        cone = conES conName
-        fromTupleBody = NormalB (appEAll cone (map varS tyVars))
+whereFromTuple (funN, tyVars, conName) = xTuple patCon retCon (funN, tyVars, conName)
+  where patCon = TupP
+        retCon = appEAll (conES conName)
 
 whereToTuple :: (Name, [String], String) -> Dec
-whereToTuple (toTupleN, tyVars, conName) = FunD toTupleN [toTupleClause]
-  where toTupleClause = Clause [toTuplePat] toTupleBody []
-        toTuplePat = conp (map varPS tyVars)
-        conp = conPS conName
-        toTupleBody = NormalB (TupE (map varS tyVars))
+whereToTuple (funN, tyVars, conName) = xTuple patCon retCon (funN, tyVars, conName)
+  where patCon = conPS conName
+        retCon = TupE
 
 {-
 Note that we can also do the instance definition like this, but it would
