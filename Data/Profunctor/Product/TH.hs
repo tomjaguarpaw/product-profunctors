@@ -59,7 +59,7 @@ makeRecord r = return decs
 
         datatype' = datatype tyName' tyVars conName derivings
         pullerSig' = pullerSig tyName' numTyVars pullerName
-        pullerDefinition' = pullerDefinition numTyVars conName pullerName
+        pullerDefinition' = pullerDefinition numTyVars conName' pullerName
         instanceDefinition' = instanceDefinition tyName' numTyVars
                                                  pullerName conName'
 
@@ -128,7 +128,7 @@ pullerSig tyName' numTyVars = flip SigD pullerType
 pArg' :: Name -> String -> Int -> Type
 pArg' tn s = appTAll (ConT tn) . map (varTS . (++s)) . allTyVars
 
-pullerDefinition :: Int -> String -> Name -> Dec
+pullerDefinition :: Int -> Name -> Name -> Dec
 pullerDefinition numTyVars conName = flip FunD [clause]
   where clause = Clause [] body wheres
         toTupleN = mkName "toTuple"
@@ -149,14 +149,14 @@ xTuple patCon retCon (funN, numTyVars) = FunD funN [clause]
         varPats = map varPS (allTyVars numTyVars)
         varExps = map varS (allTyVars numTyVars)
 
-fromTuple :: String -> (Name, Int) -> Dec
+fromTuple :: Name -> (Name, Int) -> Dec
 fromTuple conName = xTuple patCon retCon
   where patCon = TupP
-        retCon = appEAll (conES conName)
+        retCon = appEAll (ConE conName)
 
-toTuple :: String -> (Name, Int) -> Dec
+toTuple :: Name -> (Name, Int) -> Dec
 toTuple conName = xTuple patCon retCon
-  where patCon = conPS conName
+  where patCon = ConP conName
         retCon = TupE
 
 {-
