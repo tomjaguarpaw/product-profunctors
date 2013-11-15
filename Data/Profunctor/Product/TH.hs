@@ -83,13 +83,15 @@ instanceDefinition tyName' numTyVars pullerName conName = instanceDec
                                                   mkTySuffix "0" fn,
                                                   mkTySuffix "1" fn])
 
-        defClasses = (map defaultPredOfVar
-                      . map (\x -> "a" ++ show x ++ "_"))
-                     [(1 :: Int)..numTyVars]
+        varA i = "a" ++ show i ++ "_"
+
+        tyNums :: [Int]
+        tyNums = [1..numTyVars]
+
+        defClasses = (map defaultPredOfVar . map varA) tyNums
 
         pArg :: String -> Type
-        pArg s = appTAll (ConT tyName') $ map varTS $ (map (\x -> "a" ++ show x ++ "_" ++ s))
-                     [(1 :: Int)..numTyVars]
+        pArg s = appTAll (ConT tyName') $ map (varTS . (++s) . varA) tyNums
 
         instanceType = appTAll (conTS "Default")
                                [varTS "p", pArg "0", pArg "1"]
