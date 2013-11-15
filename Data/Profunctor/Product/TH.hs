@@ -21,9 +21,7 @@ makeRecord r = return decs
         tyName' = mkName tyName
 
         pArg :: String -> Type
-        pArg = appTAll (ConT tyName') . conArgs
-               where conArgs :: String -> [Type]
-                     conArgs s = map (mkVarTsuffix s) tyVars
+        pArg = appTAll (ConT tyName') . flip map tyVars . mkVarTsuffix
 
         pullerName = mkName (adaptorName r)
 
