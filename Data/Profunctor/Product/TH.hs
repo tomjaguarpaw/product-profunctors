@@ -55,10 +55,12 @@ makeRecord r = return decs
 
         pullerName = mkName (adaptorName r)
 
+        numTyVars = length tyVars
+
         datatype' = datatype tyName' tyVars conName derivings
-        pullerSig' = pullerSig tyName' (length tyVars) pullerName
-        pullerDefinition' = pullerDefinition tyVars conName pullerName
-        instanceDefinition' = instanceDefinition tyName' (length tyVars)
+        pullerSig' = pullerSig tyName' numTyVars pullerName
+        pullerDefinition' = pullerDefinition numTyVars conName pullerName
+        instanceDefinition' = instanceDefinition tyName' numTyVars
                                                  pullerName conName'
 
 datatype :: Name -> [String] -> String -> [String] -> Dec
@@ -126,33 +128,33 @@ pullerSig tyName' numTyVars = flip SigD pullerType
 pArg' :: Name -> String -> Int -> Type
 pArg' tn s = appTAll (ConT tn) . map (varTS . (++s)) . allTyVars
 
-pullerDefinition :: [String] -> String -> Name -> Dec
-pullerDefinition tyVars conName = flip FunD [clause]
+pullerDefinition :: Int -> String -> Name -> Dec
+pullerDefinition numTyVars conName = flip FunD [clause]
   where clause = Clause [] body wheres
         toTupleN = mkName "toTuple"
         fromTupleN = mkName "fromTuple"
         toTupleE = VarE toTupleN
         fromTupleE = VarE fromTupleN
         theDimap = appEAll (varS "dimap") [toTupleE, fromTupleE]
-        pN = VarE (mkName ("p" ++ show (length tyVars)))
+        pN = VarE (mkName ("p" ++ show numTyVars))
         body = NormalB (theDimap `o` pN `o` toTupleE)
-        wheres = [toTuple conName (toTupleN, tyVars),
-                  fromTuple conName (fromTupleN, tyVars)]
+        wheres = [toTuple conName (toTupleN, numTyVars),
+                  fromTuple conName (fromTupleN, numTyVars)]
 
-xTuple :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> (Name, [String]) -> Dec
-xTuple patCon retCon (funN, tyVars) = FunD funN [clause]
+xTuple :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> (Name, Int) -> Dec
+xTuple patCon retCon (funN, numTyVars) = FunD funN [clause]
   where clause = Clause [pat] body []
         pat = patCon varPats
         body = NormalB (retCon varExps)
-        varPats = map varPS tyVars
-        varExps = map varS tyVars
+        varPats = map varPS (allTyVars numTyVars)
+        varExps = map varS (allTyVars numTyVars)
 
-fromTuple :: String -> (Name, [String]) -> Dec
+fromTuple :: String -> (Name, Int) -> Dec
 fromTuple conName = xTuple patCon retCon
   where patCon = TupP
         retCon = appEAll (conES conName)
 
-toTuple :: String -> (Name, [String]) -> Dec
+toTuple :: String -> (Name, Int) -> Dec
 toTuple conName = xTuple patCon retCon
   where patCon = conPS conName
         retCon = TupE
