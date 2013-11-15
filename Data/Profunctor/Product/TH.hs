@@ -59,7 +59,7 @@ makeRecord r = return decs
                 theDimap = appEAll (varS "dimap") [toTuple, fromTuple]
                 pN = VarE (mkName ("p" ++ show (length tyVars)))
                 body = NormalB (theDimap `o` pN `o` toTuple)
-                wheres = [whereToTuple (fromTupleN, tyVars, conName), whereFromTuple (fromTupleN, tyVars, conName)]
+                wheres = [whereToTuple (toTupleN, tyVars, conName), whereFromTuple (fromTupleN, tyVars, conName)]
 
         instanceDefinition = InstanceD instanceCxt instanceType [defDefinition]
           where instanceCxt = map (uncurry ClassP) (pClass:defClasses)
