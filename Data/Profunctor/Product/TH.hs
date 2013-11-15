@@ -70,14 +70,12 @@ makeAdaptorAndInstanceE adaptorNameS info = do
   let numTyVars = length tyVars
       numConTys = length conTys
       adaptorNameN = mkName adaptorNameS
-      adaptorSig' = pullerSig tyName numTyVars adaptorNameN
-      adaptorDefinition' = pullerDefinition numTyVars conName adaptorNameN
+      adaptorSig' = adaptorSig tyName numTyVars adaptorNameN
+      adaptorDefinition' = adaptorDefinition numTyVars conName adaptorNameN
       instanceDefinition' = instanceDefinition tyName numTyVars numConTys
                                                adaptorNameN conName
 
   return [adaptorSig', adaptorDefinition', instanceDefinition']
-
--- I used to call adaptor puller, but I think adaptor is better.
 
 makeRecordData :: MakeRecordT -> Q [Dec]
 makeRecordData r = return [datatype'] where
@@ -88,19 +86,19 @@ makeRecordData r = return [datatype'] where
 makeRecord :: MakeRecordT -> Q [Dec]
 makeRecord r = return decs
   where MakeRecordT tyName conName tyVars derivings _ = r
-        decs = [datatype', pullerSig', pullerDefinition', instanceDefinition']
+        decs = [datatype', adaptorSig', adaptorDefinition', instanceDefinition']
         tyName' = mkName tyName
         conName' = mkName conName
 
-        pullerName = mkName (adaptorName r)
+        adaptorName' = mkName (adaptorName r)
 
         numTyVars = length tyVars
 
         datatype' = datatype tyName' tyVars conName derivings
-        pullerSig' = pullerSig tyName' numTyVars pullerName
-        pullerDefinition' = pullerDefinition numTyVars conName' pullerName
+        adaptorSig' = adaptorSig tyName' numTyVars adaptorName'
+        adaptorDefinition' = adaptorDefinition numTyVars conName' adaptorName'
         instanceDefinition' = instanceDefinition tyName' numTyVars numTyVars
-                                                 pullerName conName'
+                                                 adaptorName' conName'
 
 datatype :: Name -> [String] -> String -> [String] -> Dec
 datatype tyName tyVars conName derivings = datatype'
@@ -112,7 +110,7 @@ datatype tyName tyVars conName derivings = datatype'
         derivings' = map mkName derivings
 
 instanceDefinition :: Name -> Int -> Int -> Name -> Name -> Dec
-instanceDefinition tyName' numTyVars numConVars pullerName conName = instanceDec
+instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
   where instanceDec = InstanceD instanceCxt instanceType [defDefinition]
         instanceCxt = map (uncurry ClassP) (pClass:defClasses)
         pClass = (mkName "ProductProfunctor", [varTS "p"])
@@ -131,7 +129,7 @@ instanceDefinition tyName' numTyVars numConVars pullerName conName = instanceDec
                                [varTS "p", pArg "0", pArg "1"]
 
         defDefinition = FunD (mkName "def") [Clause [] defBody []]
-        defBody = NormalB (VarE pullerName `AppE` appEAll (ConE conName) defsN)
+        defBody = NormalB(VarE adaptorName' `AppE` appEAll (ConE conName) defsN)
         defsN = replicate numConVars (varS "def")
 
 allTyVars :: Int -> [String]
@@ -140,11 +138,11 @@ allTyVars numTyVars = map varA tyNums
         tyNums :: [Int]
         tyNums = [1..numTyVars]
 
-pullerSig :: Name -> Int -> Name -> Dec
-pullerSig tyName' numTyVars = flip SigD pullerType
-  where pullerType = ForallT scope pullerCxt pullerAfterCxt
-        pullerAfterCxt = before `appArrow` after
-        pullerCxt = [ClassP (mkName "ProductProfunctor")
+adaptorSig :: Name -> Int -> Name -> Dec
+adaptorSig tyName' numTyVars = flip SigD adaptorType
+  where adaptorType = ForallT scope adaptorCxt adaptorAfterCxt
+        adaptorAfterCxt = before `appArrow` after
+        adaptorCxt = [ClassP (mkName "ProductProfunctor")
                             [VarT (mkName "p")]]
         before = appTAll (ConT tyName') pArgs
         pType = VarT (mkName "p")
@@ -167,8 +165,8 @@ pullerSig tyName' numTyVars = flip SigD pullerType
 pArg' :: Name -> String -> Int -> Type
 pArg' tn s = appTAll (ConT tn) . map (varTS . (++s)) . allTyVars
 
-pullerDefinition :: Int -> Name -> Name -> Dec
-pullerDefinition numConVars conName = flip FunD [clause]
+adaptorDefinition :: Int -> Name -> Name -> Dec
+adaptorDefinition numConVars conName = flip FunD [clause]
   where clause = Clause [] body wheres
         toTupleN = mkName "toTuple"
         fromTupleN = mkName "fromTuple"
