@@ -26,11 +26,8 @@ makeRecord r = return decs
         pullerName = mkName (adaptorName r)
 
         datatype' = datatype tyName' tyVars conName derivings
-
         pullerSig' = pullerSig tyName' tyVars pArg pullerName
-
         pullerDefinition' = pullerDefinition tyVars conName pullerName
-
         instanceDefinition' = instanceDefinition tyVars pArg pullerName conName
 
 datatype :: Name -> [String] -> String -> [String] -> Dec
