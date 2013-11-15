@@ -84,15 +84,11 @@ instanceDefinition tyName' numTyVars pullerName conName = instanceDec
                                                   mkTySuffix "0" fn,
                                                   mkTySuffix "1" fn])
 
-        varA i = "a" ++ show i ++ "_"
-
-        tyNums :: [Int]
-        tyNums = [1..numTyVars]
-
-        defClasses = (map defaultPredOfVar . map varA) tyNums
+        defClasses = map defaultPredOfVar (allTyVars numTyVars)
 
         pArg :: String -> Type
-        pArg s = appTAll (ConT tyName') $ map (varTS . (++s) . varA) tyNums
+        pArg s = appTAll (ConT tyName') $ map (varTS . (++s))
+                                               (allTyVars numTyVars)
 
         instanceType = appTAll (conTS "Default")
                                [varTS "p", pArg "0", pArg "1"]
@@ -100,6 +96,13 @@ instanceDefinition tyName' numTyVars pullerName conName = instanceDec
         defDefinition = FunD (mkName "def") [Clause [] defBody []]
         defBody = NormalB (VarE pullerName `AppE` appEAll (VarE conName) defsN)
         defsN = replicate numTyVars (varS "def")
+
+allTyVars :: Int -> [String]
+allTyVars numTyVars = map varA tyNums
+  where varA i = "a" ++ show i ++ "_"
+        tyNums :: [Int]
+        tyNums = [1..numTyVars]
+
 
 pullerSig :: Name -> Int -> ([Char] -> Type) -> Name -> Dec
 pullerSig tyName' numTyVars pArg = flip SigD pullerType
@@ -114,12 +117,7 @@ pullerSig tyName' numTyVars pArg = flip SigD pullerType
 
                 tyVars
 
-        varA i = "a" ++ show i ++ "_"
-
-        tyNums :: [Int]
-        tyNums = [1..numTyVars]
-
-        tyVars = map varA tyNums
+        tyVars = allTyVars numTyVars
 
         after = appTAll pType [pArg "0", pArg "1"]
 
