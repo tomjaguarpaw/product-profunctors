@@ -46,6 +46,13 @@ dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars [constructor] _deriving)) =
     return (tyName, tyVars', conName, conTys)
 dataDecStuffOfInfo _ = Left "That doesn't look like a data declaration to me"
 
+makeAdaptorAndInstance :: String -> Info -> Q [Dec]
+makeAdaptorAndInstance adaptorNameS info = case x of
+  Right decs -> return decs
+  -- TODO: what's the right way to fail in Q monad?
+  Left errMsg -> fail errMsg
+  where x = makeAdaptorAndInstanceE adaptorNameS info
+
 makeAdaptorAndInstanceE :: String -> Info -> Either Error [Dec]
 makeAdaptorAndInstanceE adaptorNameS info = do
   (tyName, tyVars, conName, conTys) <- dataDecStuffOfInfo info
