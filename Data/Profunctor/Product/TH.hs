@@ -9,6 +9,7 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD),
                             Exp(ConE, VarE, InfixE, AppE, TupE),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify)
+import Control.Monad ((<=<))
 
 data MakeRecordT = MakeRecordT { typeName :: String
                                , constructorName :: String
@@ -54,14 +55,11 @@ dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars constructors _deriving)) =
 dataDecStuffOfInfo _ = Left "That doesn't look like a data declaration to me"
 
 makeAdaptorAndInstance :: String -> Name -> Q [Dec]
-makeAdaptorAndInstance adaptorNameS name = do
-  info <- reify name
-
-  let x = makeAdaptorAndInstanceE adaptorNameS info
-
-  case x of
-    Right decs -> return decs
-    Left errMsg -> fail errMsg
+makeAdaptorAndInstance adaptorNameS = returnOrFail <=< r makeAandIE <=< reify
+  where r = (return .)
+        returnOrFail (Right decs) = return decs
+        returnOrFail (Left errMsg) = fail errMsg
+        makeAandIE = makeAdaptorAndInstanceE adaptorNameS
 
 makeAdaptorAndInstanceE :: String -> Info -> Either Error [Dec]
 makeAdaptorAndInstanceE adaptorNameS info = do
