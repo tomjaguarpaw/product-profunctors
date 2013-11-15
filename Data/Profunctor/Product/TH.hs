@@ -17,7 +17,7 @@ data MakeRecordT = MakeRecordT { typeName :: String
 makeRecord :: MakeRecordT -> Q [Dec]
 makeRecord r = return decs
   where MakeRecordT tyName conName tyVars derivings _ = r
-        decs = [datatype, pullerSig', pullerDefinition, instanceDefinition]
+        decs = [datatype, pullerSig', pullerDefinition', instanceDefinition]
         datatype = DataD [] tyName' tyVars' [con] derivings'
           where fields = map toField tyVars
                 tyVars' = map (PlainTV . mkName) tyVars
@@ -35,17 +35,7 @@ makeRecord r = return decs
 
         pullerSig' = pullerSig pullerName tyName' tyVars pArg
 
-        pullerDefinition = FunD pullerName [clause]
-          where clause = Clause [] body wheres
-                toTupleN = mkName "toTuple"
-                fromTupleN = mkName "fromTuple"
-                toTupleE = VarE toTupleN
-                fromTupleE = VarE fromTupleN
-                theDimap = appEAll (varS "dimap") [toTupleE, fromTupleE]
-                pN = VarE (mkName ("p" ++ show (length tyVars)))
-                body = NormalB (theDimap `o` pN `o` toTupleE)
-                wheres = [toTuple conName (toTupleN, tyVars),
-                          fromTuple conName (fromTupleN, tyVars)]
+        pullerDefinition' = pullerDefinition pullerName tyVars conName
 
         instanceDefinition = InstanceD instanceCxt instanceType [defDefinition]
           where instanceCxt = map (uncurry ClassP) (pClass:defClasses)
@@ -84,6 +74,19 @@ pullerSig pullerName tyName' tyVars pArg = SigD pullerName pullerType
         scope = concat [ [PlainTV (mkName "p")]
                        , map (mkTyVarsuffix "0") tyVars
                        , map (mkTyVarsuffix "1") tyVars ]
+
+pullerDefinition :: Name -> [String] -> String -> Dec
+pullerDefinition pullerName tyVars conName = FunD pullerName [clause]
+  where clause = Clause [] body wheres
+        toTupleN = mkName "toTuple"
+        fromTupleN = mkName "fromTuple"
+        toTupleE = VarE toTupleN
+        fromTupleE = VarE fromTupleN
+        theDimap = appEAll (varS "dimap") [toTupleE, fromTupleE]
+        pN = VarE (mkName ("p" ++ show (length tyVars)))
+        body = NormalB (theDimap `o` pN `o` toTupleE)
+        wheres = [toTuple conName (toTupleN, tyVars),
+                  fromTuple conName (fromTupleN, tyVars)]
 
 xTuple :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> (Name, [String]) -> Dec
 xTuple patCon retCon (funN, tyVars) = FunD funN [clause]
