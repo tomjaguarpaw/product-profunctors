@@ -17,7 +17,7 @@ data MakeRecordT = MakeRecordT { typeName :: String
 makeRecord :: MakeRecordT -> Q [Dec]
 makeRecord r = return decs
   where MakeRecordT tyName conName tyVars derivings _ = r
-        decs = [datatype, pullerSig, pullerDefinition, instanceDefinition]
+        decs = [datatype, pullerSig', pullerDefinition, instanceDefinition]
         datatype = DataD [] tyName' tyVars' [con] derivings'
           where fields = map toField tyVars
                 tyVars' = map (PlainTV . mkName) tyVars
@@ -33,22 +33,7 @@ makeRecord r = return decs
 
         pullerName = mkName (adaptorName r)
 
-        pullerSig = SigD pullerName pullerType
-          where pullerType = ForallT scope pullerCxt pullerAfterCxt
-                pullerAfterCxt = before `appArrow` after
-                pullerCxt = [ClassP (mkName "ProductProfunctor")
-                                    [VarT (mkName "p")]]
-                before = appTAll (ConT tyName') pArgs
-                pType = VarT (mkName "p")
-                pArgs = map (\v -> (appTAll pType
-                                    [mkVarTsuffix "0" v, mkVarTsuffix "1" v]))
-                            tyVars
-
-                after = appTAll pType [pArg "0", pArg "1"]
-
-                scope = concat [ [PlainTV (mkName "p")]
-                               , map (mkTyVarsuffix "0") tyVars
-                               , map (mkTyVarsuffix "1") tyVars ]
+        pullerSig' = pullerSig pullerName tyName' tyVars pArg
 
         pullerDefinition = FunD pullerName [clause]
           where clause = Clause [] body wheres
@@ -81,6 +66,24 @@ makeRecord r = return decs
                                    `AppE` appEAll
                                           (conES conName) defsN)
                 defsN = map (const (varS "def")) tyVars
+
+pullerSig :: Name -> Name -> [String] -> ([Char] -> Type) -> Dec
+pullerSig pullerName tyName' tyVars pArg = SigD pullerName pullerType
+  where pullerType = ForallT scope pullerCxt pullerAfterCxt
+        pullerAfterCxt = before `appArrow` after
+        pullerCxt = [ClassP (mkName "ProductProfunctor")
+                            [VarT (mkName "p")]]
+        before = appTAll (ConT tyName') pArgs
+        pType = VarT (mkName "p")
+        pArgs = map (\v -> (appTAll pType
+                                    [mkVarTsuffix "0" v, mkVarTsuffix "1" v]))
+                    tyVars
+
+        after = appTAll pType [pArg "0", pArg "1"]
+
+        scope = concat [ [PlainTV (mkName "p")]
+                       , map (mkTyVarsuffix "0") tyVars
+                       , map (mkTyVarsuffix "1") tyVars ]
 
 xTuple :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> (Name, [String]) -> Dec
 xTuple patCon retCon (funN, tyVars) = FunD funN [clause]
