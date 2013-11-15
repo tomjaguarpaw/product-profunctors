@@ -46,6 +46,21 @@ dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars [constructor] _deriving)) =
     return (tyName, tyVars', conName, conTys)
 dataDecStuffOfInfo _ = Left "That doesn't look like a data declaration to me"
 
+makeAdaptorAndInstanceE :: String -> Info -> Either Error [Dec]
+makeAdaptorAndInstanceE adaptorNameS info = do
+  (tyName, tyVars, conName, conTys) <- dataDecStuffOfInfo info
+  let numTyVars = length tyVars
+      numConTys = length conTys
+      adaptorNameN = mkName adaptorNameS
+      adaptorSig' = pullerSig tyName numTyVars adaptorNameN
+      adaptorDefinition' = pullerDefinition numTyVars conName adaptorNameN
+      instanceDefinition' = instanceDefinition tyName numTyVars numConTys
+                                               adaptorNameN conName
+
+  return [adaptorSig', adaptorDefinition', instanceDefinition']
+
+-- I used to call adaptor puller, but I think adaptor is better.
+
 makeRecord :: MakeRecordT -> Q [Dec]
 makeRecord r = return decs
   where MakeRecordT tyName conName tyVars derivings _ = r
