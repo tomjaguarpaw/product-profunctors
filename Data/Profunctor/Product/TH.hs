@@ -60,7 +60,7 @@ makeRecord r = return decs
         datatype' = datatype tyName' tyVars conName derivings
         pullerSig' = pullerSig tyName' numTyVars pullerName
         pullerDefinition' = pullerDefinition numTyVars conName' pullerName
-        instanceDefinition' = instanceDefinition tyName' numTyVars
+        instanceDefinition' = instanceDefinition tyName' numTyVars numTyVars
                                                  pullerName conName'
 
 datatype :: Name -> [String] -> String -> [String] -> Dec
@@ -72,8 +72,8 @@ datatype tyName tyVars conName derivings = datatype'
         toField s = (mkName s, NotStrict, VarT (mkName s))
         derivings' = map mkName derivings
 
-instanceDefinition :: Name -> Int -> Name -> Name -> Dec
-instanceDefinition tyName' numTyVars pullerName conName = instanceDec
+instanceDefinition :: Name -> Int -> Int -> Name -> Name -> Dec
+instanceDefinition tyName' numTyVars numConVars pullerName conName = instanceDec
   where instanceDec = InstanceD instanceCxt instanceType [defDefinition]
         instanceCxt = map (uncurry ClassP) (pClass:defClasses)
         pClass = (mkName "ProductProfunctor", [varTS "p"])
@@ -93,7 +93,7 @@ instanceDefinition tyName' numTyVars pullerName conName = instanceDec
 
         defDefinition = FunD (mkName "def") [Clause [] defBody []]
         defBody = NormalB (VarE pullerName `AppE` appEAll (ConE conName) defsN)
-        defsN = replicate numTyVars (varS "def")
+        defsN = replicate numConVars (varS "def")
 
 allTyVars :: Int -> [String]
 allTyVars numTyVars = map varA tyNums
