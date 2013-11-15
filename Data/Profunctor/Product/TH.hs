@@ -33,9 +33,9 @@ makeRecord r = return decs
 
         pullerName = mkName (adaptorName r)
 
-        pullerSig' = pullerSig pullerName tyName' tyVars pArg
+        pullerSig' = pullerSig tyName' tyVars pArg pullerName
 
-        pullerDefinition' = pullerDefinition pullerName tyVars conName
+        pullerDefinition' = pullerDefinition tyVars conName pullerName
 
         instanceDefinition = InstanceD instanceCxt instanceType [defDefinition]
           where instanceCxt = map (uncurry ClassP) (pClass:defClasses)
@@ -57,8 +57,8 @@ makeRecord r = return decs
                                           (conES conName) defsN)
                 defsN = map (const (varS "def")) tyVars
 
-pullerSig :: Name -> Name -> [String] -> ([Char] -> Type) -> Dec
-pullerSig pullerName tyName' tyVars pArg = SigD pullerName pullerType
+pullerSig :: Name -> [String] -> ([Char] -> Type) -> Name -> Dec
+pullerSig tyName' tyVars pArg = flip SigD pullerType
   where pullerType = ForallT scope pullerCxt pullerAfterCxt
         pullerAfterCxt = before `appArrow` after
         pullerCxt = [ClassP (mkName "ProductProfunctor")
@@ -75,8 +75,8 @@ pullerSig pullerName tyName' tyVars pArg = SigD pullerName pullerType
                        , map (mkTyVarsuffix "0") tyVars
                        , map (mkTyVarsuffix "1") tyVars ]
 
-pullerDefinition :: Name -> [String] -> String -> Dec
-pullerDefinition pullerName tyVars conName = FunD pullerName [clause]
+pullerDefinition :: [String] -> String -> Name -> Dec
+pullerDefinition tyVars conName = flip FunD [clause]
   where clause = Clause [] body wheres
         toTupleN = mkName "toTuple"
         fromTupleN = mkName "fromTuple"
