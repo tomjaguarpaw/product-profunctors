@@ -11,21 +11,20 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD),
                             Info(TyConI), reify)
 import Control.Monad ((<=<))
 
-data MakeRecordT = MakeRecordT { typeName :: String
-                               , constructorName :: String
-                               , fieldNames :: [String]
-                               , deriving_ :: [String]
-                               , adaptorName :: String }
-
-
-type Error = String
-
 -- Usage note: Use this library by running the following splice:
 --
 -- $(makeAdaptorAndInstance "pTypeName" ''TypeName)
 --
 -- where 'TypeName' is the name of your type and 'pTypeName' is the name you
 -- want for your adaptor.
+
+data MakeRecordT = MakeRecordT { typeName :: String
+                               , constructorName :: String
+                               , fieldNames :: [String]
+                               , deriving_ :: [String]
+                               , adaptorName :: String }
+
+type Error = String
 
 varNameOfType :: Type -> Either Error Name
 varNameOfType (VarT n) = Right n
