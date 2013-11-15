@@ -2,17 +2,37 @@ module Data.Profunctor.Product.TH where
 
 import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD),
                             mkName, TyVarBndr(PlainTV),
-                            Con(RecC), Strict(NotStrict), Clause(Clause),
+                            Con(RecC, NormalC),
+                            Strict(NotStrict), Clause(Clause),
                             Type(VarT, ForallT, AppT, ArrowT, ConT),
                             Body(NormalB), Q, Pred(ClassP),
                             Exp(ConE, VarE, InfixE, AppE, TupE),
-                            Pat(TupP, VarP, ConP), Name)
+                            Pat(TupP, VarP, ConP), Name,
+                            Info(TyConI))
 
 data MakeRecordT = MakeRecordT { typeName :: String
                                , constructorName :: String
                                , fieldNames :: [String]
                                , deriving_ :: [String]
                                , adaptorName :: String }
+
+
+type Error = String
+
+conStuffOfConstructor :: Con -> Either Error (Name, [Type])
+conStuffOfConstructor (NormalC conName st) = Right (conName, map snd st)
+conStuffOfConstructor (RecC conName vst) = Right (conName, map thrd vst)
+  where thrd = (\(_,_,x) -> x)
+conStuffOfConstructor _ = Left "I can't deal with your constructor type"
+
+-- TODO: support newtypes?
+dataDecStuffOfInfo :: Info -> Either Error (Name, [TyVarBndr], Name, [Type])
+dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars [constructor] _deriving)) =
+  conStuffOfConstructor constructor >>=
+  (\(conName, conTys) -> Right (tyName, tyVars, conName, conTys))
+dataDecStuffOfInfo _ = Left "That doesn't look like a data declaration to me"
+
+dataDecStuffOfInfo _ = error "Unexpected form of constructor"
 
 makeRecord :: MakeRecordT -> Q [Dec]
 makeRecord r = return decs
