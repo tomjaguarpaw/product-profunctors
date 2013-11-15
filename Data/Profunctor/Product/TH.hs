@@ -38,11 +38,12 @@ conStuffOfConstructor (RecC conName vst) = do
 conStuffOfConstructor _ = Left "I can't deal with your constructor type"
 
 -- TODO: support newtypes?
-dataDecStuffOfInfo :: Info -> Either Error (Name, [TyVarBndr], Name, [Name])
+dataDecStuffOfInfo :: Info -> Either Error (Name, [Name], Name, [Name])
 dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars [constructor] _deriving)) =
   do
+    let tyVars' = map varNameOfBinder tyVars
     (conName, conTys) <- conStuffOfConstructor constructor
-    return (tyName, tyVars, conName, conTys)
+    return (tyName, tyVars', conName, conTys)
 dataDecStuffOfInfo _ = Left "That doesn't look like a data declaration to me"
 
 makeRecord :: MakeRecordT -> Q [Dec]
