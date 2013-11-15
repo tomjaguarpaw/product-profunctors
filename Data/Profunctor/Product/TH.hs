@@ -20,6 +20,13 @@ data MakeRecordT = MakeRecordT { typeName :: String
 
 type Error = String
 
+-- Usage note: Use this library by running the following splice:
+--
+-- $(makeAdaptorAndInstance "pTypeName" ''TypeName)
+--
+-- where 'TypeName' is the name of your type and 'pTypeName' is the name you
+-- want for your adaptor.
+
 varNameOfType :: Type -> Either Error Name
 varNameOfType (VarT n) = Right n
 varNameOfType _ = Left "Found a non-variable type"
