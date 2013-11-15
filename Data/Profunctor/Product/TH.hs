@@ -60,8 +60,8 @@ makeRecord r = return decs
         datatype' = datatype tyName' tyVars conName derivings
         pullerSig' = pullerSig tyName' tyVars pArg pullerName
         pullerDefinition' = pullerDefinition tyVars conName pullerName
-        instanceDefinition' = instanceDefinition tyName' tyVars pullerName
-                                                 conName
+        instanceDefinition' = instanceDefinition tyName' (length tyVars)
+                                                 pullerName conName
 
 datatype :: Name -> [String] -> String -> [String] -> Dec
 datatype tyName' tyVars conName derivings = datatype'
@@ -72,8 +72,8 @@ datatype tyName' tyVars conName derivings = datatype'
         toField s = (mkName s, NotStrict, VarT (mkName s))
         derivings' = map mkName derivings
 
-instanceDefinition :: Name -> [String] -> Name -> String -> Dec
-instanceDefinition tyName' tyVars pullerName conName = instanceDec
+instanceDefinition :: Name -> Int -> Name -> String -> Dec
+instanceDefinition tyName' numTyVars pullerName conName = instanceDec
   where instanceDec = InstanceD instanceCxt instanceType [defDefinition]
         instanceCxt = map (uncurry ClassP) (pClass:defClasses)
         pClass = (mkName "ProductProfunctor", [varTS "p"])
@@ -82,8 +82,6 @@ instanceDefinition tyName' tyVars pullerName conName = instanceDec
         defaultPredOfVar fn = (mkName "Default", [varTS "p",
                                                   mkTySuffix "0" fn,
                                                   mkTySuffix "1" fn])
-
-        numTyVars = length tyVars
 
         defClasses = (map defaultPredOfVar
                       . map (\x -> "a" ++ show x ++ "_"))
