@@ -37,10 +37,17 @@ conStuffOfConstructor (RecC conName vst) = do
     where thrd = (\(_,_,x) -> x)
 conStuffOfConstructor _ = Left "I can't deal with your constructor type"
 
+constructorOfConstructors :: [Con] -> Either Error Con
+constructorOfConstructors [single] = return single
+constructorOfConstructors [] = Left "I need at least one constructor"
+constructorOfConstructors _many = Left msg
+  where msg = "I can't deal with more than one constructor"
+
 -- TODO: support newtypes?
 dataDecStuffOfInfo :: Info -> Either Error (Name, [Name], Name, [Name])
-dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars [constructor] _deriving)) =
+dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars constructors _deriving)) =
   do
+    constructor <- constructorOfConstructors constructors
     let tyVars' = map varNameOfBinder tyVars
     (conName, conTys) <- conStuffOfConstructor constructor
     return (tyName, tyVars', conName, conTys)
