@@ -64,8 +64,8 @@ makeRecord r = return decs
                                                  pullerName conName
 
 datatype :: Name -> [String] -> String -> [String] -> Dec
-datatype tyName' tyVars conName derivings = datatype'
-  where datatype' = DataD [] tyName' tyVars' [con] derivings'
+datatype tyName tyVars conName derivings = datatype'
+  where datatype' = DataD [] tyName tyVars' [con] derivings'
         fields = map toField tyVars
         tyVars' = map (PlainTV . mkName) tyVars
         con = RecC (mkName conName) fields
