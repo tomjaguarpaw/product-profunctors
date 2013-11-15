@@ -59,7 +59,7 @@ makeRecord r = return decs
         pullerName = mkName (adaptorName r)
 
         datatype' = datatype tyName' tyVars conName derivings
-        pullerSig' = pullerSig tyName' tyVars pArg pullerName
+        pullerSig' = pullerSig tyName' (length tyVars) pArg pullerName
         pullerDefinition' = pullerDefinition tyVars conName pullerName
         instanceDefinition' = instanceDefinition tyName' (length tyVars)
                                                  pullerName conName'
@@ -101,8 +101,8 @@ instanceDefinition tyName' numTyVars pullerName conName = instanceDec
         defBody = NormalB (VarE pullerName `AppE` appEAll (VarE conName) defsN)
         defsN = replicate numTyVars (varS "def")
 
-pullerSig :: Name -> [String] -> ([Char] -> Type) -> Name -> Dec
-pullerSig tyName' tyVars pArg = flip SigD pullerType
+pullerSig :: Name -> Int -> ([Char] -> Type) -> Name -> Dec
+pullerSig tyName' numTyVars pArg = flip SigD pullerType
   where pullerType = ForallT scope pullerCxt pullerAfterCxt
         pullerAfterCxt = before `appArrow` after
         pullerCxt = [ClassP (mkName "ProductProfunctor")
@@ -111,7 +111,15 @@ pullerSig tyName' tyVars pArg = flip SigD pullerType
         pType = VarT (mkName "p")
         pArgs = map (\v -> (appTAll pType
                                     [mkVarTsuffix "0" v, mkVarTsuffix "1" v]))
-                    tyVars
+
+                tyVars
+
+        varA i = "a" ++ show i ++ "_"
+
+        tyNums :: [Int]
+        tyNums = [1..numTyVars]
+
+        tyVars = map varA tyNums
 
         after = appTAll pType [pArg "0", pArg "1"]
 
