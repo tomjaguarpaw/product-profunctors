@@ -1,7 +1,7 @@
 module Data.Profunctor.Product.TH where
 
 import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD),
-                            mkName, TyVarBndr(PlainTV),
+                            mkName, TyVarBndr(PlainTV, KindedTV),
                             Con(RecC, NormalC),
                             Strict(NotStrict), Clause(Clause),
                             Type(VarT, ForallT, AppT, ArrowT, ConT),
@@ -22,6 +22,10 @@ type Error = String
 varNameOfType :: Type -> Either Error Name
 varNameOfType (VarT n) = Right n
 varNameOfType _ = Left "Found a non-variable type"
+
+varNameOfBinder :: TyVarBndr -> Name
+varNameOfBinder (PlainTV n) = n
+varNameOfBinder (KindedTV n _) = n
 
 conStuffOfConstructor :: Con -> Either Error (Name, [Name])
 conStuffOfConstructor (NormalC conName st) = do
