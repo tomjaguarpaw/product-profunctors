@@ -118,14 +118,14 @@ pullerSig tyName' numTyVars = flip SigD pullerType
         pArg :: String -> Int -> Type
         pArg = pArg' tyName'
 
-        pArg' :: Name -> String -> Int -> Type
-        pArg' tn s = appTAll (ConT tn) . map (varTS . (++s)) . allTyVars
-
         after = appTAll pType [pArg "0" numTyVars, pArg "1" numTyVars]
 
         scope = concat [ [PlainTV (mkName "p")]
                        , map (mkTyVarsuffix "0") tyVars
                        , map (mkTyVarsuffix "1") tyVars ]
+
+pArg' :: Name -> String -> Int -> Type
+pArg' tn s = appTAll (ConT tn) . map (varTS . (++s)) . allTyVars
 
 pullerDefinition :: [String] -> String -> Name -> Dec
 pullerDefinition tyVars conName = flip FunD [clause]
