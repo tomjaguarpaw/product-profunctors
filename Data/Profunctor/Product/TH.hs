@@ -19,6 +19,10 @@ data MakeRecordT = MakeRecordT { typeName :: String
 
 type Error = String
 
+varNameOfType :: Type -> Either Error Name
+varNameOfType (VarT n) = Right n
+varNameOfType _ = Left "Found a non-variable type"
+
 conStuffOfConstructor :: Con -> Either Error (Name, [Type])
 conStuffOfConstructor (NormalC conName st) = Right (conName, map snd st)
 conStuffOfConstructor (RecC conName vst) = Right (conName, map thrd vst)
