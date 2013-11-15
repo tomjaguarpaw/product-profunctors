@@ -129,17 +129,17 @@ pArg' :: Name -> String -> Int -> Type
 pArg' tn s = appTAll (ConT tn) . map (varTS . (++s)) . allTyVars
 
 pullerDefinition :: Int -> Name -> Name -> Dec
-pullerDefinition numTyVars conName = flip FunD [clause]
+pullerDefinition numConVars conName = flip FunD [clause]
   where clause = Clause [] body wheres
         toTupleN = mkName "toTuple"
         fromTupleN = mkName "fromTuple"
         toTupleE = VarE toTupleN
         fromTupleE = VarE fromTupleN
         theDimap = appEAll (varS "dimap") [toTupleE, fromTupleE]
-        pN = VarE (mkName ("p" ++ show numTyVars))
+        pN = VarE (mkName ("p" ++ show numConVars))
         body = NormalB (theDimap `o` pN `o` toTupleE)
-        wheres = [toTuple conName (toTupleN, numTyVars),
-                  fromTuple conName (fromTupleN, numTyVars)]
+        wheres = [toTuple conName (toTupleN, numConVars),
+                  fromTuple conName (fromTupleN, numConVars)]
 
 xTuple :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> (Name, Int) -> Dec
 xTuple patCon retCon (funN, numTyVars) = FunD funN [clause]
