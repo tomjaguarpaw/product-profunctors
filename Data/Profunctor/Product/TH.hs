@@ -32,8 +32,6 @@ dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars [constructor] _deriving)) =
   (\(conName, conTys) -> Right (tyName, tyVars, conName, conTys))
 dataDecStuffOfInfo _ = Left "That doesn't look like a data declaration to me"
 
-dataDecStuffOfInfo _ = error "Unexpected form of constructor"
-
 makeRecord :: MakeRecordT -> Q [Dec]
 makeRecord r = return decs
   where MakeRecordT tyName conName tyVars derivings _ = r
