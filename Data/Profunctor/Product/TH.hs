@@ -60,7 +60,8 @@ makeRecord r = return decs
         datatype' = datatype tyName' tyVars conName derivings
         pullerSig' = pullerSig tyName' tyVars pArg pullerName
         pullerDefinition' = pullerDefinition tyVars conName pullerName
-        instanceDefinition' = instanceDefinition tyVars pArg pullerName conName
+        instanceDefinition' = instanceDefinition tyName' tyVars pullerName
+                                                 conName
 
 datatype :: Name -> [String] -> String -> [String] -> Dec
 datatype tyName' tyVars conName derivings = datatype'
@@ -71,8 +72,8 @@ datatype tyName' tyVars conName derivings = datatype'
         toField s = (mkName s, NotStrict, VarT (mkName s))
         derivings' = map mkName derivings
 
-instanceDefinition :: [String] -> ([Char] -> Type) -> Name -> String -> Dec
-instanceDefinition tyVars pArg pullerName conName = instanceDec
+instanceDefinition :: Name -> [String] -> Name -> String -> Dec
+instanceDefinition tyName' tyVars pullerName conName = instanceDec
   where instanceDec = InstanceD instanceCxt instanceType [defDefinition]
         instanceCxt = map (uncurry ClassP) (pClass:defClasses)
         pClass = (mkName "ProductProfunctor", [varTS "p"])
@@ -82,7 +83,15 @@ instanceDefinition tyVars pArg pullerName conName = instanceDec
                                                   mkTySuffix "0" fn,
                                                   mkTySuffix "1" fn])
 
-        defClasses = map defaultPredOfVar tyVars
+        numTyVars = length tyVars
+
+        defClasses = (map defaultPredOfVar
+                      . map (\x -> "a" ++ show x ++ "_"))
+                     [(1 :: Int)..numTyVars]
+
+        pArg :: String -> Type
+        pArg s = appTAll (ConT tyName') $ map varTS $ (map (\x -> "a" ++ show x ++ "_" ++ s))
+                     [(1 :: Int)..numTyVars]
 
         instanceType = appTAll (conTS "Default")
                                [varTS "p", pArg "0", pArg "1"]
@@ -91,7 +100,7 @@ instanceDefinition tyVars pArg pullerName conName = instanceDec
         defBody = NormalB (VarE pullerName
                            `AppE` appEAll
                            (conES conName) defsN)
-        defsN = map (const (varS "def")) tyVars
+        defsN = replicate numTyVars (varS "def")
 
 pullerSig :: Name -> [String] -> ([Char] -> Type) -> Name -> Dec
 pullerSig tyName' tyVars pArg = flip SigD pullerType
