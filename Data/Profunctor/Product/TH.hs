@@ -84,8 +84,7 @@ instanceDefinition tyName' numTyVars pullerName conName = instanceDec
         defClasses = map defaultPredOfVar (allTyVars numTyVars)
 
         pArg :: String -> Type
-        pArg s = appTAll (ConT tyName') $ map (varTS . (++s))
-                                               (allTyVars numTyVars)
+        pArg s = pArg' tyName' s numTyVars
 
         instanceType = appTAll (conTS "Default")
                                [varTS "p", pArg "0", pArg "1"]
@@ -115,10 +114,10 @@ pullerSig tyName' numTyVars = flip SigD pullerType
 
         tyVars = allTyVars numTyVars
 
-        pArg :: String -> Int -> Type
-        pArg = pArg' tyName'
+        pArg :: String -> Type
+        pArg s = pArg' tyName' s numTyVars
 
-        after = appTAll pType [pArg "0" numTyVars, pArg "1" numTyVars]
+        after = appTAll pType [pArg "0", pArg "1"]
 
         scope = concat [ [PlainTV (mkName "p")]
                        , map (mkTyVarsuffix "0") tyVars
