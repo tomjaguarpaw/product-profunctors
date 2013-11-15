@@ -17,13 +17,7 @@ data MakeRecordT = MakeRecordT { typeName :: String
 makeRecord :: MakeRecordT -> Q [Dec]
 makeRecord r = return decs
   where MakeRecordT tyName conName tyVars derivings _ = r
-        decs = [datatype, pullerSig', pullerDefinition', instanceDefinition']
-        datatype = DataD [] tyName' tyVars' [con] derivings'
-          where fields = map toField tyVars
-                tyVars' = map (PlainTV . mkName) tyVars
-                con = RecC (mkName conName) fields
-                toField s = (mkName s, NotStrict, VarT (mkName s))
-                derivings' = map mkName derivings
+        decs = [datatype', pullerSig', pullerDefinition', instanceDefinition']
         tyName' = mkName tyName
 
         pArg :: String -> Type
@@ -33,11 +27,22 @@ makeRecord r = return decs
 
         pullerName = mkName (adaptorName r)
 
+        datatype' = datatype tyName' tyVars conName derivings
+
         pullerSig' = pullerSig tyName' tyVars pArg pullerName
 
         pullerDefinition' = pullerDefinition tyVars conName pullerName
 
         instanceDefinition' = instanceDefinition tyVars pArg pullerName conName
+
+datatype :: Name -> [String] -> String -> [String] -> Dec
+datatype tyName' tyVars conName derivings = datatype'
+  where datatype' = DataD [] tyName' tyVars' [con] derivings'
+        fields = map toField tyVars
+        tyVars' = map (PlainTV . mkName) tyVars
+        con = RecC (mkName conName) fields
+        toField s = (mkName s, NotStrict, VarT (mkName s))
+        derivings' = map mkName derivings
 
 instanceDefinition :: [String] -> ([Char] -> Type) -> Name -> String -> Dec
 instanceDefinition tyVars pArg pullerName conName = instanceDec
