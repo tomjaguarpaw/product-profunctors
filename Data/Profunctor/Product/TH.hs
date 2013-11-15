@@ -90,7 +90,7 @@ instanceDefinition tyName' numTyVars pullerName conName = instanceDec
                                [varTS "p", pArg "0", pArg "1"]
 
         defDefinition = FunD (mkName "def") [Clause [] defBody []]
-        defBody = NormalB (VarE pullerName `AppE` appEAll (VarE conName) defsN)
+        defBody = NormalB (VarE pullerName `AppE` appEAll (ConE conName) defsN)
         defsN = replicate numTyVars (varS "def")
 
 allTyVars :: Int -> [String]
