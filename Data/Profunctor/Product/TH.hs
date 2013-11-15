@@ -116,7 +116,10 @@ pullerSig tyName' numTyVars = flip SigD pullerType
         tyVars = allTyVars numTyVars
 
         pArg :: String -> Int -> Type
-        pArg s = appTAll (ConT tyName') . map (varTS . (++s)) . allTyVars
+        pArg = pArg' tyName'
+
+        pArg' :: Name -> String -> Int -> Type
+        pArg' tn s = appTAll (ConT tn) . map (varTS . (++s)) . allTyVars
 
         after = appTAll pType [pArg "0" numTyVars, pArg "1" numTyVars]
 
