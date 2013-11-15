@@ -53,13 +53,10 @@ makeRecord r = return decs
         tyName' = mkName tyName
         conName' = mkName conName
 
-        pArg :: String -> Type
-        pArg = appTAll (ConT tyName') . flip map tyVars . mkVarTsuffix
-
         pullerName = mkName (adaptorName r)
 
         datatype' = datatype tyName' tyVars conName derivings
-        pullerSig' = pullerSig tyName' (length tyVars) pArg pullerName
+        pullerSig' = pullerSig tyName' (length tyVars) pullerName
         pullerDefinition' = pullerDefinition tyVars conName pullerName
         instanceDefinition' = instanceDefinition tyName' (length tyVars)
                                                  pullerName conName'
@@ -103,8 +100,8 @@ allTyVars numTyVars = map varA tyNums
         tyNums :: [Int]
         tyNums = [1..numTyVars]
 
-pullerSig :: Name -> Int -> (String -> Type) -> Name -> Dec
-pullerSig tyName' numTyVars pArg = flip SigD pullerType
+pullerSig :: Name -> Int -> Name -> Dec
+pullerSig tyName' numTyVars = flip SigD pullerType
   where pullerType = ForallT scope pullerCxt pullerAfterCxt
         pullerAfterCxt = before `appArrow` after
         pullerCxt = [ClassP (mkName "ProductProfunctor")
@@ -118,7 +115,10 @@ pullerSig tyName' numTyVars pArg = flip SigD pullerType
 
         tyVars = allTyVars numTyVars
 
-        after = appTAll pType [pArg "0", pArg "1"]
+        pArg :: String -> Int -> Type
+        pArg s = appTAll (ConT tyName') . map (varTS . (++s)) . allTyVars
+
+        after = appTAll pType [pArg "0" numTyVars, pArg "1" numTyVars]
 
         scope = concat [ [PlainTV (mkName "p")]
                        , map (mkTyVarsuffix "0") tyVars
