@@ -72,6 +72,12 @@ makeAdaptorAndInstanceE adaptorNameS info = do
 
 -- I used to call adaptor puller, but I think adaptor is better.
 
+makeRecordData :: MakeRecordT -> Q [Dec]
+makeRecordData r = return [datatype'] where
+  MakeRecordT tyName conName tyVars derivings _ = r
+  tyName' = mkName tyName
+  datatype' = datatype tyName' tyVars conName derivings
+
 makeRecord :: MakeRecordT -> Q [Dec]
 makeRecord r = return decs
   where MakeRecordT tyName conName tyVars derivings _ = r
