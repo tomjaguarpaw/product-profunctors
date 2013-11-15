@@ -103,7 +103,7 @@ allTyVars numTyVars = map varA tyNums
         tyNums :: [Int]
         tyNums = [1..numTyVars]
 
-pullerSig :: Name -> Int -> ([Char] -> Type) -> Name -> Dec
+pullerSig :: Name -> Int -> (String -> Type) -> Name -> Dec
 pullerSig tyName' numTyVars pArg = flip SigD pullerType
   where pullerType = ForallT scope pullerCxt pullerAfterCxt
         pullerAfterCxt = before `appArrow` after
