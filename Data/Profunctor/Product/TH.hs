@@ -17,7 +17,7 @@ data MakeRecordT = MakeRecordT { typeName :: String
 makeRecord :: MakeRecordT -> Q [Dec]
 makeRecord r = return decs
   where MakeRecordT tyName conName tyVars derivings _ = r
-        decs = [datatype, pullerSig', pullerDefinition', instanceDefinition]
+        decs = [datatype, pullerSig', pullerDefinition', instanceDefinition']
         datatype = DataD [] tyName' tyVars' [con] derivings'
           where fields = map toField tyVars
                 tyVars' = map (PlainTV . mkName) tyVars
@@ -37,25 +37,29 @@ makeRecord r = return decs
 
         pullerDefinition' = pullerDefinition tyVars conName pullerName
 
-        instanceDefinition = InstanceD instanceCxt instanceType [defDefinition]
-          where instanceCxt = map (uncurry ClassP) (pClass:defClasses)
-                pClass = (mkName "ProductProfunctor", [varTS "p"])
+        instanceDefinition' = instanceDefinition tyVars pArg pullerName conName
 
-                defaultPredOfVar :: String -> (Name, [Type])
-                defaultPredOfVar fn = (mkName "Default", [varTS "p",
-                                                          mkTySuffix "0" fn,
-                                                          mkTySuffix "1" fn])
+instanceDefinition :: [String] -> ([Char] -> Type) -> Name -> String -> Dec
+instanceDefinition tyVars pArg pullerName conName = instanceDec
+  where instanceDec = InstanceD instanceCxt instanceType [defDefinition]
+        instanceCxt = map (uncurry ClassP) (pClass:defClasses)
+        pClass = (mkName "ProductProfunctor", [varTS "p"])
 
-                defClasses = map defaultPredOfVar tyVars
+        defaultPredOfVar :: String -> (Name, [Type])
+        defaultPredOfVar fn = (mkName "Default", [varTS "p",
+                                                  mkTySuffix "0" fn,
+                                                  mkTySuffix "1" fn])
 
-                instanceType = appTAll (conTS "Default")
-                                       [varTS "p", pArg "0", pArg "1"]
+        defClasses = map defaultPredOfVar tyVars
 
-                defDefinition = FunD (mkName "def") [Clause [] defBody []]
-                defBody = NormalB (VarE pullerName
-                                   `AppE` appEAll
-                                          (conES conName) defsN)
-                defsN = map (const (varS "def")) tyVars
+        instanceType = appTAll (conTS "Default")
+                               [varTS "p", pArg "0", pArg "1"]
+
+        defDefinition = FunD (mkName "def") [Clause [] defBody []]
+        defBody = NormalB (VarE pullerName
+                           `AppE` appEAll
+                           (conES conName) defsN)
+        defsN = map (const (varS "def")) tyVars
 
 pullerSig :: Name -> [String] -> ([Char] -> Type) -> Name -> Dec
 pullerSig tyName' tyVars pArg = flip SigD pullerType
