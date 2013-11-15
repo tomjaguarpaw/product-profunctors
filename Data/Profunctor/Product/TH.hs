@@ -8,7 +8,7 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD),
                             Body(NormalB), Q, Pred(ClassP),
                             Exp(ConE, VarE, InfixE, AppE, TupE),
                             Pat(TupP, VarP, ConP), Name,
-                            Info(TyConI))
+                            Info(TyConI), reify)
 
 data MakeRecordT = MakeRecordT { typeName :: String
                                , constructorName :: String
@@ -46,12 +46,16 @@ dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars [constructor] _deriving)) =
     return (tyName, tyVars', conName, conTys)
 dataDecStuffOfInfo _ = Left "That doesn't look like a data declaration to me"
 
-makeAdaptorAndInstance :: String -> Info -> Q [Dec]
-makeAdaptorAndInstance adaptorNameS info = case x of
-  Right decs -> return decs
-  -- TODO: what's the right way to fail in Q monad?
-  Left errMsg -> fail errMsg
-  where x = makeAdaptorAndInstanceE adaptorNameS info
+makeAdaptorAndInstance :: String -> Name -> Q [Dec]
+makeAdaptorAndInstance adaptorNameS name = do
+  info <- reify name
+
+  let x = makeAdaptorAndInstanceE adaptorNameS info
+
+  case x of
+    Right decs -> return decs
+    -- TODO: what's the right way to fail in Q monad?
+    Left errMsg -> fail errMsg
 
 makeAdaptorAndInstanceE :: String -> Info -> Either Error [Dec]
 makeAdaptorAndInstanceE adaptorNameS info = do
