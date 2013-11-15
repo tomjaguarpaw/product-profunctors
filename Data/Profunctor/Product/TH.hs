@@ -61,7 +61,6 @@ makeAdaptorAndInstance adaptorNameS name = do
 
   case x of
     Right decs -> return decs
-    -- TODO: what's the right way to fail in Q monad?
     Left errMsg -> fail errMsg
 
 makeAdaptorAndInstanceE :: String -> Info -> Either Error [Dec]
