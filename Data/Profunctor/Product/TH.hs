@@ -50,13 +50,15 @@ constructorOfConstructors [] = Left "I need at least one constructor"
 constructorOfConstructors _many = Left msg
   where msg = "I can't deal with more than one constructor"
 
+extractConstructorStuff :: [Con] -> Either Error (Name, [Name])
+extractConstructorStuff = conStuffOfConstructor <=< constructorOfConstructors
+
 -- TODO: support newtypes?
 dataDecStuffOfInfo :: Info -> Either Error (Name, [Name], Name, [Name])
 dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars constructors _deriving)) =
   do
-    constructor <- constructorOfConstructors constructors
+    (conName, conTys) <- extractConstructorStuff constructors
     let tyVars' = map varNameOfBinder tyVars
-    (conName, conTys) <- conStuffOfConstructor constructor
     return (tyName, tyVars', conName, conTys)
 dataDecStuffOfInfo _ = Left "That doesn't look like a data declaration to me"
 
