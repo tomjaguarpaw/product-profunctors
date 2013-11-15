@@ -59,19 +59,7 @@ makeRecord r = return decs
                 theDimap = appEAll (varS "dimap") [toTuple, fromTuple]
                 pN = VarE (mkName ("p" ++ show (length tyVars)))
                 body = NormalB (theDimap `o` pN `o` toTuple)
-                wheres = [whereToTuple, whereFromTuple]
-                varPats :: [Pat]
-                varPats = map varPS tyVars
-                whereFromTuple = FunD fromTupleN [fromTupleClause]
-                  where fromTupleClause = Clause [fromTuplePat] fromTupleBody []
-                        fromTuplePat = TupP varPats
-                        cone = conES conName
-                        fromTupleBody = NormalB (appEAll cone (map varS tyVars))
-                whereToTuple = FunD toTupleN [toTupleClause]
-                  where toTupleClause = Clause [toTuplePat] toTupleBody []
-                        toTuplePat = conp varPats
-                        conp = conPS conName
-                        toTupleBody = NormalB (TupE (map varS tyVars))
+                wheres = [whereToTuple (fromTupleN, tyVars, conName), whereFromTuple (fromTupleN, tyVars, conName)]
 
         instanceDefinition = InstanceD instanceCxt instanceType [defDefinition]
           where instanceCxt = map (uncurry ClassP) (pClass:defClasses)
@@ -92,6 +80,20 @@ makeRecord r = return decs
                                    `AppE` appEAll
                                           (conES conName) defsN)
                 defsN = map (const (varS "def")) tyVars
+
+whereFromTuple :: (Name, [String], String) -> Dec
+whereFromTuple (fromTupleN, tyVars, conName) = FunD fromTupleN [fromTupleClause]
+  where fromTupleClause = Clause [fromTuplePat] fromTupleBody []
+        fromTuplePat = TupP (map varPS tyVars)
+        cone = conES conName
+        fromTupleBody = NormalB (appEAll cone (map varS tyVars))
+
+whereToTuple :: (Name, [String], String) -> Dec
+whereToTuple (toTupleN, tyVars, conName) = FunD toTupleN [toTupleClause]
+  where toTupleClause = Clause [toTuplePat] toTupleBody []
+        toTuplePat = conp (map varPS tyVars)
+        conp = conPS conName
+        toTupleBody = NormalB (TupE (map varS tyVars))
 
 {-
 Note that we can also do the instance definition like this, but it would
