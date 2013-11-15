@@ -54,13 +54,13 @@ makeRecord r = return decs
           where clause = Clause [] body wheres
                 toTupleN = mkName "toTuple"
                 fromTupleN = mkName "fromTuple"
-                toTuple = VarE toTupleN
-                fromTuple = VarE fromTupleN
-                theDimap = appEAll (varS "dimap") [toTuple, fromTuple]
+                toTupleE = VarE toTupleN
+                fromTupleE = VarE fromTupleN
+                theDimap = appEAll (varS "dimap") [toTupleE, fromTupleE]
                 pN = VarE (mkName ("p" ++ show (length tyVars)))
-                body = NormalB (theDimap `o` pN `o` toTuple)
-                wheres = [whereToTuple conName (toTupleN, tyVars),
-                          whereFromTuple conName (fromTupleN, tyVars)]
+                body = NormalB (theDimap `o` pN `o` toTupleE)
+                wheres = [toTuple conName (toTupleN, tyVars),
+                          fromTuple conName (fromTupleN, tyVars)]
 
         instanceDefinition = InstanceD instanceCxt instanceType [defDefinition]
           where instanceCxt = map (uncurry ClassP) (pClass:defClasses)
@@ -90,13 +90,13 @@ xTuple patCon retCon (funN, tyVars) = FunD funN [clause]
         varPats = map varPS tyVars
         varExps = map varS tyVars
 
-whereFromTuple :: String -> (Name, [String]) -> Dec
-whereFromTuple conName = xTuple patCon retCon
+fromTuple :: String -> (Name, [String]) -> Dec
+fromTuple conName = xTuple patCon retCon
   where patCon = TupP
         retCon = appEAll (conES conName)
 
-whereToTuple :: String -> (Name, [String]) -> Dec
-whereToTuple conName = xTuple patCon retCon
+toTuple :: String -> (Name, [String]) -> Dec
+toTuple conName = xTuple patCon retCon
   where patCon = conPS conName
         retCon = TupE
 
