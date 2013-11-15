@@ -23,17 +23,22 @@ varNameOfType :: Type -> Either Error Name
 varNameOfType (VarT n) = Right n
 varNameOfType _ = Left "Found a non-variable type"
 
-conStuffOfConstructor :: Con -> Either Error (Name, [Type])
-conStuffOfConstructor (NormalC conName st) = Right (conName, map snd st)
-conStuffOfConstructor (RecC conName vst) = Right (conName, map thrd vst)
-  where thrd = (\(_,_,x) -> x)
+conStuffOfConstructor :: Con -> Either Error (Name, [Name])
+conStuffOfConstructor (NormalC conName st) = do
+  conTys <- mapM (varNameOfType . snd) st
+  return (conName, conTys)
+conStuffOfConstructor (RecC conName vst) = do
+  conTys <- mapM (varNameOfType . thrd) vst
+  return (conName, conTys)
+    where thrd = (\(_,_,x) -> x)
 conStuffOfConstructor _ = Left "I can't deal with your constructor type"
 
 -- TODO: support newtypes?
-dataDecStuffOfInfo :: Info -> Either Error (Name, [TyVarBndr], Name, [Type])
+dataDecStuffOfInfo :: Info -> Either Error (Name, [TyVarBndr], Name, [Name])
 dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars [constructor] _deriving)) =
-  conStuffOfConstructor constructor >>=
-  (\(conName, conTys) -> Right (tyName, tyVars, conName, conTys))
+  do
+    (conName, conTys) <- conStuffOfConstructor constructor
+    return (tyName, tyVars, conName, conTys)
 dataDecStuffOfInfo _ = Left "That doesn't look like a data declaration to me"
 
 makeRecord :: MakeRecordT -> Q [Dec]
