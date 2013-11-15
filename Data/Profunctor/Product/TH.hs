@@ -51,6 +51,7 @@ makeRecord r = return decs
   where MakeRecordT tyName conName tyVars derivings _ = r
         decs = [datatype', pullerSig', pullerDefinition', instanceDefinition']
         tyName' = mkName tyName
+        conName' = mkName conName
 
         pArg :: String -> Type
         pArg = appTAll (ConT tyName') . flip map tyVars . mkVarTsuffix
@@ -61,7 +62,7 @@ makeRecord r = return decs
         pullerSig' = pullerSig tyName' tyVars pArg pullerName
         pullerDefinition' = pullerDefinition tyVars conName pullerName
         instanceDefinition' = instanceDefinition tyName' (length tyVars)
-                                                 pullerName conName
+                                                 pullerName conName'
 
 datatype :: Name -> [String] -> String -> [String] -> Dec
 datatype tyName tyVars conName derivings = datatype'
@@ -72,7 +73,7 @@ datatype tyName tyVars conName derivings = datatype'
         toField s = (mkName s, NotStrict, VarT (mkName s))
         derivings' = map mkName derivings
 
-instanceDefinition :: Name -> Int -> Name -> String -> Dec
+instanceDefinition :: Name -> Int -> Name -> Name -> Dec
 instanceDefinition tyName' numTyVars pullerName conName = instanceDec
   where instanceDec = InstanceD instanceCxt instanceType [defDefinition]
         instanceCxt = map (uncurry ClassP) (pClass:defClasses)
@@ -97,9 +98,7 @@ instanceDefinition tyName' numTyVars pullerName conName = instanceDec
                                [varTS "p", pArg "0", pArg "1"]
 
         defDefinition = FunD (mkName "def") [Clause [] defBody []]
-        defBody = NormalB (VarE pullerName
-                           `AppE` appEAll
-                           (conES conName) defsN)
+        defBody = NormalB (VarE pullerName `AppE` appEAll (VarE conName) defsN)
         defsN = replicate numTyVars (varS "def")
 
 pullerSig :: Name -> [String] -> ([Char] -> Type) -> Name -> Dec
