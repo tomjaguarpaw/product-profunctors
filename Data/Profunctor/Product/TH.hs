@@ -151,10 +151,10 @@ adaptorSig tyName' numTyVars = flip SigD adaptorType
                             [VarT (mkName "p")]]
         before = appTAll (ConT tyName') pArgs
         pType = VarT (mkName "p")
-        pArgs = map (\v -> (appTAll pType
-                                    [mkVarTsuffix "0" v, mkVarTsuffix "1" v]))
+        pArgs = map pApp tyVars
 
-                tyVars
+        pApp v = appTAll pType [mkVarTsuffix "0" v, mkVarTsuffix "1" v]
+
 
         tyVars = allTyVars numTyVars
 
