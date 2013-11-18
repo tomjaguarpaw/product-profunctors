@@ -18,13 +18,36 @@ import Control.Monad ((<=<))
 -- where 'TypeName' is the name of your type and 'pTypeName' is the name you
 -- want for your adaptor.
 
-data MakeRecordT = MakeRecordT { typeName :: String
-                               , constructorName :: String
-                               , fieldNames :: [String]
-                               , deriving_ :: [String]
-                               , adaptorName :: String }
+makeAdaptorAndInstance :: String -> Name -> Q [Dec]
+makeAdaptorAndInstance adaptorNameS = returnOrFail <=< r makeAandIE <=< reify
+  where r = (return .)
+        returnOrFail (Right decs) = return decs
+        returnOrFail (Left errMsg) = fail errMsg
+        makeAandIE = makeAdaptorAndInstanceE adaptorNameS
 
 type Error = String
+
+makeAdaptorAndInstanceE :: String -> Info -> Either Error [Dec]
+makeAdaptorAndInstanceE adaptorNameS info = do
+  (tyName, tyVars, conName, conTys) <- dataDecStuffOfInfo info
+  let numTyVars = length tyVars
+      numConTys = length conTys
+      adaptorNameN = mkName adaptorNameS
+      adaptorSig' = adaptorSig tyName numTyVars adaptorNameN
+      adaptorDefinition' = adaptorDefinition numTyVars conName adaptorNameN
+      instanceDefinition' = instanceDefinition tyName numTyVars numConTys
+                                               adaptorNameN conName
+
+  return [adaptorSig', adaptorDefinition', instanceDefinition']
+
+-- TODO: support newtypes?
+dataDecStuffOfInfo :: Info -> Either Error (Name, [Name], Name, [Name])
+dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars constructors _deriving)) =
+  do
+    (conName, conTys) <- extractConstructorStuff constructors
+    let tyVars' = map varNameOfBinder tyVars
+    return (tyName, tyVars', conName, conTys)
+dataDecStuffOfInfo _ = Left "That doesn't look like a data declaration to me"
 
 varNameOfType :: Type -> Either Error Name
 varNameOfType (VarT n) = Right n
@@ -53,34 +76,13 @@ constructorOfConstructors _many = Left msg
 extractConstructorStuff :: [Con] -> Either Error (Name, [Name])
 extractConstructorStuff = conStuffOfConstructor <=< constructorOfConstructors
 
--- TODO: support newtypes?
-dataDecStuffOfInfo :: Info -> Either Error (Name, [Name], Name, [Name])
-dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars constructors _deriving)) =
-  do
-    (conName, conTys) <- extractConstructorStuff constructors
-    let tyVars' = map varNameOfBinder tyVars
-    return (tyName, tyVars', conName, conTys)
-dataDecStuffOfInfo _ = Left "That doesn't look like a data declaration to me"
-
-makeAdaptorAndInstance :: String -> Name -> Q [Dec]
-makeAdaptorAndInstance adaptorNameS = returnOrFail <=< r makeAandIE <=< reify
-  where r = (return .)
-        returnOrFail (Right decs) = return decs
-        returnOrFail (Left errMsg) = fail errMsg
-        makeAandIE = makeAdaptorAndInstanceE adaptorNameS
-
-makeAdaptorAndInstanceE :: String -> Info -> Either Error [Dec]
-makeAdaptorAndInstanceE adaptorNameS info = do
-  (tyName, tyVars, conName, conTys) <- dataDecStuffOfInfo info
-  let numTyVars = length tyVars
-      numConTys = length conTys
-      adaptorNameN = mkName adaptorNameS
-      adaptorSig' = adaptorSig tyName numTyVars adaptorNameN
-      adaptorDefinition' = adaptorDefinition numTyVars conName adaptorNameN
-      instanceDefinition' = instanceDefinition tyName numTyVars numConTys
-                                               adaptorNameN conName
-
-  return [adaptorSig', adaptorDefinition', instanceDefinition']
+-- MakeRecordT and makeRecordData were from an old interface.  We could probably
+-- delete them now.
+data MakeRecordT = MakeRecordT { typeName :: String
+                               , constructorName :: String
+                               , fieldNames :: [String]
+                               , deriving_ :: [String]
+                               , adaptorName :: String }
 
 makeRecordData :: MakeRecordT -> Q [Dec]
 makeRecordData r = return [datatype'] where
@@ -105,6 +107,8 @@ makeRecord r = return decs
         instanceDefinition' = instanceDefinition tyName' numTyVars numTyVars
                                                  adaptorName' conName'
 
+-- The implementations of the datatype (only used in the old makeRecord),
+-- instance and adaptor follow.
 datatype :: Name -> [String] -> String -> [String] -> Dec
 datatype tyName tyVars conName derivings = datatype'
   where datatype' = DataD [] tyName tyVars' [con] derivings'
@@ -137,12 +141,6 @@ instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
         defBody = NormalB(VarE adaptorName' `AppE` appEAll (ConE conName) defsN)
         defsN = replicate numConVars (varS "def")
 
-allTyVars :: Int -> [String]
-allTyVars numTyVars = map varA tyNums
-  where varA i = "a" ++ show i ++ "_"
-        tyNums :: [Int]
-        tyNums = [1..numTyVars]
-
 adaptorSig :: Name -> Int -> Name -> Dec
 adaptorSig tyName' numTyVars = flip SigD adaptorType
   where adaptorType = ForallT scope adaptorCxt adaptorAfterCxt
@@ -166,9 +164,6 @@ adaptorSig tyName' numTyVars = flip SigD adaptorType
         scope = concat [ [PlainTV (mkName "p")]
                        , map (mkTyVarsuffix "0") tyVars
                        , map (mkTyVarsuffix "1") tyVars ]
-
-pArg' :: Name -> String -> Int -> Type
-pArg' tn s = appTAll (ConT tn) . map (varTS . (++s)) . allTyVars
 
 adaptorDefinition :: Int -> Name -> Name -> Dec
 adaptorDefinition numConVars conName = flip FunD [clause]
@@ -212,6 +207,15 @@ instance (ProductProfunctor p, Default p a a', Default p b b',
                       (LedgerRow' a' b' c' d' e' f' g' h') where
   def = dimap tupleOfLedgerRow lRowOfTuple def
 -}
+
+pArg' :: Name -> String -> Int -> Type
+pArg' tn s = appTAll (ConT tn) . map (varTS . (++s)) . allTyVars
+
+allTyVars :: Int -> [String]
+allTyVars numTyVars = map varA tyNums
+  where varA i = "a" ++ show i ++ "_"
+        tyNums :: [Int]
+        tyNums = [1..numTyVars]
 
 o :: Exp -> Exp -> Exp
 o x y = InfixE (Just x) (varS ".") (Just y)
