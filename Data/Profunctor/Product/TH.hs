@@ -152,7 +152,7 @@ adaptorSig tyName' numTyVars = flip SigD adaptorType
         before = appTAll (ConT tyName') pArgs
         pType = VarT (mkName "p")
         pArgs = map pApp tyVars
-
+        pApp :: String  -> Type
         pApp v = appTAll pType [mkVarTsuffix "0" v, mkVarTsuffix "1" v]
 
 
