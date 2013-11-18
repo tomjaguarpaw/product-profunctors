@@ -41,7 +41,7 @@ conStuffOfConstructor (NormalC conName st) = do
 conStuffOfConstructor (RecC conName vst) = do
   conTys <- mapM (varNameOfType . thrd) vst
   return (conName, conTys)
-    where thrd = (\(_,_,x) -> x)
+    where thrd = \(_,_,x) -> x
 conStuffOfConstructor _ = Left "I can't deal with your constructor type"
 
 constructorOfConstructors :: [Con] -> Either Error Con
