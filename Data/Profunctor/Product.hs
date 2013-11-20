@@ -10,6 +10,46 @@ import Data.Profunctor.Product.Tuples
 import Control.Category (id)
 import Control.Arrow (Arrow, (***), (<<<), arr, (&&&))
 
+-- STOP PRESS 2013-11-20
+--
+-- I have discovered that ProductProfunctor and ProductContravariant
+-- are redundant type classes.  It now seems to me that these are
+-- equivalent to Profunctor with Applicative, and Contravariant with
+-- Monoid respectively:
+--
+--    import Data.Profunctor
+--    import Control.Applicative hiding (empty)
+--    import Data.Functor.Contravariant
+--    import Data.Monoid
+--
+--    empty :: (Applicative (p ())) => p () ()
+--    empty = pure ()
+--
+--    (***!) :: (Applicative (p (a, a')), Profunctor p) =>
+--                p a b -> p a' b' -> p (a, a') (b, b')
+--    p ***! p' = (,) <$> lmap fst p <*> lmap snd p'
+--
+--    point :: Monoid (f ()) => f ()
+--    point = mempty
+--
+--    (***<) :: (Monoid (f (a, b)), Contravariant f) =>
+--                f a -> f b -> f (a, b)
+--    p ***< p' = contramap fst p <> contramap snd p'
+--
+-- How to deal with this:
+--
+-- 1. Expand the class constraints to require Applicative and Monoid
+-- respectively.
+--
+-- 2. Give default implementations for the class operations.
+--
+-- 3. Move the class operations out of the typeclass entirely, keeping
+-- the old constraints.
+--
+-- 4. Relax the old constraints to the new ones.
+--
+-- 5. Delete the classes.
+
 class Profunctor p => ProductProfunctor p where
   empty :: p () ()
   (***!) :: p a b -> p a' b' -> p (a, a') (b, b')
