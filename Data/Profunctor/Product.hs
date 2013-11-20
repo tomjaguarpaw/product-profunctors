@@ -41,6 +41,9 @@ import Control.Arrow (Arrow, (***), (<<<), arr, (&&&))
 -- 1. Expand the class constraints to require Applicative and Monoid
 -- respectively.
 --
+-- (Later note: step 1 does not work because we can't enforce a
+-- constraint 'Applicative (p a)' where 'a' does not appear in the head.
+--
 -- 2. Give default implementations for the class operations.
 --
 -- 3. Move the class operations out of the typeclass entirely, keeping
