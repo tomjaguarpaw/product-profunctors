@@ -1,14 +1,16 @@
 module Data.Profunctor.Product where
 
 import Prelude hiding (id)
-import Data.Profunctor (Profunctor, dimap, WrappedArrow)
-import Data.Functor.Contravariant (Contravariant)
+import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow)
+import Data.Functor.Contravariant (Contravariant, contramap)
 -- vv TODO: don't want to have to import all those explicitly.  What to do?
 import Data.Profunctor.Product.Flatten
 -- vv and these
 import Data.Profunctor.Product.Tuples
 import Control.Category (id)
 import Control.Arrow (Arrow, (***), (<<<), arr, (&&&))
+import Control.Applicative (Applicative, liftA2, pure)
+import Data.Monoid (Monoid, mempty, (<>))
 
 -- STOP PRESS 2013-11-20
 --
@@ -60,6 +62,20 @@ class Profunctor p => ProductProfunctor p where
 class Contravariant f => ProductContravariant f where
   point :: f ()
   (***<) :: f a -> f b -> f (a, b)
+
+defaultEmpty :: Applicative (p ()) => p () ()
+defaultEmpty = pure ()
+
+defaultProfunctorProduct :: (Applicative (p (a, a')), Profunctor p)
+                  => p a b -> p a' b' -> p (a, a') (b, b')
+defaultProfunctorProduct p p' = liftA2 (,) (lmap fst p) (lmap snd p')
+
+defaultPoint :: Monoid (p ()) => p ()
+defaultPoint = mempty
+
+defaultContravariantProduct :: (Contravariant f, Monoid (f (a, b)))
+                               => f a -> f b -> f (a, b)
+defaultContravariantProduct p p' = contramap fst p <> contramap snd p'
 
 instance ProductProfunctor (->) where
   empty = id
