@@ -77,6 +77,15 @@ defaultContravariantProduct :: (Contravariant f, Monoid (f (a, b)))
                                => f a -> f b -> f (a, b)
 defaultContravariantProduct p p' = contramap fst p <> contramap snd p'
 
+newtype PPOfContravariant f a b = PPOfContravariant (f a)
+
+instance Contravariant f => Profunctor (PPOfContravariant f) where
+  dimap f _ (PPOfContravariant p) = PPOfContravariant (contramap f p)
+
+instance ProductContravariant f => ProductProfunctor (PPOfContravariant f) where
+  empty = PPOfContravariant point
+  PPOfContravariant f ***! PPOfContravariant f' = PPOfContravariant (f ***< f')
+
 instance ProductProfunctor (->) where
   empty = id
   (***!) = (***)
