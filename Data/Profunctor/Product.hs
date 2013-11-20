@@ -191,6 +191,14 @@ p12 :: ProductProfunctor p => (p a1 b1, p a2 b2, p a3 b3, p a4 b4,
            (b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12)
 p12 = convert unflatten12 unflatten12 flatten12 pT12
 
+p13 :: ProductProfunctor p => (p a1 b1, p a2 b2, p a3 b3, p a4 b4,
+                              p a5 b5, p a6 b6, p a7 b7, p a8 b8,
+                              p a9 b9, p a10 b10, p a11 b11, p a12 b12,
+                              p a13 b13)
+      -> p (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
+           (b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13)
+p13 = convert unflatten13 unflatten13 flatten13 pT13
+
 p14 :: ProductProfunctor p => (p a1 b1, p a2 b2, p a3 b3, p a4 b4,
                               p a5 b5, p a6 b6, p a7 b7, p a8 b8,
                               p a9 b9, p a10 b10, p a11 b11, p a12 b12,
