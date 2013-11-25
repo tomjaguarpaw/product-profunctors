@@ -12,12 +12,10 @@ import Control.Arrow (Arrow, (***), (<<<), arr, (&&&))
 import Control.Applicative (Applicative, liftA2, pure)
 import Data.Monoid (Monoid, mempty, (<>))
 
--- STOP PRESS 2013-11-20
---
--- I have discovered that ProductProfunctor and ProductContravariant
--- are redundant type classes.  It now seems to me that these are
--- equivalent to Profunctor with Applicative, and Contravariant with
--- Monoid respectively:
+-- ProductProfunctor and ProductContravariant are potentially
+-- redundant type classes.  It seems to me that these are equivalent
+-- to Profunctor with Applicative, and Contravariant with Monoid
+-- respectively:
 --
 --    import Data.Profunctor
 --    import Control.Applicative hiding (empty)
@@ -38,22 +36,26 @@ import Data.Monoid (Monoid, mempty, (<>))
 --                f a -> f b -> f (a, b)
 --    p ***< p' = contramap fst p <> contramap snd p'
 --
--- How to deal with this:
 --
--- 1. Expand the class constraints to require Applicative and Monoid
--- respectively.
+-- The only thing that makes me think that they are not *completely*
+-- redundant is that (***!) and (***<) have to be defined
+-- polymorphically in the type arguments, whereas if we took the
+-- Profunctor+Applicative or Contravariant+Monoid approach we do not
+-- have a guarantee that these operations are polymorphic.
 --
--- (Later note: step 1 does not work because we can't enforce a
--- constraint 'Applicative (p a)' where 'a' does not appear in the head.
+-- Previously I wanted to replace ProductProfunctor and
+-- ProductContravariant entirely.  This proved difficult as it is not
+-- possible to expand the class constraints to require Applicative and
+-- Monoid respectively.  We can't enforce a constraint 'Applicative (p
+-- a)' where 'a' does not appear in the head.  This seems closely
+-- related to the above issue of adhoc implementations.
 --
--- 2. Give default implementations for the class operations.
+-- There is a potential method of working around this issue using the
+-- 'constraints' package:
+-- stackoverflow.com/questions/12718268/polymorphic-constraint/12718620
 --
--- 3. Move the class operations out of the typeclass entirely, keeping
--- the old constraints.
---
--- 4. Relax the old constraints to the new ones.
---
--- 5. Delete the classes.
+-- Still, at least we now have default implementations of the class
+-- methods, which makes things simpler.
 
 class Profunctor p => ProductProfunctor p where
   empty :: p () ()
