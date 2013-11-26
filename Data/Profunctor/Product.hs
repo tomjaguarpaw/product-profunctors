@@ -81,6 +81,9 @@ defaultContravariantProduct p p' = contramap fst p <> contramap snd p'
 
 newtype PPOfContravariant f a b = PPOfContravariant (f a)
 
+unPPOfContravariant :: PPOfContravariant c a a -> c a
+unPPOfContravariant (PPOfContravariant pp) = pp
+
 instance Contravariant f => Profunctor (PPOfContravariant f) where
   dimap f _ (PPOfContravariant p) = PPOfContravariant (contramap f p)
 
