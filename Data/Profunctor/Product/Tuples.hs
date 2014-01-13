@@ -17,3 +17,5 @@ type T13 a b c d e f g h a9 a10 a11 a12 a13 =
   (a, T12 b c d e f g h a9 a10 a11 a12 a13)
 type T14 a b c d e f g h a9 a10 a11 a12 a13 a14 =
   (a, T13 b c d e f g h a9 a10 a11 a12 a13 a14)
+type T15 a b c d e f g h a9 a10 a11 a12 a13 a14 a15 =
+  (a, T14 b c d e f g h a9 a10 a11 a12 a13 a14 a15)

@@ -194,6 +194,15 @@ pT14 :: ProductProfunctor p => T14 (p a1 b1) (p a2 b2) (p a3 b3) (p a4 b4)
             (T14 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14)
 pT14 = chain pT13
 
+pT15 :: ProductProfunctor p => T15 (p a1 b1) (p a2 b2) (p a3 b3) (p a4 b4)
+                                   (p a5 b5) (p a6 b6) (p a7 b7) (p a8 b8)
+                                   (p a9 b9) (p a10 b10) (p a11 b11)
+                                   (p a12 b12) (p a13 b13) (p a14 b14)
+                                   (p a15 b15)
+       -> p (T15 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15)
+            (T15 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15)
+pT15 = chain pT14
+
 convert :: Profunctor p => (a2 -> a1) -> (tp -> tTp) -> (b1 -> b2)
                            -> (tTp -> p a1 b1)
                            -> tp -> p a2 b2
@@ -279,3 +288,11 @@ p14 :: ProductProfunctor p => (p a1 b1, p a2 b2, p a3 b3, p a4 b4,
       -> p (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14)
            (b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14)
 p14 = convert unflatten14 unflatten14 flatten14 pT14
+
+p15 :: ProductProfunctor p => (p a1 b1, p a2 b2, p a3 b3, p a4 b4,
+                              p a5 b5, p a6 b6, p a7 b7, p a8 b8,
+                              p a9 b9, p a10 b10, p a11 b11, p a12 b12,
+                              p a13 b13, p a14 b14, p a15 b15)
+      -> p (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15)
+           (b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15)
+p15 = convert unflatten15 unflatten15 flatten15 pT15
