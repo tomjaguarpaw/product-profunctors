@@ -18,6 +18,14 @@ import Control.Monad ((<=<))
 -- where 'TypeName' is the name of your type and 'pTypeName' is the name you
 -- want for your adaptor.
 
+-- The template Haskell requires you import a number of other names.
+-- I'm not sure if there's a good way to make this neater.
+--
+-- import Data.Profunctor.Product (ProductProfunctor, p<n>)
+-- ^^ where <n> is the number of fields in your record
+-- import Data.Profunctor (dimap)
+-- import Data.Profunctor.Product.Default (Default, def)
+
 makeAdaptorAndInstance :: String -> Name -> Q [Dec]
 makeAdaptorAndInstance adaptorNameS = returnOrFail <=< r makeAandIE <=< reify
   where r = (return .)
