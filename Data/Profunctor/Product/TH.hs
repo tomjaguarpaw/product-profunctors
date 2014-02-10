@@ -26,6 +26,9 @@ import Control.Monad ((<=<))
 -- import Data.Profunctor (dimap)
 -- import Data.Profunctor.Product.Default (Default, def)
 
+-- TODO: ^^ lens avoids forcing the user to explicitly import the
+-- stuff it needs to generate lenses.  We should copy that.
+
 makeAdaptorAndInstance :: String -> Name -> Q [Dec]
 makeAdaptorAndInstance adaptorNameS = returnOrFail <=< r makeAandIE <=< reify
   where r = (return .)
