@@ -4,7 +4,6 @@ synopsis: product-profunctors
 author:   Purely Agile
 build-type: Simple
 cabal-version: >= 1.2
-              -- 'AllRightsReserved'
 License:      OtherLicense
 License-File: LICENSE
 Description: Product profunctors
