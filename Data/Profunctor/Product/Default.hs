@@ -10,8 +10,8 @@ class Default p a b where
   -- Would rather call it "default", but that's a keyword
   def :: p a b
 
-udef :: Default (PPOfContravariant u) a a => u a
-udef = unPPOfContravariant def
+cdef :: Default (PPOfContravariant u) a a => u a
+cdef = unPPOfContravariant def
 
 instance ProductProfunctor p => Default p () () where
   def = empty
