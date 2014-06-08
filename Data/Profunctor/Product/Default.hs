@@ -1,4 +1,5 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances,
+             FlexibleContexts #-}
 
 module Data.Profunctor.Product.Default where
 
@@ -8,6 +9,9 @@ import Data.Profunctor.Product
 class Default p a b where
   -- Would rather call it "default", but that's a keyword
   def :: p a b
+
+udef :: Default (PPOfContravariant u) a a => u a
+udef = unPPOfContravariant def
 
 instance ProductProfunctor p => Default p () () where
   def = empty
