@@ -1,3 +1,52 @@
+-- | If you have a data declaration which is a polymorphic product,
+-- for example
+--
+-- @
+-- data Foo a b c = Foo a b c
+-- @
+--
+-- or
+--
+-- @
+-- data Foo a b c = Foo { foo :: a, bar :: b, baz :: c }
+-- @
+--
+-- then you can use Template Haskell to automatically derive the
+-- product-profunctor 'Default' instances and product-profunctor
+-- \"adaptor\" with the following imports and splice:
+--
+-- @
+-- import Data.Profunctor.Product (ProductProfunctor, p\<n\>)
+-- import Data.Profunctor (dimap)
+-- import Data.Profunctor.Product.Default (Default, def)
+--
+-- $(makeAdaptorAndInstance \"pFoo\" ''Foo)
+-- @
+--
+-- * \<n\> is the number of fields in your record, so for Foo \<n\> would be 3.
+--
+-- * The adaptor for a type Foo is by convention called pFoo, but in
+-- practice you can call it anything.
+--
+-- Notice that currently the Template Haskell requires you import a
+-- number of other names from other modules.  This is because it is
+-- badly written and this restriction will go away in a future
+-- release.
+--
+-- The instance generated will be
+--
+-- @
+-- instance (ProductProfunctor p, Default p a a', Default p b b', Default p c c')
+--       => Default p (Foo a b c) (Foo a' b' c')
+-- @
+--
+-- and pFoo will have the type
+--
+-- @
+-- pFoo :: ProductProfunctor p =>
+--         Foo (p a a') (p b b') (p c c') -> p (Foo a b c) (Foo a' b' c')
+-- @
+
 module Data.Profunctor.Product.TH where
 
 import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD),
@@ -10,24 +59,6 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify)
 import Control.Monad ((<=<))
-
--- Usage note: Use this library by running the following splice:
---
--- $(makeAdaptorAndInstance "pTypeName" ''TypeName)
---
--- where 'TypeName' is the name of your type and 'pTypeName' is the name you
--- want for your adaptor.
-
--- The template Haskell requires you import a number of other names.
--- I'm not sure if there's a good way to make this neater.
---
--- import Data.Profunctor.Product (ProductProfunctor, p<n>)
--- ^^ where <n> is the number of fields in your record
--- import Data.Profunctor (dimap)
--- import Data.Profunctor.Product.Default (Default, def)
-
--- TODO: ^^ lens avoids forcing the user to explicitly import the
--- stuff it needs to generate lenses.  We should copy that.
 
 makeAdaptorAndInstance :: String -> Name -> Q [Dec]
 makeAdaptorAndInstance adaptorNameS = returnOrFail <=< r makeAandIE <=< reify
