@@ -93,7 +93,7 @@ dataDecStuffOfInfo _ = Left "That doesn't look like a data declaration to me"
 
 varNameOfType :: Type -> Either Error Name
 varNameOfType (VarT n) = Right n
-varNameOfType _ = Left "Found a non-variable type"
+varNameOfType x = Left $ "Found a non-variable type" ++ show x
 
 varNameOfBinder :: TyVarBndr -> Name
 varNameOfBinder (PlainTV n) = n
