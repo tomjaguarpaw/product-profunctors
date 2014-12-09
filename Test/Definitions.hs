@@ -10,9 +10,7 @@ module Definitions where
 -- a minimum.
 
 import Data.Profunctor.Product.TH (makeAdaptorAndInstance)
-import Data.Profunctor.Product.Default (Default, def)
-import Data.Profunctor.Product (ProductProfunctor, p2, p3)
-import Data.Profunctor (dimap)
+import Data.Profunctor.Product (p2, p3)
 
 data Data2 a b = Data2 a b
 data Data3 a b c = Data3 a b c

@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 -- | If you have a data declaration which is a polymorphic product,
 -- for example
 --
@@ -13,12 +15,10 @@
 --
 -- then you can use Template Haskell to automatically derive the
 -- product-profunctor 'Default' instances and product-profunctor
--- \"adaptor\" with the following imports and splice:
+-- \"adaptor\" with the following import and splice:
 --
 -- @
--- import Data.Profunctor.Product (ProductProfunctor, p\<n\>)
--- import Data.Profunctor (dimap)
--- import Data.Profunctor.Product.Default (Default, def)
+-- import Data.Profunctor.Product (p\<n\>)
 --
 -- $(makeAdaptorAndInstance \"pFoo\" ''Foo)
 -- @
@@ -28,10 +28,9 @@
 -- * The adaptor for a type Foo is by convention called pFoo, but in
 -- practice you can call it anything.
 --
--- Notice that currently the Template Haskell requires you import a
--- number of other names from other modules.  This is because it is
--- badly written and this restriction will go away in a future
--- release.
+-- Notice that currently the Template Haskell requires you import p<n>
+-- manually.  This is because it is badly written and this restriction
+-- will go away in a future release.
 --
 -- The instance generated will be
 --
@@ -49,6 +48,9 @@
 
 module Data.Profunctor.Product.TH where
 
+import Data.Profunctor (dimap)
+import Data.Profunctor.Product (ProductProfunctor)
+import Data.Profunctor.Product.Default (Default, def)
 import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD),
                             mkName, TyVarBndr(PlainTV, KindedTV),
                             Con(RecC, NormalC),
@@ -164,31 +166,30 @@ instanceDefinition :: Name -> Int -> Int -> Name -> Name -> Dec
 instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
   where instanceDec = InstanceD instanceCxt instanceType [defDefinition]
         instanceCxt = map (uncurry ClassP) (pClass:defClasses)
-        pClass = (mkName "ProductProfunctor", [varTS "p"])
+        pClass = (''ProductProfunctor, [varTS "p"])
 
         defaultPredOfVar :: String -> (Name, [Type])
-        defaultPredOfVar fn = (mkName "Default", [varTS "p",
-                                                  mkTySuffix "0" fn,
-                                                  mkTySuffix "1" fn])
+        defaultPredOfVar fn = (''Default, [varTS "p",
+                                           mkTySuffix "0" fn,
+                                           mkTySuffix "1" fn])
 
         defClasses = map defaultPredOfVar (allTyVars numTyVars)
 
         pArg :: String -> Type
         pArg s = pArg' tyName' s numTyVars
 
-        instanceType = appTAll (conTS "Default")
+        instanceType = appTAll (ConT ''Default)
                                [varTS "p", pArg "0", pArg "1"]
 
-        defDefinition = FunD (mkName "def") [Clause [] defBody []]
+        defDefinition = FunD 'def [Clause [] defBody []]
         defBody = NormalB(VarE adaptorName' `AppE` appEAll (ConE conName) defsN)
-        defsN = replicate numConVars (varS "def")
+        defsN = replicate numConVars (VarE 'def)
 
 adaptorSig :: Name -> Int -> Name -> Dec
 adaptorSig tyName' numTyVars = flip SigD adaptorType
   where adaptorType = ForallT scope adaptorCxt adaptorAfterCxt
         adaptorAfterCxt = before `appArrow` after
-        adaptorCxt = [ClassP (mkName "ProductProfunctor")
-                            [VarT (mkName "p")]]
+        adaptorCxt = [ClassP ''ProductProfunctor [VarT (mkName "p")]]
         before = appTAll (ConT tyName') pArgs
         pType = VarT (mkName "p")
         pArgs = map pApp tyVars
@@ -214,7 +215,7 @@ adaptorDefinition numConVars conName = flip FunD [clause]
         fromTupleN = mkName "fromTuple"
         toTupleE = VarE toTupleN
         fromTupleE = VarE fromTupleN
-        theDimap = appEAll (varS "dimap") [toTupleE, fromTupleE]
+        theDimap = appEAll (VarE 'dimap) [toTupleE, fromTupleE]
         pN = VarE (mkName ("p" ++ show numConVars))
         body = NormalB (theDimap `o` pN `o` toTupleE)
         wheres = [toTuple conName (toTupleN, numConVars),
