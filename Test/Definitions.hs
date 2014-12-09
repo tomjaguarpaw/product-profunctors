@@ -5,12 +5,10 @@
 module Definitions where
 
 -- We define the data types and generate the TH in a separate module
--- because we want to see explicitly what external names are required
--- to be imported for the TH to work, and keep these external names to
--- a minimum.
+-- because we want to ensure that no external names are required to be
+-- imported.
 
 import Data.Profunctor.Product.TH (makeAdaptorAndInstance)
-import Data.Profunctor.Product (p2, p3)
 
 data Data2 a b = Data2 a b
 data Data3 a b c = Data3 a b c

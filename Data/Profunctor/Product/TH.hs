@@ -49,7 +49,9 @@
 module Data.Profunctor.Product.TH where
 
 import Data.Profunctor (dimap)
-import Data.Profunctor.Product (ProductProfunctor)
+import Data.Profunctor.Product (ProductProfunctor, p1, p2, p3, p4, p5, p6, p7,
+                                p8, p9, p10, p11, p12, p13, p14, p15, p16, p17,
+                                p18)
 import Data.Profunctor.Product.Default (Default, def)
 import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD),
                             mkName, TyVarBndr(PlainTV, KindedTV),
@@ -208,6 +210,32 @@ adaptorSig tyName' numTyVars = flip SigD adaptorType
                        , map (mkTyVarsuffix "0") tyVars
                        , map (mkTyVarsuffix "1") tyVars ]
 
+-- This should probably fail in a more graceful way than an error. I
+-- guess via Either or Q.
+tupleAdaptors :: Int -> Name
+tupleAdaptors n = case n of 1  -> 'p1
+                            2  -> 'p2
+                            3  -> 'p3
+                            4  -> 'p4
+                            5  -> 'p5
+                            6  -> 'p6
+                            7  -> 'p7
+                            8  -> 'p8
+                            9  -> 'p9
+                            10 -> 'p10
+                            11 -> 'p11
+                            12 -> 'p12
+                            13 -> 'p13
+                            14 -> 'p14
+                            15 -> 'p15
+                            16 -> 'p16
+                            17 -> 'p17
+                            18 -> 'p18
+                            _  -> error errorMsg
+  where errorMsg = "Data.Profunctor.Product.TH: "
+                   ++ show n
+                   ++ " is too many type variables for me!"
+
 adaptorDefinition :: Int -> Name -> Name -> Dec
 adaptorDefinition numConVars conName = flip FunD [clause]
   where clause = Clause [] body wheres
@@ -216,7 +244,7 @@ adaptorDefinition numConVars conName = flip FunD [clause]
         toTupleE = VarE toTupleN
         fromTupleE = VarE fromTupleN
         theDimap = appEAll (VarE 'dimap) [toTupleE, fromTupleE]
-        pN = VarE (mkName ("p" ++ show numConVars))
+        pN = VarE (tupleAdaptors numConVars)
         body = NormalB (theDimap `o` pN `o` toTupleE)
         wheres = [toTuple conName (toTupleN, numConVars),
                   fromTuple conName (fromTupleN, numConVars)]
