@@ -266,12 +266,6 @@ o x y = InfixE (Just x) (varS ".") (Just y)
 varS :: String -> Exp
 varS = VarE . mkName
 
-conES :: String -> Exp
-conES = ConE . mkName
-
-conPS :: String -> [Pat] -> Pat
-conPS = ConP . mkName
-
 varPS :: String -> Pat
 varPS = VarP . mkName
 
@@ -286,9 +280,6 @@ mkVarTsuffix s = VarT . mkName . (++s)
 
 varTS :: String -> Type
 varTS = VarT . mkName
-
-conTS :: String -> Type
-conTS = ConT . mkName
 
 appTAll :: Type -> [Type] -> Type
 appTAll = foldl AppT
