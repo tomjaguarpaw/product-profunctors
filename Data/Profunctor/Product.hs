@@ -61,6 +61,7 @@ class Profunctor p => ProductProfunctor p where
   empty :: p () ()
   (***!) :: p a b -> p a' b' -> p (a, a') (b, b')
 
+-- This appears to be just 'Data.Functor.Contravariant.Divisible'
 class Contravariant f => ProductContravariant f where
   point :: f ()
   (***<) :: f a -> f b -> f (a, b)
