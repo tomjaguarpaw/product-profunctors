@@ -1,2 +1,2 @@
-with (import <nixpkgs> {}).pkgs;
-(haskellngPackages.callPackage ./. {}).env
+let hp = (import <nixpkgs> {}).haskellPackages ;
+ in hp.callPackage ./. {}
