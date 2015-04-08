@@ -25,3 +25,15 @@ type T17 a b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17 =
   (a, T16 b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17)
 type T18 a b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 =
   (a, T17 b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17 a18)
+type T19 a b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 =
+  (a, T18 b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19)
+type T20 a b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 =
+  (a, T19 b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20)
+type T21 a b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 =
+  (a, T20 b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21)
+type T22 a b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 =
+  (a, T21 b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22)
+type T23 a b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23 =
+  (a, T22 b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23)
+type T24 a b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23 a24 =
+  (a, T23 b c d e f g h a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23 a24)
