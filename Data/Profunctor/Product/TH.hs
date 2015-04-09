@@ -1,4 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE CPP #-}
+
+#ifndef MIN_VERSION_template_haskell
+#define MIN_VERSION_template_haskell(x,y,z) (defined(__GLASGOW_HASKELL__) && __GLASGOW_HASKELL__ >= 706)
+#endif
 
 -- | If you have a data declaration which is a polymorphic product,
 -- for example
@@ -43,14 +48,19 @@ module Data.Profunctor.Product.TH where
 import Data.Profunctor (dimap)
 import Data.Profunctor.Product (ProductProfunctor, p1, p2, p3, p4, p5, p6, p7,
                                 p8, p9, p10, p11, p12, p13, p14, p15, p16, p17,
-                                p18)
+                                p18, p19, p20, p21, p22, p23, p24)
 import Data.Profunctor.Product.Default (Default, def)
 import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD),
                             mkName, TyVarBndr(PlainTV, KindedTV),
                             Con(RecC, NormalC),
                             Strict(NotStrict), Clause(Clause),
                             Type(VarT, ForallT, AppT, ArrowT, ConT),
-                            Body(NormalB), Q, Pred(ClassP),
+                            Body(NormalB), Q,
+#if MIN_VERSION_template_haskell(2,10,0)
+                            Pred,
+#else
+                            Pred(ClassP),
+#endif
                             Exp(ConE, VarE, InfixE, AppE, TupE),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify)
@@ -159,7 +169,7 @@ datatype tyName tyVars conName derivings = datatype'
 instanceDefinition :: Name -> Int -> Int -> Name -> Name -> Dec
 instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
   where instanceDec = InstanceD instanceCxt instanceType [defDefinition]
-        instanceCxt = map (uncurry ClassP) (pClass:defClasses)
+        instanceCxt = map (uncurry classP') (pClass:defClasses)
         pClass = (''ProductProfunctor, [varTS "p"])
 
         defaultPredOfVar :: String -> (Name, [Type])
@@ -183,7 +193,7 @@ adaptorSig :: Name -> Int -> Name -> Dec
 adaptorSig tyName' numTyVars = flip SigD adaptorType
   where adaptorType = ForallT scope adaptorCxt adaptorAfterCxt
         adaptorAfterCxt = before `appArrow` after
-        adaptorCxt = [ClassP ''ProductProfunctor [VarT (mkName "p")]]
+        adaptorCxt = [classP' ''ProductProfunctor [VarT (mkName "p")]]
         before = appTAll (ConT tyName') pArgs
         pType = VarT (mkName "p")
         pArgs = map pApp tyVars
@@ -223,6 +233,12 @@ tupleAdaptors n = case n of 1  -> 'p1
                             16 -> 'p16
                             17 -> 'p17
                             18 -> 'p18
+                            19 -> 'p19
+                            20 -> 'p20
+                            21 -> 'p21
+                            22 -> 'p22
+                            23 -> 'p22
+                            24 -> 'p24
                             _  -> error errorMsg
   where errorMsg = "Data.Profunctor.Product.TH: "
                    ++ show n
@@ -309,3 +325,10 @@ appEAll = foldl AppE
 
 appArrow :: Type -> Type -> Type
 appArrow l r = appTAll ArrowT [l, r]
+
+classP' :: Name -> [Type] -> Pred
+#if MIN_VERSION_template_haskell(2,10,0)
+classP' name = appTAll (ConT name)
+#else
+classP' = ClassP
+#endif
