@@ -50,22 +50,24 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD),
                             Con(RecC, NormalC),
                             Strict(NotStrict), Clause(Clause),
                             Type(VarT, ForallT, AppT, ArrowT, ConT),
-                            Body(NormalB), Q, Pred(ClassP),
+                            Body(NormalB), Q, classP,
                             Exp(ConE, VarE, InfixE, AppE, TupE),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify)
 import Control.Monad ((<=<))
+import Control.Applicative ((<$>), (<*>))
+import Control.Arrow (second)
 
 makeAdaptorAndInstance :: String -> Name -> Q [Dec]
 makeAdaptorAndInstance adaptorNameS = returnOrFail <=< r makeAandIE <=< reify
   where r = (return .)
-        returnOrFail (Right decs) = return decs
+        returnOrFail (Right decs) = decs
         returnOrFail (Left errMsg) = fail errMsg
         makeAandIE = makeAdaptorAndInstanceE adaptorNameS
 
 type Error = String
 
-makeAdaptorAndInstanceE :: String -> Info -> Either Error [Dec]
+makeAdaptorAndInstanceE :: String -> Info -> Either Error (Q [Dec])
 makeAdaptorAndInstanceE adaptorNameS info = do
   (tyName, tyVars, conName, conTys) <- dataDecStuffOfInfo info
   let numTyVars = length tyVars
@@ -76,7 +78,7 @@ makeAdaptorAndInstanceE adaptorNameS info = do
       instanceDefinition' = instanceDefinition tyName numTyVars numConTys
                                                adaptorNameN conName
 
-  return [adaptorSig', adaptorDefinition', instanceDefinition']
+  return ((\a b -> [a, adaptorDefinition', b]) <$> adaptorSig' <*> instanceDefinition')
 
 -- TODO: support newtypes?
 dataDecStuffOfInfo :: Info -> Either Error (Name, [Name], Name, [Name])
@@ -129,9 +131,11 @@ makeRecordData r = return [datatype'] where
   datatype' = datatype tyName' tyVars conName derivings
 
 makeRecord :: MakeRecordT -> Q [Dec]
-makeRecord r = return decs
+makeRecord r = decs
   where MakeRecordT tyName conName tyVars derivings _ = r
-        decs = [datatype', adaptorSig', adaptorDefinition', instanceDefinition']
+        decs = (\a i -> [datatype', a, adaptorDefinition', i])
+               <$> adaptorSig'
+               <*> instanceDefinition'
         tyName' = mkName tyName
         conName' = mkName conName
 
@@ -156,18 +160,20 @@ datatype tyName tyVars conName derivings = datatype'
         toField s = (mkName s, NotStrict, VarT (mkName s))
         derivings' = map mkName derivings
 
-instanceDefinition :: Name -> Int -> Int -> Name -> Name -> Dec
+instanceDefinition :: Name -> Int -> Int -> Name -> Name -> Q Dec
 instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
-  where instanceDec = InstanceD instanceCxt instanceType [defDefinition]
-        instanceCxt = map (uncurry ClassP) (pClass:defClasses)
-        pClass = (''ProductProfunctor, [varTS "p"])
+  where instanceDec = fmap (\i -> InstanceD i instanceType [defDefinition])
+                      instanceCxt
+        instanceCxt = mapM (uncurry classP) (pClass:defClasses)
+        pClass = (''ProductProfunctor, [return (varTS "p")])
 
         defaultPredOfVar :: String -> (Name, [Type])
         defaultPredOfVar fn = (''Default, [varTS "p",
                                            mkTySuffix "0" fn,
                                            mkTySuffix "1" fn])
 
-        defClasses = map defaultPredOfVar (allTyVars numTyVars)
+        defClasses = map (second (map return) . defaultPredOfVar)
+                         (allTyVars numTyVars)
 
         pArg :: String -> Type
         pArg s = pArg' tyName' s numTyVars
@@ -179,11 +185,11 @@ instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
         defBody = NormalB(VarE adaptorName' `AppE` appEAll (ConE conName) defsN)
         defsN = replicate numConVars (VarE 'def)
 
-adaptorSig :: Name -> Int -> Name -> Dec
-adaptorSig tyName' numTyVars = flip SigD adaptorType
-  where adaptorType = ForallT scope adaptorCxt adaptorAfterCxt
+adaptorSig :: Name -> Int -> Name -> Q Dec
+adaptorSig tyName' numTyVars n = fmap (SigD n) adaptorType
+  where adaptorType = fmap (\a -> ForallT scope a adaptorAfterCxt) adaptorCxt
         adaptorAfterCxt = before `appArrow` after
-        adaptorCxt = [ClassP ''ProductProfunctor [VarT (mkName "p")]]
+        adaptorCxt = fmap (:[]) (classP ''ProductProfunctor [return (VarT (mkName "p"))])
         before = appTAll (ConT tyName') pArgs
         pType = VarT (mkName "p")
         pArgs = map pApp tyVars
