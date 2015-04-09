@@ -16,7 +16,7 @@ source-repository head
   Location: https://github.com/tomjaguarpaw/product-profunctors
 
 library
-  build-depends:   base >= 4 && < 5
+  build-depends:   base >= 4.5 && < 5
                  , profunctors >= 4.0 && < 4.5
                  , contravariant >= 0.4 && < 1.4
                  , template-haskell
