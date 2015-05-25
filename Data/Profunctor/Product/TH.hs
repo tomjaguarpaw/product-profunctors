@@ -233,7 +233,7 @@ tupleAdaptors n = case n of 1  -> 'p1
                             20 -> 'p20
                             21 -> 'p21
                             22 -> 'p22
-                            23 -> 'p22
+                            23 -> 'p23
                             24 -> 'p24
                             _  -> error errorMsg
   where errorMsg = "Data.Profunctor.Product.TH: "
