@@ -2,6 +2,7 @@ module Data.Profunctor.Product where
 
 import Prelude hiding (id)
 import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow)
+import qualified Data.Profunctor as Profunctor
 import Data.Functor.Contravariant (Contravariant, contramap)
 -- vv TODO: don't want to have to import all those explicitly.  What to do?
 import Data.Profunctor.Product.Flatten
@@ -108,6 +109,23 @@ instance Arrow arr => Profunctor (AndArrow arr z) where
 instance Arrow arr => ProductProfunctor (AndArrow arr z) where
   empty = AndArrow (arr (const ()))
   (AndArrow f) ***! (AndArrow f') = AndArrow (f &&& f')
+
+-- { Sum
+
+class Profunctor p => SumProfunctor p where
+  -- Morally we should have 'zero :: p Void Void' but I don't think
+  -- that would actually be useful
+  (+++!) :: p a b -> p a' b' -> p (Either a a') (Either b b')
+
+list :: (ProductProfunctor p, SumProfunctor p) => p a b -> p [a] [b]
+list p = Profunctor.dimap fromList toList (empty +++! (p ***! list p))
+  where toList :: Either () (a, [a]) -> [a]
+        toList = either (const []) (uncurry (:))
+        fromList :: [a] -> Either () (a, [a])
+        fromList []     = Left ()
+        fromList (a:as) = Right (a, as)
+
+-- }
 
 pT0 :: ProductProfunctor p => T0 -> p T0 T0
 pT0 = const empty
