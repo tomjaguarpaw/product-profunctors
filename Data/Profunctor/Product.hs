@@ -125,6 +125,9 @@ list p = Profunctor.dimap fromList toList (empty +++! (p ***! list p))
         fromList []     = Left ()
         fromList (a:as) = Right (a, as)
 
+-- SumContravariant would be 'Data.Functor.Contravariant.Decidable'
+-- (without the requirement to also be Divisible).
+
 -- }
 
 pT0 :: ProductProfunctor p => T0 -> p T0 T0
