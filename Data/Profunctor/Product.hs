@@ -117,6 +117,9 @@ class Profunctor p => SumProfunctor p where
   -- that would actually be useful
   (+++!) :: p a b -> p a' b' -> p (Either a a') (Either b b')
 
+instance SumProfunctor (->) where
+  f +++! g = either (Left . f) (Right . g)
+
 list :: (ProductProfunctor p, SumProfunctor p) => p a b -> p [a] [b]
 list p = Profunctor.dimap fromList toList (empty +++! (p ***! list p))
   where toList :: Either () (a, [a]) -> [a]
