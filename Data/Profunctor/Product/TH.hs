@@ -86,7 +86,7 @@ dataDecStuffOfInfo info = case info of
     extractInfo tyName' tyVars' constructors'
   (TyConI (NewtypeD _ tyName' tyVars' constructors' _)) ->
     extractInfo tyName' tyVars' [constructors']
-  _ -> Left "That doesn't look like a data declaration to me"
+  _ -> Left "That doesn't look like a data or newtype declaration to me"
   where
     extractInfo tyName tyVars constructors = do
       (conName, conTys) <- extractConstructorStuff constructors
