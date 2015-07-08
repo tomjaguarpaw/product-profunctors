@@ -45,7 +45,7 @@ import Data.Profunctor.Product (ProductProfunctor, p1, p2, p3, p4, p5, p6, p7,
                                 p8, p9, p10, p11, p12, p13, p14, p15, p16, p17,
                                 p18, p19, p20, p21, p22, p23, p24)
 import Data.Profunctor.Product.Default (Default, def)
-import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD),
+import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             mkName, TyVarBndr(PlainTV, KindedTV),
                             Con(RecC, NormalC),
                             Strict(NotStrict), Clause(Clause),
@@ -80,14 +80,18 @@ makeAdaptorAndInstanceE adaptorNameS info = do
 
   return ((\a b -> [a, adaptorDefinition', b]) <$> adaptorSig' <*> instanceDefinition')
 
--- TODO: support newtypes?
 dataDecStuffOfInfo :: Info -> Either Error (Name, [Name], Name, [Name])
-dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars constructors _deriving)) =
-  do
-    (conName, conTys) <- extractConstructorStuff constructors
-    let tyVars' = map varNameOfBinder tyVars
-    return (tyName, tyVars', conName, conTys)
-dataDecStuffOfInfo _ = Left "That doesn't look like a data declaration to me"
+dataDecStuffOfInfo info = case info of
+  (TyConI (DataD _ tyName' tyVars' constructors' _)) ->
+    extractInfo tyName' tyVars' constructors'
+  (TyConI (NewtypeD _ tyName' tyVars' constructors' _)) ->
+    extractInfo tyName' tyVars' [constructors']
+  _ -> Left "That doesn't look like a data or newtype declaration to me"
+  where
+    extractInfo tyName tyVars constructors = do
+      (conName, conTys) <- extractConstructorStuff constructors
+      let tyVars' = map varNameOfBinder tyVars
+      return (tyName, tyVars', conName, conTys)
 
 varNameOfType :: Type -> Either Error Name
 varNameOfType (VarT n) = Right n
