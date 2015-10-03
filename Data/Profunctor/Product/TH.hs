@@ -79,22 +79,24 @@ makeAdaptorAndInstanceE adaptorNameS info = do
       instanceDefinition' = instanceDefinition tyName numTyVars numConTys
                                                adaptorNameN conName
 
-      newtypeInstance :: Q [Dec]
-      newtypeInstance = case conTys of
-        [_] -> do
-          x <- newName "x"
-
-          let body = [ FunD 'constructor [Clause [] (NormalB (ConE conName)) [] ]
-                     , FunD 'field [Clause [] (NormalB (LamE [ConP conName [VarP x]] (VarE x))) []] ]
-
-          return [InstanceD [] (ConT ''Newtype `AppT` ConT tyName) body]
-        _     -> return []
+      newtypeInstance' = if length conTys == 1 then
+                           newtypeInstance conName tyName
+                         else 
+                           return []
 
   return $ do
     as <- sequence [adaptorSig', pure adaptorDefinition', instanceDefinition']
-    ns <- newtypeInstance
+    ns <- newtypeInstance'
     return (as ++ ns)
 
+newtypeInstance :: Name -> Name -> Q [Dec]
+newtypeInstance conName tyName = do
+  x <- newName "x"
+
+  let body = [ FunD 'constructor [Clause [] (NormalB (ConE conName)) [] ]
+             , FunD 'field [Clause [] (NormalB (LamE [ConP conName [VarP x]] (VarE x))) []] ]
+
+  return [InstanceD [] (ConT ''Newtype `AppT` ConT tyName) body]
 
 dataDecStuffOfInfo :: Info -> Either Error (Name, [Name], Name, [Name])
 dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars constructors _deriving)) =
