@@ -55,7 +55,7 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify)
 import Control.Monad ((<=<))
-import Control.Applicative ((<$>), (<*>))
+import Control.Applicative ((<$>), (<*>), pure)
 import Control.Arrow (second)
 
 makeAdaptorAndInstance :: String -> Name -> Q [Dec]
@@ -78,7 +78,7 @@ makeAdaptorAndInstanceE adaptorNameS info = do
       instanceDefinition' = instanceDefinition tyName numTyVars numConTys
                                                adaptorNameN conName
 
-  return ((\a b -> [a, adaptorDefinition', b]) <$> adaptorSig' <*> instanceDefinition')
+  return (sequence [adaptorSig', pure adaptorDefinition', instanceDefinition'])
 
 dataDecStuffOfInfo :: Info -> Either Error (Name, [Name], Name, [Name])
 dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars constructors _deriving)) =
