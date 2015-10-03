@@ -37,6 +37,29 @@
 -- pFoo :: ProductProfunctor p =>
 --         Foo (p a a') (p b b') (p c c') -> p (Foo a b c) (Foo a' b' c')
 -- @
+--
+-- If your type has only one field, for example
+--
+-- @
+-- data Foo a = Foo a
+-- @
+--
+-- or
+--
+-- @
+-- newtype Foo a = Foo a
+-- @
+--
+-- then you will also get the instance
+--
+-- @
+-- instance 'N.Newtype' Foo where
+--   'N.constructor' = Foo
+--   'N.field'       = \(Foo x) -> x
+-- @
+--
+-- which allows you to use the polymorphic function 'N.pNewtype'
+-- instead of @pFoo@.
 
 module Data.Profunctor.Product.TH where
 

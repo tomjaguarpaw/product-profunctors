@@ -6,5 +6,5 @@ class Newtype t where
   constructor :: a -> t a
   field       :: t a -> a
 
-ppNewtype :: (P.Profunctor p, Newtype t) => p a b -> p (t a) (t b)
-ppNewtype = P.dimap field constructor
+pNewtype :: (P.Profunctor p, Newtype t) => p a b -> p (t a) (t b)
+pNewtype = P.dimap field constructor
