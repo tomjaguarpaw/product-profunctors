@@ -23,6 +23,7 @@ library
   exposed-modules: Data.Profunctor.Product,
                    Data.Profunctor.Product.Default,
                    Data.Profunctor.Product.Flatten,
+                   Data.Profunctor.Product.Newtype,
                    Data.Profunctor.Product.TH,
                    Data.Profunctor.Product.Tuples
   ghc-options:     -Wall

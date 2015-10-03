@@ -1,4 +1,5 @@
-module Data.Profunctor.Product where
+module Data.Profunctor.Product (module Data.Profunctor.Product.Newtype,
+                                module Data.Profunctor.Product) where
 
 import Prelude hiding (id)
 import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow)
@@ -12,6 +13,7 @@ import Control.Category (id)
 import Control.Arrow (Arrow, (***), (<<<), arr, (&&&))
 import Control.Applicative (Applicative, liftA2, pure)
 import Data.Monoid (Monoid, mempty, (<>))
+import Data.Profunctor.Product.Newtype
 
 -- ProductProfunctor and ProductContravariant are potentially
 -- redundant type classes.  It seems to me that these are equivalent

@@ -45,13 +45,14 @@ import Data.Profunctor.Product (ProductProfunctor, p1, p2, p3, p4, p5, p6, p7,
                                 p8, p9, p10, p11, p12, p13, p14, p15, p16, p17,
                                 p18, p19, p20, p21, p22, p23, p24)
 import Data.Profunctor.Product.Default (Default, def)
+import Data.Profunctor.Product.Newtype (Newtype(constructor, field))
 import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
-                            mkName, TyVarBndr(PlainTV, KindedTV),
+                            mkName, newName, TyVarBndr(PlainTV, KindedTV),
                             Con(RecC, NormalC),
                             Strict(NotStrict), Clause(Clause),
                             Type(VarT, ForallT, AppT, ArrowT, ConT),
                             Body(NormalB), Q, classP,
-                            Exp(ConE, VarE, InfixE, AppE, TupE),
+                            Exp(ConE, VarE, InfixE, AppE, TupE, LamE),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify)
 import Control.Monad ((<=<))
@@ -78,7 +79,22 @@ makeAdaptorAndInstanceE adaptorNameS info = do
       instanceDefinition' = instanceDefinition tyName numTyVars numConTys
                                                adaptorNameN conName
 
-  return (sequence [adaptorSig', pure adaptorDefinition', instanceDefinition'])
+      newtypeInstance :: Q [Dec]
+      newtypeInstance = case conTys of
+        [_] -> do
+          x <- newName "x"
+
+          let body = [ FunD 'constructor [Clause [] (NormalB (ConE conName)) [] ]
+                     , FunD 'field [Clause [] (NormalB (LamE [ConP conName [VarP x]] (VarE x))) []] ]
+
+          return [InstanceD [] (ConT ''Newtype `AppT` ConT tyName) body]
+        _     -> return []
+
+  return $ do
+    as <- sequence [adaptorSig', pure adaptorDefinition', instanceDefinition']
+    ns <- newtypeInstance
+    return (as ++ ns)
+
 
 dataDecStuffOfInfo :: Info -> Either Error (Name, [Name], Name, [Name])
 dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars constructors _deriving)) =
@@ -169,6 +185,7 @@ instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
   where instanceDec = fmap (\i -> InstanceD i instanceType [defDefinition])
                       instanceCxt
         instanceCxt = mapM (uncurry classP) (pClass:defClasses)
+        pClass :: Monad m => (Name, [m Type])
         pClass = (''ProductProfunctor, [return (varTS "p")])
 
         defaultPredOfVar :: String -> (Name, [Type])
