@@ -109,7 +109,7 @@ dataDecStuffOfInfo (TyConI (NewtypeD _cxt tyName tyVars constructor _deriving)) 
     (conName, conTys) <- extractConstructorStuff [constructor]
     let tyVars' = map varNameOfBinder tyVars
     return (tyName, tyVars', conName, conTys)
-dataDecStuffOfInfo _ = Left "That doesn't look like a data or newtpe declaration to me"
+dataDecStuffOfInfo _ = Left "That doesn't look like a data or newtype declaration to me"
 
 varNameOfType :: Type -> Either Error Name
 varNameOfType (VarT n) = Right n
