@@ -93,8 +93,8 @@ newtypeInstance :: Name -> Name -> Q [Dec]
 newtypeInstance conName tyName = do
   x <- newName "x"
 
-  let body = [ FunD 'N.constructor [Clause [] (NormalB (ConE conName)) [] ]
-             , FunD 'N.field [Clause [] (NormalB (LamE [ConP conName [VarP x]] (VarE x))) []] ]
+  let body = [ FunD 'N.constructor [simpleClause (NormalB (ConE conName))]
+             , FunD 'N.field [simpleClause (NormalB (LamE [ConP conName [VarP x]] (VarE x)))] ]
 
   return [InstanceD [] (ConT ''N.Newtype `AppT` ConT tyName) body]
 
@@ -204,7 +204,7 @@ instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
         instanceType = appTAll (ConT ''Default)
                                [varTS "p", pArg "0", pArg "1"]
 
-        defDefinition = FunD 'def [Clause [] defBody []]
+        defDefinition = FunD 'def [simpleClause defBody]
         defBody = NormalB(VarE adaptorName' `AppE` appEAll (ConE conName) defsN)
         defsN = replicate numConVars (VarE 'def)
 
@@ -344,3 +344,6 @@ appEAll = foldl AppE
 
 appArrow :: Type -> Type -> Type
 appArrow l r = appTAll ArrowT [l, r]
+
+simpleClause :: Body -> Clause
+simpleClause x = Clause [] x []
