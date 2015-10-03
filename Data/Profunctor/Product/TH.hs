@@ -80,7 +80,6 @@ makeAdaptorAndInstanceE adaptorNameS info = do
 
   return ((\a b -> [a, adaptorDefinition', b]) <$> adaptorSig' <*> instanceDefinition')
 
--- TODO: support newtypes?
 dataDecStuffOfInfo :: Info -> Either Error (Name, [Name], Name, [Name])
 dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars constructors _deriving)) =
   do
