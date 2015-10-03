@@ -45,7 +45,7 @@ import Data.Profunctor.Product (ProductProfunctor, p1, p2, p3, p4, p5, p6, p7,
                                 p8, p9, p10, p11, p12, p13, p14, p15, p16, p17,
                                 p18, p19, p20, p21, p22, p23, p24)
 import Data.Profunctor.Product.Default (Default, def)
-import Data.Profunctor.Product.Newtype (Newtype(constructor, field))
+import qualified Data.Profunctor.Product.Newtype as N
 import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             mkName, newName, TyVarBndr(PlainTV, KindedTV),
                             Con(RecC, NormalC),
@@ -93,10 +93,10 @@ newtypeInstance :: Name -> Name -> Q [Dec]
 newtypeInstance conName tyName = do
   x <- newName "x"
 
-  let body = [ FunD 'constructor [Clause [] (NormalB (ConE conName)) [] ]
-             , FunD 'field [Clause [] (NormalB (LamE [ConP conName [VarP x]] (VarE x))) []] ]
+  let body = [ FunD 'N.constructor [Clause [] (NormalB (ConE conName)) [] ]
+             , FunD 'N.field [Clause [] (NormalB (LamE [ConP conName [VarP x]] (VarE x))) []] ]
 
-  return [InstanceD [] (ConT ''Newtype `AppT` ConT tyName) body]
+  return [InstanceD [] (ConT ''N.Newtype `AppT` ConT tyName) body]
 
 dataDecStuffOfInfo :: Info -> Either Error (Name, [Name], Name, [Name])
 dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars constructors _deriving)) =
