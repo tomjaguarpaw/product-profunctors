@@ -4,7 +4,9 @@ import Data.Profunctor.Product (ProductProfunctor)
 import Data.Profunctor.Product.Default (Default, def)
 
 import Definitions (Data2, Data3, Record2, Record3,
-                    pData2, pData3, pRecord2, pRecord3)
+                    RecordDefaultName,
+                    pData2, pData3, pRecord2, pRecord3,
+                    pRecordDefaultName)
 
 -- The test suite checks that the TH derived adaptor is of the correct
 -- type and that the typeclass instance has been generated.  We don't
@@ -45,3 +47,6 @@ instanceRecord3 :: (ProductProfunctor p,
                   Default p a a', Default p b b', Default p c c')
                  => p (Record3 a b c) (Record3 a' b' c')
 instanceRecord3 = def
+
+defaultNameGenerated :: ProductProfunctor p => RecordDefaultName (p x x') (p y y') -> p (RecordDefaultName x y) (RecordDefaultName x' y')
+defaultNameGenerated = pRecordDefaultName
