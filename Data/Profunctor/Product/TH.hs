@@ -21,7 +21,7 @@
 -- $(makeAdaptorAndInstance \"pFoo\" ''Foo)
 -- @
 --
--- * The adaptor for a type Foo is by convention called pFoo, but in
+-- The adaptor for a type Foo is by convention called pFoo, but in
 -- practice you can call it anything.
 --
 -- The instance generated will be
@@ -44,10 +44,10 @@
 -- $(makeAdaptorAndInstance' ''Foo)
 -- @
 --
--- and will be nameed @pFoo@ automatically.
+-- and it will be nameed @pFoo@ automatically.
 --
--- The product-profunctor "adaptor" is a generalization of
--- @Data.Traversable.Sequence@ in two different ways.  Firstly it
+-- The product-profunctor \"adaptor\" is a generalization of
+-- @Data.Traversable.sequence@ in two different ways.  Firstly it
 -- works on datatypes with multiple type parameters.  Secondly it
 -- works on 'ProductProfunctor's, which are themselves a
 -- generalization of 'Applicative's.
