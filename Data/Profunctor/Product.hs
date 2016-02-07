@@ -60,6 +60,10 @@ import Data.Profunctor.Product.Newtype
 -- Still, at least we now have default implementations of the class
 -- methods, which makes things simpler.
 
+-- | A 'ProductProfunctor' is a generalization of an 'Applicative'.
+-- It has an "input", contravariant type parameter on the left as well
+-- as the usual 'Applicative' "output", covariant parameter on teh
+-- right.
 class Profunctor p => ProductProfunctor p where
   empty :: p () ()
   (***!) :: p a b -> p a' b' -> p (a, a') (b, b')
