@@ -38,6 +38,11 @@
 --         Foo (p a a') (p b b') (p c c') -> p (Foo a b c) (Foo a' b' c')
 -- @
 --
+-- This is a generalization of @Data.Traversable.Sequence@ in two
+-- different ways.  Firstly it works on datatypes with multiple type
+-- parameters.  Secondly it works on 'ProductProfunctor's, which are
+-- themselves a generalization of 'Applicative's.
+--
 -- If your type has only one field, for example
 --
 -- @
