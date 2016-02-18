@@ -11,14 +11,14 @@ import qualified Data.Profunctor.Product.Newtype as N
 import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             mkName, newName, nameBase, TyVarBndr(PlainTV, KindedTV),
                             Con(RecC, NormalC),
-                            Strict(NotStrict), Clause(Clause),
+                            Clause(Clause),
                             Type(VarT, ForallT, AppT, ArrowT, ConT),
                             Body(NormalB), Q, classP,
                             Exp(ConE, VarE, InfixE, AppE, TupE, LamE),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify)
 import Control.Monad ((<=<))
-import Control.Applicative ((<$>), (<*>), pure)
+import Control.Applicative (pure)
 import Control.Arrow (second)
 
 makeAdaptorAndInstanceI :: Maybe String -> Name -> Q [Dec]
@@ -100,50 +100,6 @@ constructorOfConstructors _many =
 
 extractConstructorStuff :: [Con] -> Either Error (Name, [Name])
 extractConstructorStuff = conStuffOfConstructor <=< constructorOfConstructors
-
--- MakeRecordT and makeRecordData were from an old interface.  We could probably
--- delete them now.
-data MakeRecordT = MakeRecordT { typeName :: String
-                               , constructorName :: String
-                               , fieldNames :: [String]
-                               , deriving_ :: [String]
-                               , adaptorName :: String }
-
-makeRecordData :: MakeRecordT -> Q [Dec]
-makeRecordData r = return [datatype'] where
-  MakeRecordT tyName conName tyVars derivings _ = r
-  tyName' = mkName tyName
-  datatype' = datatype tyName' tyVars conName derivings
-
-makeRecord :: MakeRecordT -> Q [Dec]
-makeRecord r = decs
-  where MakeRecordT tyName conName tyVars derivings _ = r
-        decs = (\a i -> [datatype', a, adaptorDefinition', i])
-               <$> adaptorSig'
-               <*> instanceDefinition'
-        tyName' = mkName tyName
-        conName' = mkName conName
-
-        adaptorName' = mkName (adaptorName r)
-
-        numTyVars = length tyVars
-
-        datatype' = datatype tyName' tyVars conName derivings
-        adaptorSig' = adaptorSig tyName' numTyVars adaptorName'
-        adaptorDefinition' = adaptorDefinition numTyVars conName' adaptorName'
-        instanceDefinition' = instanceDefinition tyName' numTyVars numTyVars
-                                                 adaptorName' conName'
-
--- The implementations of the datatype (only used in the old makeRecord),
--- instance and adaptor follow.
-datatype :: Name -> [String] -> String -> [String] -> Dec
-datatype tyName tyVars conName derivings = datatype'
-  where datatype' = DataD [] tyName tyVars' [con] derivings'
-        fields = map toField tyVars
-        tyVars' = map (PlainTV . mkName) tyVars
-        con = RecC (mkName conName) fields
-        toField s = (mkName s, NotStrict, VarT (mkName s))
-        derivings' = map mkName derivings
 
 instanceDefinition :: Name -> Int -> Int -> Name -> Name -> Q Dec
 instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
