@@ -73,10 +73,10 @@ class Contravariant f => ProductContravariant f where
   point :: f ()
   (***<) :: f a -> f b -> f (a, b)
 
--- | This is exactly the same as @Applicative@'s @<$>@, but for a
+-- | This is exactly the same as @Applicative@'s @<*>@, but for a
 -- 'ProductProfunctor'.
-(***$) :: ProductProfunctor p => p a (b -> c) -> p a b -> p a c
-(***$) f x = Profunctor.dimap dup (uncurry ($)) (f ***! x)
+(****) :: ProductProfunctor p => p a (b -> c) -> p a b -> p a c
+(****) f x = Profunctor.dimap dup (uncurry ($)) (f ***! x)
   where dup y = (y, y)
 
 defaultEmpty :: Applicative (p ()) => p () ()
