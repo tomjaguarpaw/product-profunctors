@@ -79,6 +79,11 @@ class Contravariant f => ProductContravariant f where
 (****) f x = Profunctor.dimap dup (uncurry ($)) (f ***! x)
   where dup y = (y, y)
 
+-- | This is exactly 'Profunctor.rmap', given a name which highlights
+-- the similarity to @Applicative@'s @\<$\>@.
+(***$) :: ProductProfunctor p => (b -> c) -> p a b -> p a c
+(***$) = Profunctor.rmap
+
 defaultEmpty :: Applicative (p ()) => p () ()
 defaultEmpty = pure ()
 
