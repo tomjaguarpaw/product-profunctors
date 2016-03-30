@@ -3,6 +3,9 @@
 
 module Data.Profunctor.Product.Default where
 
+import Control.Applicative (Const (Const))
+import Data.Functor.Identity (Identity (Identity))
+import Data.Profunctor (Profunctor (dimap))
 -- TODO: vv this imports a lot of names.  Should we list them all?
 import Data.Profunctor.Product
 
@@ -266,3 +269,11 @@ instance (ProductProfunctor p, Default p a1 b1, Default p a2 b2,
   def = p24 (def, def, def, def, def, def, def, def, def, def,
              def, def, def, def, def, def, def, def, def, def,
              def, def, def, def)
+
+instance (Profunctor p, Default p a b) => Default p (Identity a) (Identity b)
+  where
+    def = dimap (\(Identity a) -> a) Identity def
+
+instance (Profunctor p, Default p a b) => Default p (Const a c) (Const b c)
+  where
+    def = dimap (\(Const a) -> a) Const def
