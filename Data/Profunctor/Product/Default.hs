@@ -274,6 +274,6 @@ instance (Profunctor p, Default p a b) => Default p (Identity a) (Identity b)
   where
     def = dimap (\(Identity a) -> a) Identity def
 
-instance (Profunctor p, Default p a b) => Default p (Const a c) (Const b c)
+instance (Profunctor p, Default p a b) => Default p (Const a c) (Const b c')
   where
     def = dimap (\(Const a) -> a) Const def
