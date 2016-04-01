@@ -5,9 +5,10 @@ module Data.Profunctor.Product.Default where
 
 import Control.Applicative (Const (Const))
 import Data.Functor.Identity (Identity (Identity))
-import Data.Profunctor (Profunctor (dimap))
+import Data.Profunctor (Profunctor, dimap)
 -- TODO: vv this imports a lot of names.  Should we list them all?
 import Data.Profunctor.Product
+import Data.Tagged (Tagged (Tagged))
 
 class Default p a b where
   -- Would rather call it "default", but that's a keyword
@@ -277,3 +278,7 @@ instance (Profunctor p, Default p a b) => Default p (Identity a) (Identity b)
 instance (Profunctor p, Default p a b) => Default p (Const a c) (Const b c')
   where
     def = dimap (\(Const a) -> a) Const def
+
+instance (Profunctor p, Default p a b) => Default p (Tagged s a) (Tagged s' b)
+  where
+    def = dimap (\(Tagged a) -> a) Tagged def
