@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Data.Profunctor.Product.Internal.TH where
@@ -62,12 +63,20 @@ newtypeInstance conName tyName = do
   return [InstanceD [] (ConT ''N.Newtype `AppT` ConT tyName) body]
 
 dataDecStuffOfInfo :: Info -> Either Error (Name, [Name], Name, [Name])
+#if __GLASGOW_HASKELL__ >= 800
+dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars _kind constructors _deriving)) =
+#else
 dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars constructors _deriving)) =
+#endif
   do
     (conName, conTys) <- extractConstructorStuff constructors
     let tyVars' = map varNameOfBinder tyVars
     return (tyName, tyVars', conName, conTys)
+#if __GLASGOW_HASKELL__ >= 800
+dataDecStuffOfInfo (TyConI (NewtypeD _cxt tyName tyVars _kind constructor _deriving)) =
+#else
 dataDecStuffOfInfo (TyConI (NewtypeD _cxt tyName tyVars constructor _deriving)) =
+#endif
   do
     (conName, conTys) <- extractConstructorStuff [constructor]
     let tyVars' = map varNameOfBinder tyVars
