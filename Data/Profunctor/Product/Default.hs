@@ -1,5 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances,
-             FlexibleContexts #-}
+             FlexibleContexts, PolyKinds #-}
 
 module Data.Profunctor.Product.Default where
 
