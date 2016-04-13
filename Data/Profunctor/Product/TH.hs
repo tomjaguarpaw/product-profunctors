@@ -89,8 +89,8 @@
 -- @Applicative@ case.  For an @Applicative@ we would write
 --
 -- @
--- pFooApplicative :: Applicative f =>
---         Foo (f a) (f b) (f c) -> f (Foo a b c)
+-- pFooApplicative :: Applicative f
+--                 => Foo (f a) (f b) (f c) -> f (Foo a b c)
 -- pFooApplicative f = Foo \<$\> foo f
 --                         \<*\> bar f
 --                         \<*\> baz f
@@ -102,8 +102,8 @@
 -- import Data.Profunctor (lmap)
 -- import Data.Profunctor.Product ((***$), (****))
 --
--- pFoo :: ProductProfunctor p =>
---         Foo (p a a') (p b b') (p c c') -> p (Foo a b c) (Foo a' b' c')
+-- pFoo :: ProductProfunctor p
+--      => Foo (p a a') (p b b') (p c c') -> p (Foo a b c) (Foo a' b' c')
 -- pFoo f = Foo ***$ lmap foo (foo f)
 --              **** lmap bar (bar f)
 --              **** lmap baz (baz f)
