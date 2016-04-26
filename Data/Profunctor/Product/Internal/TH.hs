@@ -59,8 +59,11 @@ newtypeInstance conName tyName = do
 
   let body = [ FunD 'N.constructor [simpleClause (NormalB (ConE conName))]
              , FunD 'N.field [simpleClause (NormalB (LamE [ConP conName [VarP x]] (VarE x)))] ]
-
+#if __GLASGOW_HASKELL__ >= 800
+  return [InstanceD Nothing [] (ConT ''N.Newtype `AppT` ConT tyName) body]
+#else
   return [InstanceD [] (ConT ''N.Newtype `AppT` ConT tyName) body]
+#endif
 
 dataDecStuffOfInfo :: Info -> Either Error (Name, [Name], Name, [Name])
 #if __GLASGOW_HASKELL__ >= 800
@@ -112,8 +115,13 @@ extractConstructorStuff = conStuffOfConstructor <=< constructorOfConstructors
 
 instanceDefinition :: Name -> Int -> Int -> Name -> Name -> Q Dec
 instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
-  where instanceDec = fmap (\i -> InstanceD i instanceType [defDefinition])
-                      instanceCxt
+  where instanceDec = fmap
+#if __GLASGOW_HASKELL__ >= 800
+            (\i -> InstanceD Nothing i instanceType [defDefinition])
+#else
+            (\i -> InstanceD i instanceType [defDefinition])
+#endif
+            instanceCxt
         instanceCxt = mapM (uncurry classP) (pClass:defClasses)
         pClass :: Monad m => (Name, [m Type])
         pClass = (''ProductProfunctor, [return (varTS "p")])
