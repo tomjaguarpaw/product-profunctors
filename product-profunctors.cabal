@@ -28,6 +28,9 @@ library
                    Data.Profunctor.Product.Newtype,
                    Data.Profunctor.Product.TH,
                    Data.Profunctor.Product.Tuples
+                   Data.Profunctor.Product.Tuples.TH
+  other-modules:   Data.Profunctor.Product.Class,
+                   Data.Profunctor.Product.Default.Class
   ghc-options:     -Wall
 
   if impl(ghc < 7.10)

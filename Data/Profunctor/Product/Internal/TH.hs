@@ -4,9 +4,7 @@
 module Data.Profunctor.Product.Internal.TH where
 
 import Data.Profunctor (dimap)
-import Data.Profunctor.Product (ProductProfunctor, p1, p2, p3, p4, p5, p6, p7,
-                                p8, p9, p10, p11, p12, p13, p14, p15, p16, p17,
-                                p18, p19, p20, p21, p22, p23, p24)
+import Data.Profunctor.Product
 import Data.Profunctor.Product.Default (Default, def)
 import qualified Data.Profunctor.Product.Newtype as N
 import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
@@ -194,6 +192,17 @@ tupleAdaptors n = case n of 1  -> 'p1
                             22 -> 'p22
                             23 -> 'p23
                             24 -> 'p24
+                            25 -> 'p25
+                            26 -> 'p26
+                            27 -> 'p27
+                            28 -> 'p28
+                            29 -> 'p29
+                            30 -> 'p30
+                            31 -> 'p31
+                            32 -> 'p32
+                            33 -> 'p33
+                            34 -> 'p34
+                            35 -> 'p35
                             _  -> error errorMsg
   where errorMsg = "Data.Profunctor.Product.TH: "
                    ++ show n
