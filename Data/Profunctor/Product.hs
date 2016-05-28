@@ -63,7 +63,7 @@ import Data.Profunctor.Product.Tuples.TH (pTns, maxTupleSize, pNs)
 -- Still, at least we now have default implementations of the class
 -- methods, which makes things simpler.
 
--- This appears to be just 'Data.Functor.Contravariant.Divisible'
+{-# DEPRECATED ProductContravariant "Use Data.Functor.Contravariant.Divisible instead" #-}
 class Contravariant f => ProductContravariant f where
   point  :: f ()
   (***<) :: f a -> f b -> f (a, b)
