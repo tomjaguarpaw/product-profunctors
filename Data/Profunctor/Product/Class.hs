@@ -32,5 +32,5 @@ import Data.Profunctor (Profunctor)
 --    (***!) = defaultProfunctorProduct
 -- @
 class Profunctor p => ProductProfunctor p where
-  empty :: p () ()
+  empty  :: p () ()
   (***!) :: p a b -> p a' b' -> p (a, a') (b, b')

@@ -65,7 +65,7 @@ import Data.Profunctor.Product.Tuples.TH (pTns, maxTupleSize, pNs)
 
 -- This appears to be just 'Data.Functor.Contravariant.Divisible'
 class Contravariant f => ProductContravariant f where
-  point :: f ()
+  point  :: f ()
   (***<) :: f a -> f b -> f (a, b)
 
 -- | '(****)' is the generalisation of @Applicative@'s @\<*\>@.
