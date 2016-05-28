@@ -99,14 +99,14 @@ defaultEmpty :: Applicative (p ()) => p () ()
 defaultEmpty = pure ()
 
 defaultProfunctorProduct :: (Applicative (p (a, a')), Profunctor p)
-                  => p a b -> p a' b' -> p (a, a') (b, b')
+                         => p a b -> p a' b' -> p (a, a') (b, b')
 defaultProfunctorProduct p p' = liftA2 (,) (lmap fst p) (lmap snd p')
 
 defaultPoint :: Monoid (p ()) => p ()
 defaultPoint = mempty
 
 defaultContravariantProduct :: (Contravariant f, Monoid (f (a, b)))
-                               => f a -> f b -> f (a, b)
+                            => f a -> f b -> f (a, b)
 defaultContravariantProduct p p' = contramap fst p <> contramap snd p'
 
 newtype PPOfContravariant f a b = PPOfContravariant (f a)
