@@ -68,14 +68,14 @@ class Contravariant f => ProductContravariant f where
   point :: f ()
   (***<) :: f a -> f b -> f (a, b)
 
--- | This is exactly the same as @Applicative@'s @\<*\>@, but for a
--- 'ProductProfunctor'.
+-- | '(****)' is the generalisation of @Applicative@'s @\<*\>@.
 (****) :: ProductProfunctor p => p a (b -> c) -> p a b -> p a c
 (****) f x = Profunctor.dimap dup (uncurry ($)) (f ***! x)
   where dup y = (y, y)
 
--- | This is exactly 'Profunctor.rmap', given a name which highlights
--- the similarity to @Applicative@'s @\<$\>@.
+-- | '(***$)' is the generalisation of @Applicative@'s @\<$\>@.
+--
+-- '(***$)' = 'Profunctor.rmap', just like '<$>' = 'fmap'.
 (***$) :: ProductProfunctor p => (b -> c) -> p a b -> p a c
 (***$) = Profunctor.rmap
 
