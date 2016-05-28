@@ -152,12 +152,15 @@ instance Arrow arr => ProductProfunctor (AndArrow arr z) where
   empty = AndArrow (arr (const ()))
   (AndArrow f) ***! (AndArrow f') = AndArrow (f &&& f')
 
+{-# DEPRECATED defaultContravariantProduct "defaultContravariantProduct will be removed" #-}
 defaultContravariantProduct :: (Contravariant f, Monoid (f (a, b)))
                             => f a -> f b -> f (a, b)
 defaultContravariantProduct p p' = contramap fst p <> contramap snd p'
 
+{-# DEPRECATED PPOfContravariant "PPOfContravariant will be removed" #-}
 newtype PPOfContravariant f a b = PPOfContravariant (f a)
 
+{-# DEPRECATED unPPOfContravariant "unPPOfContravariant will be removed" #-}
 unPPOfContravariant :: PPOfContravariant c a a -> c a
 unPPOfContravariant (PPOfContravariant pp) = pp
 
