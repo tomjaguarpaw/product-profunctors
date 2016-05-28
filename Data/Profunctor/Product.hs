@@ -129,9 +129,7 @@ instance Arrow arr => ProductProfunctor (WrappedArrow arr) where
   empty = id
   (***!) = (***)
 
-{-# DEPRECATED AndArrow "If you really need this, file an issue.
-    It will go soon."
-#-}
+{-# DEPRECATED AndArrow "If you really need this, file an issue. It will go soon." #-}
 data AndArrow arr z a b = AndArrow { runAndArrow :: arr z b }
 
 instance Arrow arr => Profunctor (AndArrow arr z) where
