@@ -122,11 +122,11 @@ instance ProductContravariant f => ProductProfunctor (PPOfContravariant f) where
   PPOfContravariant f ***! PPOfContravariant f' = PPOfContravariant (f ***< f')
 
 instance ProductProfunctor (->) where
-  empty = id
+  empty  = id
   (***!) = (***)
 
 instance Arrow arr => ProductProfunctor (WrappedArrow arr) where
-  empty = id
+  empty  = id
   (***!) = (***)
 
 {-# DEPRECATED AndArrow "If you really need this, file an issue. It will go soon." #-}
