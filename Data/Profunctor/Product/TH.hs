@@ -18,7 +18,7 @@
 -- \"adaptor\" with the following splice:
 --
 -- @
--- $(makeAdaptorAndInstance \"pFoo\" ''Foo)
+--  $(makeAdaptorAndInstance \"pFoo\" ''Foo)
 -- @
 --
 -- The adaptor for a type @Foo@ is by convention called @pFoo@, but in
@@ -26,7 +26,7 @@
 -- the name @pFoo@ yourself you can use
 --
 -- @
--- $(makeAdaptorAndInstance' ''Foo)
+--  $(makeAdaptorAndInstance' ''Foo)
 -- @
 --
 -- and it will be named @pFoo@ automatically.

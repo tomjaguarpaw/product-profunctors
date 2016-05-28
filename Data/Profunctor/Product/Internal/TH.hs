@@ -1,11 +1,10 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Data.Profunctor.Product.Internal.TH where
 
 import Data.Profunctor (dimap)
-import Data.Profunctor.Product (ProductProfunctor, p1, p2, p3, p4, p5, p6, p7,
-                                p8, p9, p10, p11, p12, p13, p14, p15, p16, p17,
-                                p18, p19, p20, p21, p22, p23, p24)
+import Data.Profunctor.Product
 import Data.Profunctor.Product.Default (Default, def)
 import qualified Data.Profunctor.Product.Newtype as N
 import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
@@ -58,16 +57,27 @@ newtypeInstance conName tyName = do
 
   let body = [ FunD 'N.constructor [simpleClause (NormalB (ConE conName))]
              , FunD 'N.field [simpleClause (NormalB (LamE [ConP conName [VarP x]] (VarE x)))] ]
-
+#if __GLASGOW_HASKELL__ >= 800
+  return [InstanceD Nothing [] (ConT ''N.Newtype `AppT` ConT tyName) body]
+#else
   return [InstanceD [] (ConT ''N.Newtype `AppT` ConT tyName) body]
+#endif
 
 dataDecStuffOfInfo :: Info -> Either Error (Name, [Name], Name, [Name])
+#if __GLASGOW_HASKELL__ >= 800
+dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars _kind constructors _deriving)) =
+#else
 dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars constructors _deriving)) =
+#endif
   do
     (conName, conTys) <- extractConstructorStuff constructors
     let tyVars' = map varNameOfBinder tyVars
     return (tyName, tyVars', conName, conTys)
+#if __GLASGOW_HASKELL__ >= 800
+dataDecStuffOfInfo (TyConI (NewtypeD _cxt tyName tyVars _kind constructor _deriving)) =
+#else
 dataDecStuffOfInfo (TyConI (NewtypeD _cxt tyName tyVars constructor _deriving)) =
+#endif
   do
     (conName, conTys) <- extractConstructorStuff [constructor]
     let tyVars' = map varNameOfBinder tyVars
@@ -103,8 +113,13 @@ extractConstructorStuff = conStuffOfConstructor <=< constructorOfConstructors
 
 instanceDefinition :: Name -> Int -> Int -> Name -> Name -> Q Dec
 instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
-  where instanceDec = fmap (\i -> InstanceD i instanceType [defDefinition])
-                      instanceCxt
+  where instanceDec = fmap
+#if __GLASGOW_HASKELL__ >= 800
+            (\i -> InstanceD Nothing i instanceType [defDefinition])
+#else
+            (\i -> InstanceD i instanceType [defDefinition])
+#endif
+            instanceCxt
         instanceCxt = mapM (uncurry classP) (pClass:defClasses)
         pClass :: Monad m => (Name, [m Type])
         pClass = (''ProductProfunctor, [return (varTS "p")])
@@ -177,6 +192,17 @@ tupleAdaptors n = case n of 1  -> 'p1
                             22 -> 'p22
                             23 -> 'p23
                             24 -> 'p24
+                            25 -> 'p25
+                            26 -> 'p26
+                            27 -> 'p27
+                            28 -> 'p28
+                            29 -> 'p29
+                            30 -> 'p30
+                            31 -> 'p31
+                            32 -> 'p32
+                            33 -> 'p33
+                            34 -> 'p34
+                            35 -> 'p35
                             _  -> error errorMsg
   where errorMsg = "Data.Profunctor.Product.TH: "
                    ++ show n
