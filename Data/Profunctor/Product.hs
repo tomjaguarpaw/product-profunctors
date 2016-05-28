@@ -69,6 +69,10 @@ class Contravariant f => ProductContravariant f where
   (***<) :: f a -> f b -> f (a, b)
 
 -- | '(****)' is the generalisation of @Applicative@'s @\<*\>@.
+--
+-- You will probably never need to use this.  @\<*\>@ should be
+-- sufficient (if your 'ProductProfunctor' instance has also been given
+-- an @Applicative@ instance).
 (****) :: ProductProfunctor p => p a (b -> c) -> p a b -> p a c
 (****) f x = Profunctor.dimap dup (uncurry ($)) (f ***! x)
   where dup y = (y, y)
@@ -76,10 +80,18 @@ class Contravariant f => ProductContravariant f where
 -- | '(***$)' is the generalisation of @Applicative@'s @\<$\>@.
 --
 -- '(***$)' = 'Profunctor.rmap', just like '<$>' = 'fmap'.
+--
+-- You will probably never need to use this.  @\<$\>@ should be
+-- sufficient (if your 'ProductProfunctor' instance has also been given
+-- an @Applicative@ instance).
 (***$) :: ProductProfunctor p => (b -> c) -> p a b -> p a c
 (***$) = Profunctor.rmap
 
 -- | 'purePP' is the generalisation of @Applicative@'s @pure@,
+--
+-- You will probably never need to use this.  @pure@ should be
+-- sufficient (if your 'ProductProfunctor' instance also has an
+-- @Applicative@ instance).
 purePP :: ProductProfunctor p => b -> p a b
 purePP b = Profunctor.rmap (const b) empty
 
