@@ -63,11 +63,6 @@ import Data.Profunctor.Product.Tuples.TH (pTns, maxTupleSize, pNs)
 -- Still, at least we now have default implementations of the class
 -- methods, which makes things simpler.
 
-{-# DEPRECATED ProductContravariant "Use Data.Functor.Contravariant.Divisible instead" #-}
-class Contravariant f => ProductContravariant f where
-  point  :: f ()
-  (***<) :: f a -> f b -> f (a, b)
-
 -- | '(****)' is the generalisation of @Applicative@'s @\<*\>@.
 --
 -- You will probably never need to use this.  @\<*\>@ should be
@@ -105,22 +100,6 @@ defaultProfunctorProduct p p' = liftA2 (,) (lmap fst p) (lmap snd p')
 defaultPoint :: Monoid (p ()) => p ()
 defaultPoint = mempty
 
-defaultContravariantProduct :: (Contravariant f, Monoid (f (a, b)))
-                            => f a -> f b -> f (a, b)
-defaultContravariantProduct p p' = contramap fst p <> contramap snd p'
-
-newtype PPOfContravariant f a b = PPOfContravariant (f a)
-
-unPPOfContravariant :: PPOfContravariant c a a -> c a
-unPPOfContravariant (PPOfContravariant pp) = pp
-
-instance Contravariant f => Profunctor (PPOfContravariant f) where
-  dimap f _ (PPOfContravariant p) = PPOfContravariant (contramap f p)
-
-instance ProductContravariant f => ProductProfunctor (PPOfContravariant f) where
-  empty = PPOfContravariant point
-  PPOfContravariant f ***! PPOfContravariant f' = PPOfContravariant (f ***< f')
-
 instance ProductProfunctor (->) where
   empty  = id
   (***!) = (***)
@@ -128,16 +107,6 @@ instance ProductProfunctor (->) where
 instance Arrow arr => ProductProfunctor (WrappedArrow arr) where
   empty  = id
   (***!) = (***)
-
-{-# DEPRECATED AndArrow "If you really need this, file an issue. It will go soon." #-}
-data AndArrow arr z a b = AndArrow { runAndArrow :: arr z b }
-
-instance Arrow arr => Profunctor (AndArrow arr z) where
-  dimap _ f (AndArrow g) = AndArrow (arr f <<< g)
-
-instance Arrow arr => ProductProfunctor (AndArrow arr z) where
-  empty = AndArrow (arr (const ()))
-  (AndArrow f) ***! (AndArrow f') = AndArrow (f &&& f')
 
 -- { Sum
 
@@ -165,3 +134,38 @@ list p = Profunctor.dimap fromList toList (empty +++! (p ***! list p))
 pTns [0..maxTupleSize]
 
 pNs [0..maxTupleSize]
+
+-- { Deprecated stuff
+
+{-# DEPRECATED ProductContravariant "Use Data.Functor.Contravariant.Divisible instead" #-}
+class Contravariant f => ProductContravariant f where
+  point  :: f ()
+  (***<) :: f a -> f b -> f (a, b)
+
+{-# DEPRECATED AndArrow "If you really need this, file an issue. It will go soon." #-}
+data AndArrow arr z a b = AndArrow { runAndArrow :: arr z b }
+
+instance Arrow arr => Profunctor (AndArrow arr z) where
+  dimap _ f (AndArrow g) = AndArrow (arr f <<< g)
+
+instance Arrow arr => ProductProfunctor (AndArrow arr z) where
+  empty = AndArrow (arr (const ()))
+  (AndArrow f) ***! (AndArrow f') = AndArrow (f &&& f')
+
+defaultContravariantProduct :: (Contravariant f, Monoid (f (a, b)))
+                            => f a -> f b -> f (a, b)
+defaultContravariantProduct p p' = contramap fst p <> contramap snd p'
+
+newtype PPOfContravariant f a b = PPOfContravariant (f a)
+
+unPPOfContravariant :: PPOfContravariant c a a -> c a
+unPPOfContravariant (PPOfContravariant pp) = pp
+
+instance Contravariant f => Profunctor (PPOfContravariant f) where
+  dimap f _ (PPOfContravariant p) = PPOfContravariant (contramap f p)
+
+instance ProductContravariant f => ProductProfunctor (PPOfContravariant f) where
+  empty = PPOfContravariant point
+  PPOfContravariant f ***! PPOfContravariant f' = PPOfContravariant (f ***< f')
+
+-- }
