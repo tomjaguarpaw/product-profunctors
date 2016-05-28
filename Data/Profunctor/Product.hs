@@ -93,7 +93,7 @@ class Contravariant f => ProductContravariant f where
 -- sufficient (if your 'ProductProfunctor' instance also has an
 -- @Applicative@ instance).
 purePP :: ProductProfunctor p => b -> p a b
-purePP b = Profunctor.rmap (const b) empty
+purePP b = Profunctor.dimap (const ()) (const b) empty
 
 defaultEmpty :: Applicative (p ()) => p () ()
 defaultEmpty = pure ()
