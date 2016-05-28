@@ -79,6 +79,10 @@ class Contravariant f => ProductContravariant f where
 (***$) :: ProductProfunctor p => (b -> c) -> p a b -> p a c
 (***$) = Profunctor.rmap
 
+-- | 'purePP' is the generalisation of @Applicative@'s @pure@,
+purePP :: ProductProfunctor p => b -> p a b
+purePP b = Profunctor.rmap (const b) empty
+
 defaultEmpty :: Applicative (p ()) => p () ()
 defaultEmpty = pure ()
 
