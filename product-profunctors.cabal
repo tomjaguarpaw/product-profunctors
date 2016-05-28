@@ -1,19 +1,21 @@
 name:          product-profunctors
+copyright:     Copyright (c) 2013, Karamaan Group LLC; 2014-2016 Purely Agile Limited
 version:       0.7.1.0
 synopsis:      product-profunctors
 description:   Product profunctors
 homepage:      https://github.com/tomjaguarpaw/product-profunctors
 license:       BSD3
-license-File:  LICENSE
+license-file:  LICENSE
 author:        Purely Agile
 maintainer:    Purely Agile
 category:      Control, Category
 build-type:    Simple
 cabal-version: >= 1.8
+tested-with:   GHC==7.10.1, GHC==7.8.4, GHC==7.6.3
 
 source-repository head
-  Type:     git
-  Location: https://github.com/tomjaguarpaw/product-profunctors
+  type:     git
+  location: https://github.com/tomjaguarpaw/product-profunctors
 
 library
   build-depends:   base >= 4.5 && < 5
