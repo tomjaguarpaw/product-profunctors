@@ -2,10 +2,11 @@ module Data.Profunctor.Product.Class where
 
 import Data.Profunctor (Profunctor)
 
--- | A 'ProductProfunctor' is a generalization of an 'Applicative'.
--- It has an "input", contravariant type parameter on the left as well
--- as the usual 'Applicative' "output", covariant parameter on the
--- right.
+-- | 'ProductProfunctor' is a generalization of 'Applicative'.
+--
+-- It has the usual 'Applicative' "output" (covariant) parameter on
+-- the right.  Additionally it has an "input" (contravariant) type
+-- parameter on the left.
 --
 -- You will find it easier to see the similarity between
 -- 'ProductProfunctor' and 'Applicative' if you look at @purePP@,
