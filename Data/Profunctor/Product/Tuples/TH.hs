@@ -161,4 +161,4 @@ mkDefaultN n = instanceD (pure (ConT ''ProductProfunctor `AppT` VarT p : mkDefs)
     bs = take n [ mkName $ 'b':show i | i <- [0::Int ..] ]
 
 maxTupleSize :: Int
-maxTupleSize = 35
+maxTupleSize = 62
