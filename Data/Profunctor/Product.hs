@@ -3,12 +3,10 @@ module Data.Profunctor.Product (module Data.Profunctor.Product.Class,
                                 module Data.Profunctor.Product.Newtype,
                                 module Data.Profunctor.Product) where
 
-import Prelude hiding (id)
-import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow)
+import Data.Profunctor (Profunctor, dimap, lmap)
 import qualified Data.Profunctor as Profunctor
 import Data.Functor.Contravariant (Contravariant, contramap)
-import Control.Category (id)
-import Control.Arrow (Arrow, (***), (<<<), arr, (&&&))
+import Control.Arrow (Arrow, (<<<), arr, (&&&))
 import Control.Applicative (Applicative, liftA2, pure)
 import Data.Monoid (Monoid, mempty, (<>))
 import Data.Profunctor.Product.Newtype
@@ -99,24 +97,6 @@ defaultProfunctorProduct p p' = liftA2 (,) (lmap fst p) (lmap snd p')
 
 defaultPoint :: Monoid (p ()) => p ()
 defaultPoint = mempty
-
-instance ProductProfunctor (->) where
-  empty  = id
-  (***!) = (***)
-
-instance Arrow arr => ProductProfunctor (WrappedArrow arr) where
-  empty  = id
-  (***!) = (***)
-
--- { Sum
-
-class Profunctor p => SumProfunctor p where
-  -- Morally we should have 'zero :: p Void Void' but I don't think
-  -- that would actually be useful
-  (+++!) :: p a b -> p a' b' -> p (Either a a') (Either b b')
-
-instance SumProfunctor (->) where
-  f +++! g = either (Left . f) (Right . g)
 
 list :: (ProductProfunctor p, SumProfunctor p) => p a b -> p [a] [b]
 list p = Profunctor.dimap fromList toList (empty +++! (p ***! list p))
