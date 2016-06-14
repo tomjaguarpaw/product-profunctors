@@ -34,3 +34,8 @@ import Data.Profunctor (Profunctor)
 class Profunctor p => ProductProfunctor p where
   empty  :: p () ()
   (***!) :: p a b -> p a' b' -> p (a, a') (b, b')
+
+class Profunctor p => SumProfunctor p where
+  -- Morally we should have 'zero :: p Void Void' but I don't think
+  -- that would actually be useful
+  (+++!) :: p a b -> p a' b' -> p (Either a a') (Either b b')

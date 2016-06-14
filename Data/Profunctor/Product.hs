@@ -110,11 +110,6 @@ instance Arrow arr => ProductProfunctor (WrappedArrow arr) where
 
 -- { Sum
 
-class Profunctor p => SumProfunctor p where
-  -- Morally we should have 'zero :: p Void Void' but I don't think
-  -- that would actually be useful
-  (+++!) :: p a b -> p a' b' -> p (Either a a') (Either b b')
-
 instance SumProfunctor (->) where
   f +++! g = either (Left . f) (Right . g)
 
