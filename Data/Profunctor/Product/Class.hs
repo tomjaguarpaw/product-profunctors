@@ -27,7 +27,7 @@ import Data.Profunctor (Profunctor)
 -- and then write
 --
 -- @
---  instance ProductProfunctor Writer where
+--  instance ProductProfunctor MyProductProfunctor where
 --    empty  = defaultEmpty
 --    (***!) = defaultProfunctorProduct
 -- @
