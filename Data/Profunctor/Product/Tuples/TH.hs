@@ -168,4 +168,4 @@ mkDefaultN n = instanceD (sequence (productProfunctor p : mkDefs))
     bs = take n [ mkName $ 'b':show i | i <- [0::Int ..] ]
 
 maxTupleSize :: Int
-maxTupleSize = 35
+maxTupleSize = 62
