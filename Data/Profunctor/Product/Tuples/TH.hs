@@ -14,6 +14,7 @@ import Language.Haskell.TH
 import Data.Profunctor (Profunctor (dimap))
 import Data.Profunctor.Product.Class (ProductProfunctor, (***!), empty)
 import Data.Profunctor.Product.Default.Class (Default (def))
+import Control.Applicative (pure)
 
 mkTs :: [Int] -> Q [Dec]
 mkTs = mapM mkT
@@ -37,12 +38,18 @@ chain rest (a, as) = uncurry (***!) (a, rest as)
 pTns :: [Int] -> Q [Dec]
 pTns = fmap concat . mapM pTn
 
+productProfunctor :: Name -> Q Pred
+productProfunctor p = classP ''ProductProfunctor [pure (VarT p)]
+
+default_ :: Name -> Name -> Name -> Q Pred
+default_ p a b = classP ''Default (map (pure . VarT) [p, a, b])
+
 pTn :: Int -> Q [Dec]
 pTn n = sequence [sig, fun]
   where
     p = mkName "p"
     sig = sigD (pT n) (forallT (map PlainTV $ p : take n as ++ take n bs)
-                               (pure [ConT ''ProductProfunctor `AppT` VarT p])
+                               (sequence [productProfunctor p])
                                (arrowT `appT` mkLeftTy `appT` mkRightTy)
                       )
     mkLeftTy = foldl appT (conT tN)
@@ -115,7 +122,7 @@ pN :: Int -> Q [Dec]
 pN n = sequence [sig, fun]
   where
     sig = sigD nm (forallT (map PlainTV $ p : as ++ bs)
-                           (pure [ConT ''ProductProfunctor `AppT` VarT p])
+                           (sequence [productProfunctor p])
                            (arrowT `appT` mkLeftTy `appT` mkRightTy)
                    )
     mkLeftTy = case n of
@@ -146,11 +153,11 @@ mkDefaultNs :: [Int] -> Q [Dec]
 mkDefaultNs = mapM mkDefaultN
 
 mkDefaultN :: Int -> Q Dec
-mkDefaultN n = instanceD (pure (ConT ''ProductProfunctor `AppT` VarT p : mkDefs))
+mkDefaultN n = instanceD (sequence (productProfunctor p : mkDefs))
                          (conT ''Default `appT` varT p `appT` mkTupT as `appT` mkTupT bs)
                          [mkFun]
   where
-    mkDefs = zipWith (\a b -> ConT ''Default `AppT` VarT p `AppT` VarT a `AppT` VarT b) as bs
+    mkDefs = zipWith (\a b -> default_ p a b) as bs
     mkTupT = foldl appT (tupleT n) . map varT
     mkFun = funD 'def [clause [] bdy []]
     bdy = normalB $ case n of
