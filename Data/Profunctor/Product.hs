@@ -118,6 +118,10 @@ class Profunctor p => SumProfunctor p where
 instance SumProfunctor (->) where
   f +++! g = either (Left . f) (Right . g)
 
+-- | A generalisation of @map :: (a -> b) -> [a] -> [b]@.  It is also,
+-- in spirit, a generalisation of @traverse :: (a -> f b) -> [a] -> f
+-- [b]@, but the types need to be shuffled around a bit to make that
+-- work.
 list :: (ProductProfunctor p, SumProfunctor p) => p a b -> p [a] [b]
 list p = Profunctor.dimap fromList toList (empty +++! (p ***! list p))
   where toList :: Either () (a, [a]) -> [a]
