@@ -77,7 +77,7 @@
 -- @
 -- instance 'N.Newtype' Foo where
 --   'N.constructor' = Foo
---   'N.field'       = \(Foo x) -> x
+--   'N.field'       = \\(Foo x) -> x
 -- @
 --
 -- which allows you to use the polymorphic function 'N.pNewtype'
