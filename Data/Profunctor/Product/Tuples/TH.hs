@@ -7,15 +7,17 @@ module Data.Profunctor.Product.Tuples.TH
   , pNs
   , mkDefaultNs
   , mkDefaultCovariantNs
+  , mkDefaultContravariantNs
   , maxTupleSize
   ) where
 
 import Language.Haskell.TH
 
-import Data.Profunctor (Profunctor (dimap, lmap))
+import Data.Profunctor (Profunctor (dimap, lmap, rmap))
 import Data.Profunctor.Product.Class (ProductProfunctor, (***!), empty)
 import Data.Profunctor.Product.Default.Class (Default (def))
 import Control.Applicative (pure)
+import Data.Void (Void, absurd)
 
 mkTs :: [Int] -> Q [Dec]
 mkTs = mapM mkT
@@ -42,8 +44,8 @@ pTns = fmap concat . mapM pTn
 productProfunctor :: Name -> Q Pred
 productProfunctor p = classP ''ProductProfunctor [pure (VarT p)]
 
-default_ :: Name -> Type -> Name -> Q Pred
-default_ p a b = classP ''Default (map pure [VarT p, a, VarT b])
+default_ :: Name -> Type -> Type -> Q Pred
+default_ p a b = classP ''Default (map pure [VarT p, a, b])
 
 pTn :: Int -> Q [Dec]
 pTn n = sequence [sig, fun]
@@ -158,7 +160,7 @@ mkDefaultN n = instanceD (sequence (productProfunctor p : mkDefs))
                          (conT ''Default `appT` varT p `appT` mkTupT as `appT` mkTupT bs)
                          [mkFun]
   where
-    mkDefs = zipWith (\a b -> default_ p (VarT a) b) as bs
+    mkDefs = zipWith (\a b -> default_ p (VarT a) (VarT b)) as bs
     mkTupT = foldl appT (tupleT n) . map varT
     mkFun = funD 'def [clause [] bdy []]
     bdy = normalB $ case n of
@@ -177,7 +179,7 @@ mkDefaultCovariantN n =
               (conT ''Default `appT` varT p `appT` tupleT 0 `appT` mkTupT as)
               [mkFun]
   where
-    mkDefs = map (default_ p (TupleT 0)) as
+    mkDefs = map (default_ p (TupleT 0) . VarT) as
     mkTupT = foldl appT (tupleT n) . map varT
     mkFun = funD 'def [clause [] bdy []]
     mkConst = varE 'const `appE` tupE (replicate n (tupE []))
@@ -185,6 +187,28 @@ mkDefaultCovariantN n =
     bdy = normalB $ case n of
       0 -> varE 'empty
       _ -> varE 'lmap `appE` mkConst `appE` mkPn
+    p = mkName "p"
+    as = take n [ mkName $ 'a':show i | i <- [0::Int ..] ]
+
+mkDefaultContravariantNs :: [Int] -> Q [Dec]
+mkDefaultContravariantNs = mapM mkDefaultContravariantN
+
+mkDefaultContravariantN :: Int -> Q Dec
+mkDefaultContravariantN n =
+    instanceD (sequence (productProfunctor p : mkDefs))
+              (conT ''Default `appT` varT p `appT` mkTupT as `appT` conT ''Void)
+              [mkFun]
+  where
+    mkDefs = map (\a -> default_ p (VarT a) (ConT ''Void)) as
+    mkTupT = foldl appT (tupleT n) . map varT
+    mkFun = funD 'def [clause [] bdy []]
+    mkAbsurd = uInfixE (varE 'absurd) (varE '(.)) mkFst
+    mkPn = varE (mkName $ 'p':show n) `appE` tupE mkDefTups
+    mkDefTups = map (\a -> varE 'def `sigE` (varT p `appT` varT a `appT` conT ''Void)) as
+    mkFst = do
+        x <- newName "x"
+        return $ LamE [TupP (VarP x : replicate (n - 1) WildP)] (VarE x)
+    bdy = normalB $ varE 'rmap `appE` mkAbsurd `appE` mkPn
     p = mkName "p"
     as = take n [ mkName $ 'a':show i | i <- [0::Int ..] ]
 
