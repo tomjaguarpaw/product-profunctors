@@ -6,12 +6,13 @@ module Data.Profunctor.Product.Tuples.TH
   , mkUnflattenNs
   , pNs
   , mkDefaultNs
+  , mkDefaultCovariantNs
   , maxTupleSize
   ) where
 
 import Language.Haskell.TH
 
-import Data.Profunctor (Profunctor (dimap))
+import Data.Profunctor (Profunctor (dimap, lmap))
 import Data.Profunctor.Product.Class (ProductProfunctor, (***!), empty)
 import Data.Profunctor.Product.Default.Class (Default (def))
 import Control.Applicative (pure)
@@ -41,8 +42,8 @@ pTns = fmap concat . mapM pTn
 productProfunctor :: Name -> Q Pred
 productProfunctor p = classP ''ProductProfunctor [pure (VarT p)]
 
-default_ :: Name -> Name -> Name -> Q Pred
-default_ p a b = classP ''Default (map (pure . VarT) [p, a, b])
+default_ :: Name -> Type -> Name -> Q Pred
+default_ p a b = classP ''Default (map pure [VarT p, a, VarT b])
 
 pTn :: Int -> Q [Dec]
 pTn n = sequence [sig, fun]
@@ -157,7 +158,7 @@ mkDefaultN n = instanceD (sequence (productProfunctor p : mkDefs))
                          (conT ''Default `appT` varT p `appT` mkTupT as `appT` mkTupT bs)
                          [mkFun]
   where
-    mkDefs = zipWith (\a b -> default_ p a b) as bs
+    mkDefs = zipWith (\a b -> default_ p (VarT a) b) as bs
     mkTupT = foldl appT (tupleT n) . map varT
     mkFun = funD 'def [clause [] bdy []]
     bdy = normalB $ case n of
@@ -166,6 +167,26 @@ mkDefaultN n = instanceD (sequence (productProfunctor p : mkDefs))
     p = mkName "p"
     as = take n [ mkName $ 'a':show i | i <- [0::Int ..] ]
     bs = take n [ mkName $ 'b':show i | i <- [0::Int ..] ]
+
+mkDefaultCovariantNs :: [Int] -> Q [Dec]
+mkDefaultCovariantNs = mapM mkDefaultCovariantN
+
+mkDefaultCovariantN :: Int -> Q Dec
+mkDefaultCovariantN n =
+    instanceD (sequence (productProfunctor p : mkDefs))
+              (conT ''Default `appT` varT p `appT` tupleT 0 `appT` mkTupT as)
+              [mkFun]
+  where
+    mkDefs = map (default_ p (TupleT 0)) as
+    mkTupT = foldl appT (tupleT n) . map varT
+    mkFun = funD 'def [clause [] bdy []]
+    mkConst = varE 'const `appE` tupE (replicate n (tupE []))
+    mkPn = varE (mkName $ 'p':show n) `appE` tupE (replicate n (varE 'def))
+    bdy = normalB $ case n of
+      0 -> varE 'empty
+      _ -> varE 'lmap `appE` mkConst `appE` mkPn
+    p = mkName "p"
+    as = take n [ mkName $ 'a':show i | i <- [0::Int ..] ]
 
 maxTupleSize :: Int
 maxTupleSize = 62
