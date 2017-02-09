@@ -3,8 +3,8 @@
 
 module Data.Profunctor.Product.Internal.TH where
 
-import Data.Profunctor (dimap)
-import Data.Profunctor.Product
+import Data.Profunctor (dimap, lmap)
+import Data.Profunctor.Product hiding (constructor, field)
 import Data.Profunctor.Product.Default (Default, def)
 import qualified Data.Profunctor.Product.Newtype as N
 import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
@@ -38,15 +38,20 @@ makeAdaptorAndInstanceE adaptorNameM info = do
       conTys  = dConTys  dataDecStuff
 
       numTyVars = length tyVars
-      numConTys = length conTys
+      numConTys = lengthCons conTys
       defaultAdaptorName = (mkName . ("p" ++) . nameBase) conName
       adaptorNameN = maybe defaultAdaptorName mkName adaptorNameM
       adaptorSig' = adaptorSig tyName numTyVars adaptorNameN
-      adaptorDefinition' = adaptorDefinition numTyVars conName adaptorNameN
+      adaptorDefinition' =
+        case conTys of ConTys   _        ->
+                         adaptorDefinition numTyVars conName adaptorNameN
+                       FieldTys fieldTys ->
+                         adaptorDefinitionFields conName fieldTys adaptorNameN
+
       instanceDefinition' = instanceDefinition tyName numTyVars numConTys
                                                adaptorNameN conName
 
-      newtypeInstance' = if length conTys == 1 then
+      newtypeInstance' = if numConTys == 1 then
                            newtypeInstance conName tyName
                          else 
                            return []
@@ -68,11 +73,20 @@ newtypeInstance conName tyName = do
   return [InstanceD [] (ConT ''N.Newtype `AppT` ConT tyName) body]
 #endif
 
+data ConTysFields = ConTys   [Name]
+                  -- ^^ The type of each constructor field
+                  | FieldTys [(Name, Name)]
+                  -- ^^ The fieldname and type of each constructor field
+
+lengthCons :: ConTysFields -> Int
+lengthCons (ConTys l)   = length l
+lengthCons (FieldTys l) = length l
+
 data DataDecStuff = DataDecStuff {
     dTyName  :: Name
   , dTyVars  :: [Name]
   , dConName :: Name
-  , dConTys  :: [Name]
+  , dConTys  :: ConTysFields
   }
 
 dataDecStuffOfInfo :: Info -> Either Error DataDecStuff
@@ -113,14 +127,16 @@ varNameOfBinder :: TyVarBndr -> Name
 varNameOfBinder (PlainTV n) = n
 varNameOfBinder (KindedTV n _) = n
 
-conStuffOfConstructor :: Con -> Either Error (Name, [Name])
+conStuffOfConstructor :: Con -> Either Error (Name, ConTysFields)
 conStuffOfConstructor (NormalC conName st) = do
   conTys <- mapM (varNameOfType . snd) st
-  return (conName, conTys)
+  return (conName, ConTys conTys)
 conStuffOfConstructor (RecC conName vst) = do
-  conTys <- mapM (varNameOfType . thrd) vst
-  return (conName, conTys)
-    where thrd = \(_,_,x) -> x
+  conTys <- mapM nameType vst
+  return (conName, FieldTys conTys)
+    where nameType (n, _, VarT t) = Right (n, t)
+          nameType (_, _, x)      = Left ("Found a non-variable type " ++ show x)
+
 conStuffOfConstructor _ = Left "I can't deal with your constructor type"
 
 constructorOfConstructors :: [Con] -> Either Error Con
@@ -129,7 +145,7 @@ constructorOfConstructors [] = Left "I need at least one constructor"
 constructorOfConstructors _many =
   Left "I can't deal with more than one constructor"
 
-extractConstructorStuff :: [Con] -> Either Error (Name, [Name])
+extractConstructorStuff :: [Con] -> Either Error (Name, ConTysFields)
 extractConstructorStuff = conStuffOfConstructor <=< constructorOfConstructors
 
 instanceDefinition :: Name -> Int -> Int -> Name -> Name -> Q Dec
@@ -268,6 +284,26 @@ adaptorDefinition numConVars conName = flip FunD [clause]
         body = NormalB (theDimap `o` pN `o` toTupleE)
         wheres = [toTuple conName (toTupleN, numConVars),
                   fromTuple conName (fromTupleN, numConVars)]
+
+adaptorDefinitionFields :: Name -> [(Name, name)] -> Name -> Dec
+adaptorDefinitionFields conName fieldsTys adaptorName =
+  FunD adaptorName [clause]
+  where fields = map fst fieldsTys
+        -- TODO: vv f should be generated in Q
+        fP = VarP (mkName "f")
+        fE = VarE (mkName "f")
+        clause = Clause [fP] (NormalB body) []
+        body = case fields of
+          []             -> error "Can't handle no fields in constructor"
+          field1:fields' -> let first   = (VarE '(***$)) `AppE` (ConE conName)
+                                                         `AppE` (theLmap field1)
+                                app x y = (VarE '(****)) `AppE` x
+                                                         `AppE` (theLmap y)
+                            in foldl app first fields'
+
+        theLmap field = appEAll (VarE 'lmap)
+                                [ VarE field
+                                , VarE field `AppE` fE ]
 
 xTuple :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> (Name, Int) -> Dec
 xTuple patCon retCon (funN, numTyVars) = FunD funN [clause]
