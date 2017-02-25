@@ -9,7 +9,7 @@ import qualified Data.Profunctor as Profunctor
 import Data.Functor.Contravariant (Contravariant, contramap)
 import Control.Category (id)
 import Control.Arrow (Arrow, (***), (<<<), arr, (&&&))
-import Control.Applicative (Applicative, liftA2, pure)
+import Control.Applicative (Applicative, liftA2, pure, (<*>))
 import Data.Monoid (Monoid, mempty, (<>))
 import Data.Profunctor.Product.Newtype
 
@@ -63,46 +63,19 @@ import Data.Profunctor.Product.Tuples.TH (pTns, maxTupleSize, pNs)
 -- Still, at least we now have default implementations of the class
 -- methods, which makes things simpler.
 
--- | '(****)' is the generalisation of @Applicative@'s @\<*\>@.
+-- | '***$' is the generalisation of @Applicative@'s @\<$\>@.
 --
--- You will probably never need to use this.  @\<*\>@ should be
+-- '***$' = 'Profunctor.rmap', just like '<$>' = 'fmap'.
+--
+-- You will probably never need to use this; @\<$\>@ should be
 -- sufficient (if your 'ProductProfunctor' instance has also been given
--- an @Applicative@ instance).
-(****) :: ProductProfunctor p => p a (b -> c) -> p a b -> p a c
-(****) f x = Profunctor.dimap dup (uncurry ($)) (f ***! x)
-  where dup y = (y, y)
-
--- | '(***$)' is the generalisation of @Applicative@'s @\<$\>@.
---
--- '(***$)' = 'Profunctor.rmap', just like '<$>' = 'fmap'.
---
--- You will probably never need to use this.  @\<$\>@ should be
--- sufficient (if your 'ProductProfunctor' instance has also been given
--- an @Applicative@ instance).
+-- a @Functor@ instance).
 (***$) :: ProductProfunctor p => (b -> c) -> p a b -> p a c
 (***$) = Profunctor.rmap
 
--- | 'purePP' is the generalisation of @Applicative@'s @pure@,
---
--- You will probably never need to use this.  @pure@ should be
--- sufficient (if your 'ProductProfunctor' instance also has an
--- @Applicative@ instance).
-purePP :: ProductProfunctor p => b -> p a b
-purePP b = Profunctor.dimap (const ()) (const b) empty
-
-defaultEmpty :: Applicative (p ()) => p () ()
-defaultEmpty = pure ()
-
-defaultProfunctorProduct :: (Applicative (p (a, a')), Profunctor p)
-                         => p a b -> p a' b' -> p (a, a') (b, b')
-defaultProfunctorProduct p p' = liftA2 (,) (lmap fst p) (lmap snd p')
-
-defaultPoint :: Monoid (p ()) => p ()
-defaultPoint = mempty
-
 instance ProductProfunctor (->) where
-  empty  = id
-  (***!) = (***)
+  purePP = pure
+  (****) = (<*>)
 
 instance Arrow arr => ProductProfunctor (WrappedArrow arr) where
   empty  = id
@@ -140,6 +113,22 @@ pTns [0..maxTupleSize]
 pNs [0..maxTupleSize]
 
 -- { Deprecated stuff
+
+-- | You probably never want to use 'defaultEmpty' and it may be
+-- deprecated in a later version.
+defaultEmpty :: Applicative (p ()) => p () ()
+defaultEmpty = pure ()
+
+-- | You probably never want to use 'defaultProfunctorProduct' and it
+-- may be deprecated in a later version.
+defaultProfunctorProduct :: (Applicative (p (a, a')), Profunctor p)
+                         => p a b -> p a' b' -> p (a, a') (b, b')
+defaultProfunctorProduct p p' = liftA2 (,) (lmap fst p) (lmap snd p')
+
+-- | You probably never want to use 'defaultPoint' and it may be
+-- deprecated in a later version.
+defaultPoint :: Monoid (p ()) => p ()
+defaultPoint = mempty
 
 {-# DEPRECATED ProductContravariant "Use Data.Functor.Contravariant.Divisible instead" #-}
 class Contravariant f => ProductContravariant f where
