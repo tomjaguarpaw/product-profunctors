@@ -58,7 +58,7 @@ class Profunctor p => ProductProfunctor p where
   -- probably never need to use this; @pure@ should be sufficient (if
   -- your 'ProductProfunctor' instance also has an @Applicative@
   -- instance).
-  purePP :: ProductProfunctor p => b -> p a b
+  purePP :: b -> p a b
   purePP b = Profunctor.dimap (const ()) (const b) empty
 
   -- | '****' is the generalisation of @Applicative@'s @\<*\>@.
@@ -67,7 +67,7 @@ class Profunctor p => ProductProfunctor p where
   -- will probably never need to use this; @\<*\>@ should be
   -- sufficient (if your 'ProductProfunctor' instance has also been
   -- given an @Applicative@ instance).
-  (****) :: ProductProfunctor p => p a (b -> c) -> p a b -> p a c
+  (****) :: p a (b -> c) -> p a b -> p a c
   (****) f x = Profunctor.dimap dup (uncurry ($)) (f ***! x)
     where dup y = (y, y)
 
