@@ -86,7 +86,7 @@
 --
 -- If you prefer not to use Template Haskell then the generated code
 -- can be written by hand because it is quite simple.  It corresponds
--- very closely to what you would do in the more familiar
+-- very closely to what we would do in the more familiar
 -- @Applicative@ case.  For an @Applicative@ we would write
 --
 -- @
