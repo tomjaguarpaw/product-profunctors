@@ -18,7 +18,7 @@
 -- \"adaptor\" with the following splice:
 --
 -- @
---  $(makeAdaptorAndInstance \"pFoo\" ''Foo)
+-- \$(makeAdaptorAndInstance \"pFoo\" ''Foo)
 -- @
 --
 -- The adaptor for a type @Foo@ is by convention called @pFoo@, but in
@@ -26,7 +26,7 @@
 -- the name @pFoo@ yourself you can use
 --
 -- @
---  $(makeAdaptorAndInstance' ''Foo)
+-- \$(makeAdaptorAndInstance' ''Foo)
 -- @
 --
 -- and it will be named @pFoo@ automatically.
@@ -128,7 +128,7 @@ import qualified Language.Haskell.TH                   as TH
 -- | For example
 --
 -- @
--- $(makeAdaptorAndInstance \"pFoo\" ''Foo)
+-- \$(makeAdaptorAndInstance \"pFoo\" ''Foo)
 -- @
 --
 -- generates the 'Default' instance and the adaptor @pFoo@.
@@ -138,7 +138,7 @@ makeAdaptorAndInstance adaptorNameS = makeAdaptorAndInstanceI (Just adaptorNameS
 -- | For example
 --
 -- @
--- $(makeAdaptorAndInstance ''Foo)
+-- \$(makeAdaptorAndInstance ''Foo)
 -- @
 --
 -- generates the 'Default' instance and the adaptor @pFoo@.  The name
