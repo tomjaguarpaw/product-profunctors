@@ -34,8 +34,9 @@
 -- @pFoo@ will have the type
 --
 -- @
--- pFoo :: ProductProfunctor p =>
---         Foo (p a a') (p b b') (p c c') -> p (Foo a b c) (Foo a' b' c')
+-- pFoo :: ProductProfunctor p
+--      => Foo (p a a') (p b b') (p c c')
+--      -> p (Foo a b c) (Foo a' b' c')
 -- @
 --
 -- and the instance generated will be
