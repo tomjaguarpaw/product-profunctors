@@ -51,8 +51,9 @@
 -- (its implementation is given below).
 --
 -- @
--- pFooApplicative :: Applicative f =>
---         Foo (f a) (f b) (f c) -> f (Foo a b c)
+-- pFooApplicative :: Applicative f
+--                 => Foo (f a) (f b) (f c)
+--                 -> f (Foo a b c)
 -- @
 --
 -- The product-profunctor \"adaptor\" (in this case @pFoo@) is a
