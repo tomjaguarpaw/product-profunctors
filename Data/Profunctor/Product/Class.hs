@@ -10,8 +10,8 @@ import Data.Profunctor (Profunctor)
 --
 -- You will find it easier to see the similarity between
 -- 'ProductProfunctor' and 'Applicative' if you look at @purePP@,
--- @***$@, and @****@, which correspond to @pure@, @<$>@, and @<*>@
--- respectively.
+-- @***$@, and @****@, which correspond to @pure@, @\<$\>@, and
+-- @\<*\>@ respectively.
 --
 -- It's easy to make instances of 'ProductProfunctor'.  Just make
 -- instances
