@@ -25,6 +25,7 @@ library
                  , contravariant >= 0.4 && < 1.5
                  , tagged >= 0.0 && < 1
                  , template-haskell
+                 , void >= 0.0 && < 1
   exposed-modules: Data.Profunctor.Product,
                    Data.Profunctor.Product.Default,
                    Data.Profunctor.Product.Flatten,
