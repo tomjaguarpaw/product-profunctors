@@ -13,6 +13,7 @@ import Control.Arrow (Arrow, (***), (<<<), arr, (&&&), ArrowChoice, (+++))
 import Control.Applicative (Applicative, liftA2, pure, (<*>), Alternative, (<|>))
 import Data.Monoid (Monoid, mempty, (<>))
 import Data.Tagged
+import Data.Void (Void, absurd)
 import Data.Bifunctor.Biff
 import Data.Bifunctor.Clown
 import Data.Bifunctor.Joker
@@ -164,6 +165,33 @@ list p = Profunctor.dimap fromList toList (empty +++! (p ***! list p))
 -- (without the requirement to also be Divisible).
 
 -- }
+
+
+class Profunctor p => ProfunctorEnd p where
+  end :: p a a
+
+instance ProfunctorEnd (->) where
+  end = id
+
+instance Arrow arr => ProfunctorEnd (WrappedArrow arr) where
+  end = id
+
+instance Applicative f => ProfunctorEnd (Star f) where
+  end = Star pure
+
+instance Decidable f => ProfunctorEnd (Clown f) where
+  end = Clown conquer
+
+instance (ProfunctorEnd p, ProfunctorEnd q) => ProfunctorEnd (Product p q) where
+  end = Pair end end
+
+instance (Applicative f, ProfunctorEnd p) => ProfunctorEnd (Tannen f p) where
+  end = Tannen (pure end)
+
+
+zero :: ProfunctorEnd p => p Void Void
+zero = Profunctor.lmap absurd end
+
 
 pTns [0..maxTupleSize]
 
