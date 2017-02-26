@@ -11,6 +11,7 @@ import Data.Functor.Contravariant.Divisible (Divisible(..), divided, Decidable, 
 import Control.Category (id)
 import Control.Arrow (Arrow, (***), (<<<), arr, (&&&), ArrowChoice, (+++))
 import Control.Applicative (Applicative, liftA2, pure, (<*>), Alternative, (<|>))
+import qualified Control.Applicative as Applicative
 import Data.Monoid (Monoid, mempty, (<>))
 import Data.Tagged
 import Data.Void (Void, absurd)
@@ -178,6 +179,9 @@ instance Arrow arr => ProfunctorEnd (WrappedArrow arr) where
 
 instance Applicative f => ProfunctorEnd (Star f) where
   end = Star pure
+
+instance Alternative f => ProfunctorEnd (Joker f) where
+  end = Joker Applicative.empty
 
 instance Decidable f => ProfunctorEnd (Clown f) where
   end = Clown conquer
