@@ -1,16 +1,23 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, FlexibleInstances #-}
 module Data.Profunctor.Product (module Data.Profunctor.Product.Class,
                                 module Data.Profunctor.Product.Newtype,
                                 module Data.Profunctor.Product) where
 
 import Prelude hiding (id)
-import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow)
+import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow, Star, Costar)
 import qualified Data.Profunctor as Profunctor
 import Data.Functor.Contravariant (Contravariant, contramap)
+import Data.Functor.Contravariant.Divisible (Divisible(..), divided)
 import Control.Category (id)
 import Control.Arrow (Arrow, (***), (<<<), arr, (&&&))
 import Control.Applicative (Applicative, liftA2, pure, (<*>))
 import Data.Monoid (Monoid, mempty, (<>))
+import Data.Tagged
+import Data.Bifunctor.Biff
+import Data.Bifunctor.Clown
+import Data.Bifunctor.Joker
+import Data.Bifunctor.Product
+import Data.Bifunctor.Tannen
 import Data.Profunctor.Product.Newtype
 
 import Data.Profunctor.Product.Class
@@ -80,6 +87,38 @@ instance ProductProfunctor (->) where
 instance Arrow arr => ProductProfunctor (WrappedArrow arr) where
   empty  = id
   (***!) = (***)
+
+instance ProductProfunctor Tagged where
+  purePP = pure
+  (****) = (<*>)
+
+instance Applicative f => ProductProfunctor (Star f) where
+  purePP = pure
+  (****) = (<*>)
+
+instance Functor f => ProductProfunctor (Costar f) where
+  purePP = pure
+  (****) = (<*>)
+
+instance (Functor f, Applicative g) => ProductProfunctor (Biff (->) f g) where
+  purePP = Biff . const . pure
+  Biff abc **** Biff ab = Biff $ \a -> abc a <*> ab a
+
+instance Applicative f => ProductProfunctor (Joker f) where
+  purePP = Joker . pure
+  Joker bc **** Joker b = Joker $ bc <*> b
+
+instance Divisible f => ProductProfunctor (Clown f) where
+  purePP _ = Clown conquer
+  Clown l **** Clown r = Clown $ divide (\a -> (a, a)) l r
+
+instance (ProductProfunctor p, ProductProfunctor q) => ProductProfunctor (Product p q) where
+  purePP a = Pair (purePP a) (purePP a)
+  Pair l1 l2 **** Pair r1 r2 = Pair (l1 **** r1) (l2 **** r2)
+
+instance (Applicative f, ProductProfunctor p) => ProductProfunctor (Tannen f p) where
+  purePP = Tannen . pure . purePP
+  Tannen f **** Tannen a = Tannen $ liftA2 (****) f a
 
 -- { Sum
 
