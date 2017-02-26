@@ -4,13 +4,13 @@ module Data.Profunctor.Product (module Data.Profunctor.Product.Class,
                                 module Data.Profunctor.Product) where
 
 import Prelude hiding (id)
-import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow, Star, Costar)
+import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow, Star(..), Costar)
 import qualified Data.Profunctor as Profunctor
 import Data.Functor.Contravariant (Contravariant, contramap)
-import Data.Functor.Contravariant.Divisible (Divisible(..), divided)
+import Data.Functor.Contravariant.Divisible (Divisible(..), divided, Decidable, chosen)
 import Control.Category (id)
 import Control.Arrow (Arrow, (***), (<<<), arr, (&&&))
-import Control.Applicative (Applicative, liftA2, pure, (<*>))
+import Control.Applicative (Applicative, liftA2, pure, (<*>), Alternative, (<|>))
 import Data.Monoid (Monoid, mempty, (<>))
 import Data.Tagged
 import Data.Bifunctor.Biff
@@ -129,6 +129,21 @@ class Profunctor p => SumProfunctor p where
 
 instance SumProfunctor (->) where
   f +++! g = either (Left . f) (Right . g)
+
+instance Applicative f => SumProfunctor (Star f) where
+  Star f +++! Star g = Star $ either (fmap Left . f) (fmap Right . g)
+
+instance Alternative f => SumProfunctor (Joker f) where
+  Joker f +++! Joker g = Joker $ Left <$> f <|> Right <$> g
+
+instance Decidable f => SumProfunctor (Clown f) where
+  Clown f +++! Clown g = Clown $ chosen f g
+
+instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Product p q) where
+  Pair l1 l2 +++! Pair r1 r2 = Pair (l1 +++! r1) (l2 +++! r2)
+
+instance (Applicative f, SumProfunctor p) => SumProfunctor (Tannen f p) where
+  Tannen l +++! Tannen r = Tannen $ liftA2 (+++!) l r
 
 -- | A generalisation of @map :: (a -> b) -> [a] -> [b]@.  It is also,
 -- in spirit, a generalisation of @traverse :: (a -> f b) -> [a] -> f
