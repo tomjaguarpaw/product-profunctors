@@ -1,16 +1,29 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE FlexibleInstances #-}
+
 module Data.Profunctor.Product (module Data.Profunctor.Product.Class,
                                 module Data.Profunctor.Product.Newtype,
                                 module Data.Profunctor.Product) where
 
 import Prelude hiding (id)
-import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow)
+import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow, Star(..), Costar)
 import qualified Data.Profunctor as Profunctor
 import Data.Functor.Contravariant (Contravariant, contramap)
+import Data.Functor.Contravariant.Divisible (Divisible(..), divided, Decidable, chosen)
 import Control.Category (id)
-import Control.Arrow (Arrow, (***), (<<<), arr, (&&&))
-import Control.Applicative (Applicative, liftA2, pure, (<*>))
+import Control.Arrow (Arrow, (***), (<<<), arr, (&&&), ArrowChoice, (+++))
+import Control.Applicative (Applicative, liftA2, pure, (<*>), Alternative, (<|>), (<$>))
+import qualified Control.Applicative as Applicative
+
 import Data.Monoid (Monoid, mempty, (<>))
+import Data.Tagged
+
+import Data.Bifunctor.Biff
+import Data.Bifunctor.Clown
+import Data.Bifunctor.Joker
+import Data.Bifunctor.Product
+import Data.Bifunctor.Tannen
+
 import Data.Profunctor.Product.Newtype
 
 import Data.Profunctor.Product.Class
@@ -81,6 +94,38 @@ instance Arrow arr => ProductProfunctor (WrappedArrow arr) where
   empty  = id
   (***!) = (***)
 
+instance ProductProfunctor Tagged where
+  purePP = pure
+  (****) = (<*>)
+
+instance Applicative f => ProductProfunctor (Star f) where
+  purePP = pure
+  (****) = (<*>)
+
+instance Functor f => ProductProfunctor (Costar f) where
+  purePP = pure
+  (****) = (<*>)
+
+instance (Functor f, Applicative g) => ProductProfunctor (Biff (->) f g) where
+  purePP = Biff . const . pure
+  Biff abc **** Biff ab = Biff $ \a -> abc a <*> ab a
+
+instance Applicative f => ProductProfunctor (Joker f) where
+  purePP = Joker . pure
+  Joker bc **** Joker b = Joker $ bc <*> b
+
+instance Divisible f => ProductProfunctor (Clown f) where
+  purePP _ = Clown conquer
+  Clown l **** Clown r = Clown $ divide (\a -> (a, a)) l r
+
+instance (ProductProfunctor p, ProductProfunctor q) => ProductProfunctor (Product p q) where
+  purePP a = Pair (purePP a) (purePP a)
+  Pair l1 l2 **** Pair r1 r2 = Pair (l1 **** r1) (l2 **** r2)
+
+instance (Applicative f, ProductProfunctor p) => ProductProfunctor (Tannen f p) where
+  purePP = Tannen . pure . purePP
+  Tannen f **** Tannen a = Tannen $ liftA2 (****) f a
+
 -- { Sum
 
 class Profunctor p => SumProfunctor p where
@@ -90,6 +135,24 @@ class Profunctor p => SumProfunctor p where
 
 instance SumProfunctor (->) where
   f +++! g = either (Left . f) (Right . g)
+
+instance ArrowChoice arr => SumProfunctor (WrappedArrow arr) where
+  (+++!) = (+++)
+
+instance Applicative f => SumProfunctor (Star f) where
+  Star f +++! Star g = Star $ either (fmap Left . f) (fmap Right . g)
+
+instance Alternative f => SumProfunctor (Joker f) where
+  Joker f +++! Joker g = Joker $ Left <$> f <|> Right <$> g
+
+instance Decidable f => SumProfunctor (Clown f) where
+  Clown f +++! Clown g = Clown $ chosen f g
+
+instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Product p q) where
+  Pair l1 l2 +++! Pair r1 r2 = Pair (l1 +++! r1) (l2 +++! r2)
+
+instance (Applicative f, SumProfunctor p) => SumProfunctor (Tannen f p) where
+  Tannen l +++! Tannen r = Tannen $ liftA2 (+++!) l r
 
 -- | A generalisation of @map :: (a -> b) -> [a] -> [b]@.  It is also,
 -- in spirit, a generalisation of @traverse :: (a -> f b) -> [a] -> f
