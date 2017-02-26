@@ -9,7 +9,7 @@ import qualified Data.Profunctor as Profunctor
 import Data.Functor.Contravariant (Contravariant, contramap)
 import Data.Functor.Contravariant.Divisible (Divisible(..), divided, Decidable, chosen)
 import Control.Category (id)
-import Control.Arrow (Arrow, (***), (<<<), arr, (&&&))
+import Control.Arrow (Arrow, (***), (<<<), arr, (&&&), ArrowChoice, (+++))
 import Control.Applicative (Applicative, liftA2, pure, (<*>), Alternative, (<|>))
 import Data.Monoid (Monoid, mempty, (<>))
 import Data.Tagged
@@ -129,6 +129,9 @@ class Profunctor p => SumProfunctor p where
 
 instance SumProfunctor (->) where
   f +++! g = either (Left . f) (Right . g)
+
+instance ArrowChoice arr => SumProfunctor (WrappedArrow arr) where
+  (+++!) = (+++)
 
 instance Applicative f => SumProfunctor (Star f) where
   Star f +++! Star g = Star $ either (fmap Left . f) (fmap Right . g)
