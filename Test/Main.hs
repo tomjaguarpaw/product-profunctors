@@ -1,4 +1,4 @@
-import CheckTypes
+import CheckTypes ()
 
 main :: IO ()
 main = return ()
