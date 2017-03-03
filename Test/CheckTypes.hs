@@ -1,7 +1,11 @@
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeOperators #-}
+
 module CheckTypes where
 
 import Data.Profunctor.Product (ProductProfunctor)
 import Data.Profunctor.Product.Default (Default, def)
+import Data.Profunctor.Product.Adaptor
 
 import Definitions (Data2, Data3, Record2, Record3,
                     RecordDefaultName,
@@ -50,3 +54,26 @@ instanceRecord3 = def
 
 defaultNameGenerated :: ProductProfunctor p => RecordDefaultName (p x x') (p y y') -> p (RecordDefaultName x y) (RecordDefaultName x' y')
 defaultNameGenerated = pRecordDefaultName
+
+-- We similarly test the type of the generic adaptor.
+
+pData2'' :: ProductProfunctor p =>
+           Data2 (p a a') (p b b') -> p (Data2 a b) (Data2 a' b')
+pData2'' = genericAdaptor
+
+pData3'' :: ProductProfunctor p =>
+           Data3 (p a a') (p b b') (p c c') -> p (Data3 a b c) (Data3 a' b' c')
+pData3'' = genericAdaptor
+
+data a :~: b where
+  Refl :: a :~: a
+
+pData2TypeEq
+  :: (Data2 (p a a') (p b b') -> p (Data2 a b) (Data2 a' b'))
+  :~: Adaptor p (Data2 (p a a') (p b b'))
+pData2TypeEq = Refl
+
+pData3TypeEq
+  :: (Data3 (p a a') (p b b') (p c c') -> p (Data3 a b c) (Data3 a' b' c'))
+  :~: Adaptor p (Data3 (p a a') (p b b') (p c c'))
+pData3TypeEq = Refl
