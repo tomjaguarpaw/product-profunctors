@@ -26,8 +26,10 @@ library
                  , tagged >= 0.0 && < 1
                  , template-haskell
   exposed-modules: Data.Profunctor.Product,
+                   Data.Profunctor.Product.Adaptor
                    Data.Profunctor.Product.Default,
                    Data.Profunctor.Product.Flatten,
+                   Data.Profunctor.Product.Internal.Adaptor
                    Data.Profunctor.Product.Internal.TH,
                    Data.Profunctor.Product.Newtype,
                    Data.Profunctor.Product.TH,
