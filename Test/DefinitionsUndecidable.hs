@@ -4,6 +4,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE UndecidableInstances  #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 
 module DefinitionsUndecidable where
 
