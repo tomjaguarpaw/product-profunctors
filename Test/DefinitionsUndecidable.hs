@@ -21,12 +21,8 @@ data MonomorphicProduct = Product Int Bool            deriving Generic
 data MonomorphicSum     = A Int | B Bool              deriving Generic
 data MonomorphicBoth    = Both1 Char | Both2 Int Bool deriving Generic
 
-instance (ProductProfunctor p, Default p Bool Bool, Default p Int Int)
-         => Default p MonomorphicProduct MonomorphicProduct
+instance _ => Default p MonomorphicProduct MonomorphicProduct
 
-instance (SumProfunctor p, Default p Bool Bool, Default p Int Int)
-         => Default p MonomorphicSum MonomorphicSum
+instance _ => Default p MonomorphicSum MonomorphicSum
 
-instance (ProductProfunctor p, SumProfunctor p,
-          Default p Bool Bool, Default p Char Char, Default p Int Int)
-         => Default p MonomorphicBoth MonomorphicBoth
+instance _ => Default p MonomorphicBoth MonomorphicBoth
