@@ -21,7 +21,7 @@ class GDefault p f g where
 instance ProductProfunctor p => GDefault p U1 U1 where
   gdef1 = dimap (const ()) (const U1) empty
 
-instance (ProductProfunctor p, GDefault p f g) => GDefault p (M1 i c f) (M1 i c g) where
+instance (Profunctor p, GDefault p f g) => GDefault p (M1 i c f) (M1 i c g) where
   gdef1 = dimap unM1 M1 gdef1
 
 instance (Profunctor p, Default p c c') => GDefault p (K1 i c) (K1 i c') where
