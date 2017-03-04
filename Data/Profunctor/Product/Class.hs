@@ -81,3 +81,8 @@ class Profunctor p => ProductProfunctor p where
   (***!) :: p a b -> p a' b' -> p (a, a') (b, b')
   f ***! g = (,) `Profunctor.rmap` Profunctor.lmap fst f
                   **** Profunctor.lmap snd g
+
+class Profunctor p => SumProfunctor p where
+  -- Morally we should have 'zero :: p Void Void' but I don't think
+  -- that would actually be useful
+  (+++!) :: p a b -> p a' b' -> p (Either a a') (Either b b')
