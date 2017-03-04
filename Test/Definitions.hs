@@ -30,7 +30,7 @@ $(makeAdaptorAndInstance "pData2" ''Data2)
 $(makeAdaptorAndInstance "pData3" ''Data3)
 $(makeAdaptorAndInstance "pRecord2" ''Record2)
 $(makeAdaptorAndInstance "pRecord3" ''Record3)
-makeAdaptorAndInstance' ''RecordDefaultName
+$(makeAdaptorAndInstance' ''RecordDefaultName)
 
 instance Unzippable Data2
 instance Unzippable Data3
