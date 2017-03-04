@@ -52,7 +52,8 @@ instanceRecord3 :: (ProductProfunctor p,
                  => p (Record3 a b c) (Record3 a' b' c')
 instanceRecord3 = def
 
-defaultNameGenerated :: ProductProfunctor p => RecordDefaultName (p x x') (p y y') -> p (RecordDefaultName x y) (RecordDefaultName x' y')
+defaultNameGenerated :: ProductProfunctor p => RecordDefaultName (p x x') (p y y')
+                     -> p (RecordDefaultName x y) (RecordDefaultName x' y')
 defaultNameGenerated = pRecordDefaultName
 
 -- We similarly test the type of the generic adaptor.
