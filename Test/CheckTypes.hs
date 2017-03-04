@@ -11,6 +11,7 @@ import Definitions (Data2, Data3, Record2, Record3,
                     RecordDefaultName,
                     pData2, pData3, pRecord2, pRecord3,
                     pRecordDefaultName)
+import DefinitionsUndecidable ()
 
 -- The test suite checks that the TH derived adaptor is of the correct
 -- type and that the typeclass instance has been generated.  We don't
