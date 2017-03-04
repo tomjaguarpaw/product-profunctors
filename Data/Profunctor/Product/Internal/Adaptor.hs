@@ -12,9 +12,11 @@
 
 module Data.Profunctor.Product.Internal.Adaptor where
 
-import Data.Profunctor
-import Data.Profunctor.Product
-import GHC.Generics
+import           Data.Profunctor         (Profunctor, dimap, lmap)
+import           Data.Profunctor.Product (ProductProfunctor, (****), (***$))
+import           GHC.Generics            (from, to,
+                                          M1(M1), K1(K1), (:*:)((:*:)),
+                                          Generic, Rep)
 
 -- * Exported
 
