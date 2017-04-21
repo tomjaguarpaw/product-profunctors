@@ -33,4 +33,93 @@ instance (Profunctor p, Default p a b) => Default p (Tagged s a) (Tagged s' b)
   where
     def = dimap (\(Tagged a) -> a) Tagged def
 
+instance (Profunctor p, Default p a (Maybe b)) =>
+    Default p (Const a c) (Maybe (Const b c'))
+  where
+    def = dimap (\(Const a) -> a) (fmap Const) def
+
+instance (Profunctor p, Default p (Maybe a) b) =>
+    Default p (Maybe (Const a c)) (Const b c')
+  where
+    def = dimap (fmap (\(Const a) -> a)) Const def
+
+instance (Profunctor p, Default p (Maybe a) (Maybe b)) =>
+    Default p (Maybe (Const a c)) (Maybe (Const b c'))
+  where
+    def = dimap (fmap (\(Const a) -> a)) (fmap Const) def
+
+instance (Profunctor p, Default p a (Maybe b)) =>
+    Default p (Identity a) (Maybe (Identity b))
+  where
+    def = dimap (\(Identity a) -> a) (fmap Identity) def
+
+instance (Profunctor p, Default p (Maybe a) b) =>
+    Default p (Maybe (Identity a)) (Identity b)
+  where
+    def = dimap (fmap (\(Identity a) -> a)) Identity def
+
+instance (Profunctor p, Default p (Maybe a) (Maybe b)) =>
+    Default p (Maybe (Identity a)) (Maybe (Identity b))
+  where
+    def = dimap (fmap (\(Identity a) -> a)) (fmap Identity) def
+
+instance (Profunctor p, Default p a (Maybe b)) =>
+    Default p (Tagged s a) (Maybe (Tagged s' b))
+  where
+    def = dimap (\(Tagged a) -> a) (fmap Tagged) def
+
+instance (Profunctor p, Default p (Maybe a) b) =>
+    Default p (Maybe (Tagged s a)) (Tagged s' b)
+  where
+    def = dimap (fmap (\(Tagged a) -> a)) Tagged def
+
+instance (Profunctor p, Default p (Maybe a) (Maybe b)) =>
+    Default p (Maybe (Tagged s a)) (Maybe (Tagged s' b))
+  where
+    def = dimap (fmap (\(Tagged a) -> a)) (fmap Tagged) def
+
+instance (Profunctor p, Default p a [b]) => Default p (Const a c) [Const b c']
+  where
+    def = dimap (\(Const a) -> a) (fmap Const) def
+
+instance (Profunctor p, Default p [a] b) => Default p [Const a c] (Const b c')
+  where
+    def = dimap (fmap (\(Const a) -> a)) Const def
+
+instance (Profunctor p, Default p [a] [b]) =>
+    Default p [Const a c] [Const b c']
+  where
+    def = dimap (fmap (\(Const a) -> a)) (fmap Const) def
+
+instance (Profunctor p, Default p a [b]) =>
+    Default p (Identity a) [Identity b]
+  where
+    def = dimap (\(Identity a) -> a) (fmap Identity) def
+
+instance (Profunctor p, Default p [a] b) =>
+    Default p [Identity a] (Identity b)
+  where
+    def = dimap (fmap (\(Identity a) -> a)) Identity def
+
+instance (Profunctor p, Default p [a] [b]) =>
+    Default p [Identity a] [Identity b]
+  where
+    def = dimap (fmap (\(Identity a) -> a)) (fmap Identity) def
+
+instance (Profunctor p, Default p a [b]) =>
+    Default p (Tagged s a) [Tagged s' b]
+  where
+    def = dimap (\(Tagged a) -> a) (fmap Tagged) def
+
+instance (Profunctor p, Default p [a] b) =>
+    Default p [Tagged s a] (Tagged s' b)
+  where
+    def = dimap (fmap (\(Tagged a) -> a)) Tagged def
+
+instance (Profunctor p, Default p [a] [b]) =>
+    Default p [Tagged s a] [Tagged s' b]
+  where
+    def = dimap (fmap (\(Tagged a) -> a)) (fmap Tagged) def
+
+
 mkDefaultNs (0:[2..maxTupleSize])
