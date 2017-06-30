@@ -1,4 +1,4 @@
-# product-profunctors [![Hackage version](https://img.shields.io/hackage/v/product-profunctors.svg?style=flat)](https://hackage.haskell.org/package/product-profunctors) [![Build Status](https://img.shields.io/travis/tomjaguarpaw/product-profunctors.svg?style=flat)](https://travis-ci.org/tomjaguarpaw/product-profunctors)
+# product-profunctors [![Hackage version](https://img.shields.io/hackage/v/product-profunctors.svg?label=Hackage)](https://hackage.haskell.org/package/product-profunctors) [![Linux Build Status](https://img.shields.io/travis/tomjaguarpaw/product-profunctors.svg?label=Linux%20build)](https://travis-ci.org/tomjaguarpaw/product-profunctors)
 
 ## Backup maintainers
 
