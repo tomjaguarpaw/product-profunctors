@@ -7,6 +7,7 @@ module Data.Profunctor.Product (module Data.Profunctor.Product.Class,
 import Prelude hiding (id)
 import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow, Star(..), Costar)
 import qualified Data.Profunctor as Profunctor
+import Data.Profunctor.Composition (Procompose(..))
 import Data.Functor.Contravariant (Contravariant, contramap)
 import Data.Functor.Contravariant.Divisible (Divisible(..), Decidable, chosen)
 import Control.Category (id)
@@ -104,6 +105,11 @@ instance Functor f => ProductProfunctor (Costar f) where
   purePP = pure
   (****) = (<*>)
 
+instance (ProductProfunctor p, ProductProfunctor q) => ProductProfunctor (Procompose p q) where
+  purePP a = Procompose (purePP a) (purePP ())
+  Procompose pf qf **** Procompose pa qa =
+    Procompose (lmap fst pf **** lmap snd pa) ((,) ***$ qf **** qa)
+
 instance (Functor f, Applicative g, ProductProfunctor p) => ProductProfunctor (Biff p f g) where
   purePP = Biff . purePP . pure
   Biff abc **** Biff ab = Biff $ (<*>) ***$ abc **** ab
@@ -134,6 +140,9 @@ instance ArrowChoice arr => SumProfunctor (WrappedArrow arr) where
 
 instance Applicative f => SumProfunctor (Star f) where
   Star f +++! Star g = Star $ either (fmap Left . f) (fmap Right . g)
+
+instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Procompose p q) where
+  Procompose pa qa +++! Procompose pb qb = Procompose (pa +++! pb) (qa +++! qb)
 
 instance Alternative f => SumProfunctor (Joker f) where
   Joker f +++! Joker g = Joker $ Left <$> f <|> Right <$> g
