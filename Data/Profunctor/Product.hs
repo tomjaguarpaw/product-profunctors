@@ -1,15 +1,17 @@
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE TemplateHaskell      #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Data.Profunctor.Product (module Data.Profunctor.Product.Class,
                                 module Data.Profunctor.Product.Newtype,
                                 module Data.Profunctor.Product) where
 
 import Prelude hiding (id)
-import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow, Star(..), Costar)
+import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow, Star(..), Costar(..))
 import qualified Data.Profunctor as Profunctor
 import Data.Profunctor.Composition (Procompose(..))
 import Data.Functor.Contravariant (Contravariant, contramap)
 import Data.Functor.Contravariant.Divisible (Divisible(..), Decidable, chosen)
+import Data.Functor.Adjunction (Adjunction, cozipL)
 import Control.Category (id)
 import Control.Arrow (Arrow, (***), (<<<), arr, (&&&), ArrowChoice, (+++))
 import Control.Applicative (Applicative, liftA2, pure, (<*>), Alternative, (<|>), (<$>))
@@ -143,6 +145,9 @@ instance Applicative f => SumProfunctor (Star f) where
 
 instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Procompose p q) where
   Procompose pa qa +++! Procompose pb qb = Procompose (pa +++! pb) (qa +++! qb)
+
+instance Adjunction f u => SumProfunctor (Costar f) where
+  Costar f +++! Costar g = Costar $ (f +++! g) . cozipL
 
 instance Alternative f => SumProfunctor (Joker f) where
   Joker f +++! Joker g = Joker $ Left <$> f <|> Right <$> g
