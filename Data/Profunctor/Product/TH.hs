@@ -138,7 +138,7 @@ makeAdaptorAndInstance adaptorNameS = makeAdaptorAndInstanceI (Just adaptorNameS
 -- | For example
 --
 -- @
--- \$(makeAdaptorAndInstance ''Foo)
+-- \$(makeAdaptorAndInstance' ''Foo)
 -- @
 --
 -- generates the 'Default' instance and the adaptor @pFoo@.  The name
