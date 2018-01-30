@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 
 module Definitions where
 
@@ -44,14 +45,10 @@ $(makeAdaptorAndInstance' ''RecordDefaultName)
 instance Unzippable Data2
 instance Unzippable Data3
 
-instance (ProductProfunctor p, Default p a a', Default p b b', Default p c c')
-      => Default p (DataGeneric a b c) (DataGeneric a' b' c')
+instance _ => Default p (DataGeneric a b c) (DataGeneric a' b' c')
 
-instance (ProductProfunctor p, Default p a a', Default p b b', Default p c c')
-      => Default p (RecordGeneric a b c) (RecordGeneric a' b' c')
+instance _ => Default p (RecordGeneric a b c) (RecordGeneric a' b' c')
 
-instance (SumProfunctor p, Default p a a', Default p b b')
-      => Default p (SumGeneric a b) (SumGeneric a' b')
+instance _ => Default p (SumGeneric a b) (SumGeneric a' b')
 
-instance (ProductProfunctor p, SumProfunctor p, Default p a a', Default p b b', Default p c c')
-      => Default p (ProductAndSumGeneric a b c) (ProductAndSumGeneric a' b' c')
+instance _ => Default p (ProductAndSumGeneric a b c) (ProductAndSumGeneric a' b' c')
