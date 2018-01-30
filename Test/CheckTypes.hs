@@ -59,13 +59,21 @@ defaultNameGenerated = pRecordDefaultName
 
 -- We similarly test the type of the generic adaptor.
 
-pData2'' :: ProductProfunctor p =>
+pData2G :: ProductProfunctor p =>
            Data2 (p a a') (p b b') -> p (Data2 a b) (Data2 a' b')
-pData2'' = genericAdaptor
+pData2G = genericAdaptor
 
-pData3'' :: ProductProfunctor p =>
+pData3G :: ProductProfunctor p =>
            Data3 (p a a') (p b b') (p c c') -> p (Data3 a b c) (Data3 a' b' c')
-pData3'' = genericAdaptor
+pData3G = genericAdaptor
+
+pRecord2G :: ProductProfunctor p
+          => Record2 (p a a') (p b b') -> p (Record2 a b) (Record2 a' b')
+pRecord2G = pRecord2
+
+pRecord3G :: ProductProfunctor p
+          => Record3 (p a a') (p b b') (p c c') -> p (Record3 a b c) (Record3 a' b' c')
+pRecord3G = pRecord3
 
 data a :~: b where
   Refl :: a :~: a
