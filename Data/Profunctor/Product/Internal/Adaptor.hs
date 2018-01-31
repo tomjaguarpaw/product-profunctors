@@ -3,6 +3,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RankNTypes #-}
@@ -109,7 +110,7 @@ type instance GUnzip z (K1 i c) = K1 i (Project z c)
 type instance GUnzip z (M1 i c f) = M1 i c (GUnzip z f)
 
 -- | Adaptors over generic representations of types.
-class Profunctor p => GAdaptor p f where
+class Profunctor p => GAdaptor p f | f -> p where
   gAdaptor :: f a -> p (GUnzip 'Fst f a) (GUnzip 'Snd f a)
 
 instance
