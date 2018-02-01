@@ -179,54 +179,17 @@ pNs [0..maxTupleSize]
 
 -- { Deprecated stuff
 
--- | You probably never want to use 'defaultEmpty' and it may be
--- deprecated in a later version.
+{-# DEPRECATED defaultEmpty "Use pure () instead" #-}
 defaultEmpty :: Applicative (p ()) => p () ()
 defaultEmpty = pure ()
 
--- | You probably never want to use 'defaultProfunctorProduct' and it
--- may be deprecated in a later version.
+{-# DEPRECATED defaultProfunctorProduct "Use \\p p' -> liftA2 (,) (lmap fst p) (lmap snd p') instead" #-}
 defaultProfunctorProduct :: (Applicative (p (a, a')), Profunctor p)
                          => p a b -> p a' b' -> p (a, a') (b, b')
 defaultProfunctorProduct p p' = liftA2 (,) (lmap fst p) (lmap snd p')
 
--- | You probably never want to use 'defaultPoint' and it may be
--- deprecated in a later version.
+{-# DEPRECATED defaultPoint "Use mempty instead" #-}
 defaultPoint :: Monoid (p ()) => p ()
 defaultPoint = mempty
-
-{-# DEPRECATED ProductContravariant "Use Data.Functor.Contravariant.Divisible instead" #-}
-class Contravariant f => ProductContravariant f where
-  point  :: f ()
-  (***<) :: f a -> f b -> f (a, b)
-
-{-# DEPRECATED AndArrow "If you really need this, file an issue. It will go soon." #-}
-data AndArrow arr z a b = AndArrow { runAndArrow :: arr z b }
-
-instance Arrow arr => Profunctor (AndArrow arr z) where
-  dimap _ f (AndArrow g) = AndArrow (arr f <<< g)
-
-instance Arrow arr => ProductProfunctor (AndArrow arr z) where
-  empty = AndArrow (arr (const ()))
-  (AndArrow f) ***! (AndArrow f') = AndArrow (f &&& f')
-
-{-# DEPRECATED defaultContravariantProduct "defaultContravariantProduct will be removed" #-}
-defaultContravariantProduct :: (Contravariant f, Monoid (f (a, b)))
-                            => f a -> f b -> f (a, b)
-defaultContravariantProduct p p' = contramap fst p <> contramap snd p'
-
-{-# DEPRECATED PPOfContravariant "PPOfContravariant will be removed" #-}
-newtype PPOfContravariant f a b = PPOfContravariant (f a)
-
-{-# DEPRECATED unPPOfContravariant "unPPOfContravariant will be removed" #-}
-unPPOfContravariant :: PPOfContravariant c a a -> c a
-unPPOfContravariant (PPOfContravariant pp) = pp
-
-instance Contravariant f => Profunctor (PPOfContravariant f) where
-  dimap f _ (PPOfContravariant p) = PPOfContravariant (contramap f p)
-
-instance ProductContravariant f => ProductProfunctor (PPOfContravariant f) where
-  empty = PPOfContravariant point
-  PPOfContravariant f ***! PPOfContravariant f' = PPOfContravariant (f ***< f')
 
 -- }

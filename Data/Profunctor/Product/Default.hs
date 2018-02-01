@@ -17,10 +17,6 @@ import Data.Tagged (Tagged (Tagged))
 import Data.Profunctor.Product.Default.Class
 import Data.Profunctor.Product.Tuples.TH (mkDefaultNs, maxTupleSize)
 
--- | This will be deprecated in a future version
-cdef :: Default (PPOfContravariant u) a a => u a
-cdef = unPPOfContravariant def
-
 instance (Profunctor p, Default p a b) => Default p (Identity a) (Identity b)
   where
     def = dimap (\(Identity a) -> a) Identity def

@@ -1,3 +1,10 @@
+# 0.10.0.0
+
+* Removed `ProductContravariant`, `AndArrow`, `defaultContravariantProduct`,
+  `PPOfContravariant`, `unPPOfContravariant`, `cdef`
+
+* Deprecated `defaultEmpty`, `defaultProfunctorProduct`, `defaultPoint`
+
 # 0.9.0.0
 
 * Added more `ProductProfunctor/SumProfunctor` instances including for
