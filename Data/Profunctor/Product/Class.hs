@@ -9,10 +9,8 @@ import qualified Data.Profunctor as Profunctor
 -- the right.  Additionally it has an "input" (contravariant) type
 -- parameter on the left.
 --
--- You will find it easier to see the correspondence between
--- 'ProductProfunctor' and 'Applicative' if you look at @purePP@,
--- @(***$)@, and @(****)@, which correspond to @pure@, @(\<$\>)@, and
--- @(\<*\>)@ respectively.
+-- 'ProductProfunctor' corresponds closely to 'Applicative' as laid
+-- out in the following table.
 --
 -- @
 -- | Correspondence between Applicative and ProductProfunctor
