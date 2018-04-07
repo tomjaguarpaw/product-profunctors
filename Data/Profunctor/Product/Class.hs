@@ -2,30 +2,37 @@ module Data.Profunctor.Product.Class where
 
 import           Data.Profunctor (Profunctor)
 import qualified Data.Profunctor as Profunctor
+import qualified Control.Applicative
+--- ^^ This is a redundant import but it's needeed for Haddock links.
+-- AIUI Haddock can't link to something you haven't imported.
+--
+--     https://github.com/haskell/haddock/issues/796
 
--- | 'ProductProfunctor' is a generalization of 'Applicative'.
+-- | 'ProductProfunctor' is a generalization of
+-- 'Control.Applicative.Applicative'.
 --
--- It has the usual 'Applicative' "output" (covariant) parameter on
--- the right.  Additionally it has an "input" (contravariant) type
--- parameter on the left.
+-- It has the usual 'Control.Applicative.Applicative' "output"
+-- (covariant) parameter on the right.  Additionally it has an "input"
+-- (contravariant) type parameter on the left.
 --
--- 'ProductProfunctor' corresponds closely to 'Applicative' as laid
--- out in the following table.
+-- 'ProductProfunctor' corresponds closely to
+-- 'Control.Applicative.Applicative' as laid out in the following
+-- table.
 --
 -- @
 -- | Correspondence between Applicative and ProductProfunctor
 -- |
--- |  Applicative f           ProductProfunctor p
+-- |  'Control.Applicative.Applicative' f           'ProductProfunctor' p
 -- |
--- |  pure                    purePP
+-- |  'Control.Applicative.pure'                    'purePP'
 -- |    :: b -> f b             :: b -> p a b
 -- |
--- |  (\<$\>)                   (***$)
+-- |  ('Control.Applicative.<$>')                   ('Data.Profunctor.Product.***$')
 -- |    :: (b -> b')            :: (b -> b')
 -- |    -> f b                  -> p a b
 -- |    -> f b'                 -> p a b'
 -- |
--- |  (\<*\>)                   (****)
+-- |  ('Control.Applicative.<*>')                   ('****')
 -- |    :: f (b -> b')          :: p a (b -> b')
 -- |    -> f b                  -> p a b
 -- |    -> f b'                 -> p a b'
@@ -35,22 +42,23 @@ import qualified Data.Profunctor as Profunctor
 -- instances
 --
 -- @
---  instance Profunctor MyProductProfunctor where
+--  instance 'Profunctor' MyProductProfunctor where
 --    ...
 --
---  instance Applicative (MyProductProfunctor a) where
+--  instance 'Control.Applicative.Applicative' (MyProductProfunctor a) where
 --    ...
 -- @
 --
 -- and then write
 --
 -- @
---  instance ProductProfunctor MyProductProfunctor where
---    purePP = pure
---    (****) = (\<*\>)
+--  instance 'ProductProfunctor' MyProductProfunctor where
+--    'purePP' = 'Control.Applicative.pure'
+--    ('****') = ('Control.Applicative.<*>')
 -- @
 class Profunctor p => ProductProfunctor p where
-  -- | 'purePP' is the generalisation of @Applicative@'s @pure@.
+  -- | 'purePP' is the generalisation of @Applicative@'s
+  -- 'Control.Applicative.pure'.
   --
   -- Aside from defining 'ProductProfunctor' instances you will
   -- probably never need to use this; @pure@ should be sufficient (if
@@ -59,7 +67,8 @@ class Profunctor p => ProductProfunctor p where
   purePP :: b -> p a b
   purePP b = Profunctor.dimap (const ()) (const b) empty
 
-  -- | '****' is the generalisation of @Applicative@'s @\<*\>@.
+  -- | '****' is the generalisation of @Applicative@'s
+  -- 'Control.Applicative.<*>'.
   --
   -- Aside from defining 'ProductProfunctor' instances you will you
   -- will probably never need to use this; @\<*\>@ should be
