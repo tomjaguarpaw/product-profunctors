@@ -79,9 +79,8 @@ import Data.Profunctor.Product.Tuples.TH (pTns, maxTupleSize, pNs)
 --
 -- '***$' = 'Profunctor.rmap', just like '<$>' = 'fmap'.
 --
--- You will probably never need to use this; @\<$\>@ should be
--- sufficient (if your 'ProductProfunctor' instance has also been given
--- a @Functor@ instance).
+-- (You probably won't need to use this.  @\<$\>@ should be
+-- sufficient.)
 (***$) :: ProductProfunctor p => (b -> c) -> p a b -> p a c
 (***$) = Profunctor.rmap
 

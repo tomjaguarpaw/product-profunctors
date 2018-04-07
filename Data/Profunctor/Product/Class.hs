@@ -2,22 +2,27 @@ module Data.Profunctor.Product.Class where
 
 import           Data.Profunctor (Profunctor)
 import qualified Data.Profunctor as Profunctor
-import qualified Control.Applicative
---- ^^ This is a redundant import but it's needeed for Haddock links.
--- AIUI Haddock can't link to something you haven't imported.
+
+--- vv These are redundant imports but they're needeed for Haddock
+--- links. AIUI Haddock can't link to something you haven't imported.
 --
 --     https://github.com/haskell/haddock/issues/796
+import qualified Control.Applicative
+import qualified Data.Profunctor
 
 -- | 'ProductProfunctor' is a generalization of
 -- 'Control.Applicative.Applicative'.
---
 -- It has the usual 'Control.Applicative.Applicative' "output"
 -- (covariant) parameter on the right.  Additionally it has an "input"
 -- (contravariant) type parameter on the left.
 --
--- 'ProductProfunctor' corresponds closely to
+-- The methods for 'ProductProfunctor' correspond closely to those for
 -- 'Control.Applicative.Applicative' as laid out in the following
 -- table.
+-- The only difference between them is that the 'ProductProfunctor'
+-- has a contravariant type parameter on the left.  We can use the
+-- contravariant to compose them in nice ways as described at
+-- "Data.Profunctor.Product".
 --
 -- @
 -- | Correspondence between Applicative and ProductProfunctor
@@ -60,31 +65,31 @@ class Profunctor p => ProductProfunctor p where
   -- | 'purePP' is the generalisation of @Applicative@'s
   -- 'Control.Applicative.pure'.
   --
-  -- Aside from defining 'ProductProfunctor' instances you will
-  -- probably never need to use this; @pure@ should be sufficient (if
-  -- your 'ProductProfunctor' instance also has an @Applicative@
-  -- instance).
+  -- (You probably won't need to use this except to define
+  -- 'ProductProfunctor' instances.  In your own code @pure@ should be
+  -- sufficient.)
   purePP :: b -> p a b
   purePP b = Profunctor.dimap (const ()) (const b) empty
 
   -- | '****' is the generalisation of @Applicative@'s
   -- 'Control.Applicative.<*>'.
   --
-  -- Aside from defining 'ProductProfunctor' instances you will you
-  -- will probably never need to use this; @\<*\>@ should be
-  -- sufficient (if your 'ProductProfunctor' instance has also been
-  -- given an @Applicative@ instance).
+  -- (You probably won't need to use this except to define
+  -- 'ProductProfunctor' instances.  In your own code @\<*\>@ should
+  -- be sufficient.)
   (****) :: p a (b -> c) -> p a b -> p a c
   (****) f x = Profunctor.dimap dup (uncurry ($)) (f ***! x)
     where dup y = (y, y)
 
-  -- | You probably never want to use 'empty' and it may be deprecated
-  -- in a future version.
+  -- | Use @pure ()@ instead.  @empty@ may be deprecated in a future
+  -- version.
   empty  :: p () ()
   empty = purePP ()
 
-  -- | You probably never want to use '***!' and it may be
-  -- deprecated in a future version.
+  -- | Use @\\f g -> (,) 'Control.Applicative.<$>'
+  -- 'Data.Profunctor.lmap' fst f 'Control.Applicative.<*>'
+  -- 'Data.Profunctor.lmap' snd g@ instead.
+  -- @(***!)@ may be deprecated in a future version.
   (***!) :: p a b -> p a' b' -> p (a, a') (b, b')
   f ***! g = (,) `Profunctor.rmap` Profunctor.lmap fst f
                   **** Profunctor.lmap snd g
