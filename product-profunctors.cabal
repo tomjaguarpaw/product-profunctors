@@ -42,7 +42,7 @@ library
                    Data.Profunctor.Product.Tuples.TH
   other-modules:   Data.Profunctor.Product.Class,
                    Data.Profunctor.Product.Default.Class
-  ghc-options:     -Wall
+  ghc-options:     -Wall -Wcompat
 
   if impl(ghc < 7.10)
     build-depends: transformers >= 0.2 && < 0.6
