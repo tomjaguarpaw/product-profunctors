@@ -32,6 +32,7 @@ library
   exposed-modules: Data.Profunctor.Product,
                    Data.Profunctor.Product.Adaptor
                    Data.Profunctor.Product.Default,
+                   Data.Profunctor.Product.Examples,
                    Data.Profunctor.Product.Flatten,
                    Data.Profunctor.Product.Internal.Adaptor
                    Data.Profunctor.Product.Internal.TH,

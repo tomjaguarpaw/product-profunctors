@@ -1,3 +1,5 @@
+* Added `Data.Profunctor.Product.Examples`
+
 # 0.10.0.0
 
 * Removed `ProductContravariant`, `AndArrow`, `defaultContravariantProduct`,
