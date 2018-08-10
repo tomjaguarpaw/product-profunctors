@@ -49,3 +49,46 @@ instance Functor f => P.Profunctor (Replicator r f) where
 instance Applicative f=> PP.ProductProfunctor (Replicator r f) where
   purePP = pure
   (****) = (<*>)
+
+newtype Take a z b = Take ([a] -> Maybe ([a], b))
+  deriving Functor
+
+instance D.Default (Take a) z a where
+  def = Take (\as ->
+    case as of
+      []      -> Nothing
+      (a:as') -> Just (as', a))
+
+-- | A type safe generalisation of 'Prelude.take'.  For example
+--
+-- @
+-- > let count = [1..] :: [Int]
+-- > takeT count :: Maybe (Int, Int)
+-- Just (1,2)
+-- > takeT count
+--     :: Maybe (Int, Int, (Int, (Int, Int), Int, Int),
+--               Const Int Bool, Identity (Int, Int), Tagged String Int)
+-- Just (1,2,(3,(4,5),6,7),Const 8,Identity (9,10),Tagged 11)
+-- @
+takeT :: D.Default (Take a) b b
+      => [a]
+      -> Maybe b
+takeT = takeExplicit D.def
+  where takeExplicit :: Take a b b -> [a] -> Maybe b
+        takeExplicit (Take f) as = fmap snd (f as)
+
+-- More boilerplate
+instance Applicative (Take a z) where
+  pure x = Take (\as -> pure (as, x))
+  Take f <*> Take x = Take (\as -> do
+    (as', f')  <- f as
+    (as'', x') <- x as'
+
+    return (as'', f' x'))
+
+instance P.Profunctor (Take a) where
+  dimap _ g (Take h) = Take ((fmap . fmap . fmap) g h)
+
+instance PP.ProductProfunctor (Take a) where
+  purePP = pure
+  (****) = (<*>)
