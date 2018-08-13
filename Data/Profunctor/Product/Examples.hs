@@ -50,6 +50,8 @@ instance Applicative f=> PP.ProductProfunctor (Replicator r f) where
   purePP = pure
   (****) = (<*>)
 
+-- In the real world this would be 'StateT [a] Maybe b' but I don't want to
+-- pick up the transformers dependency here
 newtype Take a z b = Take ([a] -> Maybe ([a], b))
   deriving Functor
 
