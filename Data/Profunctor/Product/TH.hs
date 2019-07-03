@@ -120,10 +120,17 @@
 -- @
 
 
-module Data.Profunctor.Product.TH where
+module Data.Profunctor.Product.TH
+  ( makeAdaptorAndInstance
+  , makeAdaptorAndInstance'
+  , adaptorDefinition
+  , adaptorDefinitionFields
+  ) where
 
-import           Data.Profunctor.Product.Internal.TH  (makeAdaptorAndInstanceI)
-import qualified Language.Haskell.TH                   as TH
+import           Data.Profunctor.Product.Internal.TH (adaptorDefinition,
+                                                      adaptorDefinitionFields,
+                                                      makeAdaptorAndInstanceI)
+import qualified Language.Haskell.TH                 as TH
 
 -- | For example
 --
@@ -146,4 +153,3 @@ makeAdaptorAndInstance adaptorNameS = makeAdaptorAndInstanceI (Just adaptorNameS
 -- the string \"p\".
 makeAdaptorAndInstance' :: TH.Name -> TH.Q [TH.Dec]
 makeAdaptorAndInstance' = makeAdaptorAndInstanceI Nothing
-
