@@ -44,7 +44,7 @@ instance Applicative f => Applicative (Replicator r f a) where
   Replicator f <*> Replicator x = Replicator (liftA2 (<*>) f x)
 
 instance Functor f => P.Profunctor (Replicator r f) where
-  dimap g h (Replicator f) = Replicator ((fmap . fmap) h f)
+  dimap _ h (Replicator f) = Replicator ((fmap . fmap) h f)
 
 instance Applicative f=> PP.ProductProfunctor (Replicator r f) where
   purePP = pure
