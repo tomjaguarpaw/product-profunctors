@@ -94,3 +94,24 @@ instance P.Profunctor (Take a) where
 instance PP.ProductProfunctor (Take a) where
   purePP = pure
   (****) = (<*>)
+
+newtype Traverse f a b = Traverse { runTraverse :: a -> f b } deriving Functor
+
+traverseT :: D.Default (Traverse f) a b => a -> f b
+traverseT = runTraverse D.def
+
+instance D.Default (Traverse f) (f a) a where
+  def = Traverse id
+
+-- Boilerplate that is derivable using generics but I never got round
+-- to implementing it.
+instance Applicative f => Applicative (Traverse f a) where
+  pure = Traverse . pure . pure
+  Traverse f <*> Traverse x = Traverse (liftA2 (<*>) f x)
+
+instance Functor f => P.Profunctor (Traverse f) where
+  dimap g h (Traverse f) = Traverse (P.dimap g (fmap h) f)
+
+instance Applicative f => PP.ProductProfunctor (Traverse f) where
+  purePP = pure
+  (****) = (<*>)
