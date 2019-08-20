@@ -149,12 +149,14 @@ instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
             (\i j -> InstanceD i j [defDefinition])
 #endif
             instanceCxt instanceType
+        p = varTS "p"
+
         instanceCxt = mapM (uncurry classP) (pClass:defClasses)
         pClass :: Monad m => (Name, [m Type])
-        pClass = (''ProductProfunctor, [return (varTS "p")])
+        pClass = (''ProductProfunctor, [return p])
 
         defaultPredOfVar :: String -> (Name, [Type])
-        defaultPredOfVar fn = (''Default, [varTS "p",
+        defaultPredOfVar fn = (''Default, [p,
                                            mkTySuffix "0" fn,
                                            mkTySuffix "1" fn])
 
@@ -165,7 +167,7 @@ instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
         pArg s = pArg' tyName' s numTyVars
 
         instanceType = [t| $(pure $ ConT ''Default)
-                           $(pure $ varTS "p")
+                           $(pure $ p)
                            $(pure $ pArg "0")
                            $(pure $ pArg "1")
                          |]
@@ -176,11 +178,12 @@ instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
 
 adaptorSig :: Name -> Int -> Name -> Q Dec
 adaptorSig tyName' numTyVars n = fmap (SigD n) adaptorType
-  where adaptorType = ForallT scope <$> adaptorCxt <*> adaptorAfterCxt
+  where p = mkName "p"
+        adaptorType = ForallT scope <$> adaptorCxt <*> adaptorAfterCxt
         adaptorAfterCxt = [t| $before -> $after |]
-        adaptorCxt = fmap (:[]) (classP ''ProductProfunctor [return (VarT (mkName "p"))])
+        adaptorCxt = fmap (:[]) (classP ''ProductProfunctor [return (VarT p)])
         before = foldl (liftA2 AppT) (pure (ConT tyName')) pArgs
-        pType = pure $ VarT (mkName "p")
+        pType = pure $ VarT p
         pArgs = map pApp tyVars
         pApp :: String  -> Q Type
         pApp v = [t| $pType $(mkVarTsuffix "0" v) $(mkVarTsuffix "1" v) |]
@@ -193,7 +196,7 @@ adaptorSig tyName' numTyVars n = fmap (SigD n) adaptorType
 
         after = [t| $pType $(pArg "0") $(pArg "1") |]
 
-        scope = concat [ [PlainTV (mkName "p")]
+        scope = concat [ [PlainTV p]
                        , map (mkTyVarsuffix "0") tyVars
                        , map (mkTyVarsuffix "1") tyVars ]
 
