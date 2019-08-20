@@ -125,12 +125,9 @@ varNameOfBinder (KindedTV n _) = n
 
 conStuffOfConstructor :: Con -> Either Error (Name, ConTysFields)
 conStuffOfConstructor (NormalC conName st) = do
-  let conTys = map snd st
-  return (conName, ConTys conTys)
+  return (conName, ConTys (map snd st))
 conStuffOfConstructor (RecC conName vst) = do
-  let conTys = map nameType vst
-  return (conName, FieldTys conTys)
-    where nameType (n, _, t) = (n, t)
+  return (conName, FieldTys (map (\(n, _, t) -> (n, t)) vst))
 
 conStuffOfConstructor _ = Left "I can't deal with your constructor type"
 
