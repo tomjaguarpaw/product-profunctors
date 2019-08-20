@@ -293,17 +293,15 @@ adaptorDefinitionFields conName fieldsTys adaptorName =
         clause = liftA2 (\fP' b -> Clause [fP'] (NormalB b) []) fP body
         body = case fields of
           []             -> error "Can't handle no fields in constructor"
-          field1:fields' -> let first   = [| $(varE '(***$))
-                                                $(conE conName)
-                                                $(theLmap field1) |]
-                                app x y = [| $(varE '(****))
-                                                $x
-                                                $(theLmap y) |]
-                            in foldl app first fields'
+          field1:fields' ->
+            let first =
+                  [| $(varE '(***$)) $(conE conName) $(theLmap field1) |]
+                app x y =
+                  [| $(varE '(****)) $x $(theLmap y) |]
+            in foldl app first fields'
 
-        theLmap field = [| $(varE 'lmap)
-                              $(varE field)
-                              ($(varE field) $fE) |]
+        theLmap field =
+          [| $(varE 'lmap) $(varE field) ($(varE field) $fE) |]
 
 xTuple :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> (Name, Int) -> Dec
 xTuple patCon retCon (funN, numTyVars) = FunD funN [clause]
