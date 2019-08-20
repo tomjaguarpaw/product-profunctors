@@ -53,7 +53,7 @@ makeAdaptorAndInstanceE adaptorNameM info = do
 
       newtypeInstance' = if numConTys == 1 then
                            newtypeInstance conName tyName
-                         else 
+                         else
                            return []
 
   return $ do
