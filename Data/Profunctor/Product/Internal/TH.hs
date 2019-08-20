@@ -43,8 +43,8 @@ makeAdaptorAndInstanceE adaptorNameM info = do
       adaptorNameN = maybe defaultAdaptorName mkName adaptorNameM
       adaptorSig' = adaptorSig tyName numTyVars adaptorNameN
       adaptorDefinition' = case conTys of
-        ConTys   _        -> adaptorDefinition numTyVars conName adaptorNameN
-        FieldTys fieldTys -> adaptorDefinitionFields conName fieldTys adaptorNameN
+        ConTys   _        -> adaptorDefinition numTyVars conName
+        FieldTys fieldTys -> adaptorDefinitionFields conName fieldTys
 
       instanceDefinition' = instanceDefinition tyName numTyVars numConTys
                                                adaptorNameN conName
@@ -55,7 +55,9 @@ makeAdaptorAndInstanceE adaptorNameM info = do
                            return []
 
   return $ do
-    as <- sequence [adaptorSig', adaptorDefinition', instanceDefinition']
+    as <- sequence [ adaptorSig'
+                   , adaptorDefinition' adaptorNameN
+                   , instanceDefinition']
     ns <- newtypeInstance'
     return (as ++ ns)
 
