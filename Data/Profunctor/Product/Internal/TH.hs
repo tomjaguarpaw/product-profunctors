@@ -42,11 +42,9 @@ makeAdaptorAndInstanceE adaptorNameM info = do
       defaultAdaptorName = (mkName . ("p" ++) . nameBase) conName
       adaptorNameN = maybe defaultAdaptorName mkName adaptorNameM
       adaptorSig' = adaptorSig tyName numTyVars adaptorNameN
-      adaptorDefinition' =
-        case conTys of ConTys   _        ->
-                         adaptorDefinition numTyVars conName adaptorNameN
-                       FieldTys fieldTys ->
-                         adaptorDefinitionFields conName fieldTys adaptorNameN
+      adaptorDefinition' = case conTys of
+        ConTys   _        -> adaptorDefinition numTyVars conName adaptorNameN
+        FieldTys fieldTys -> adaptorDefinitionFields conName fieldTys adaptorNameN
 
       instanceDefinition' = instanceDefinition tyName numTyVars numConTys
                                                adaptorNameN conName
