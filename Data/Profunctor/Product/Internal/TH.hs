@@ -44,7 +44,7 @@ makeAdaptorAndInstanceE adaptorNameM info = do
       adaptorSig' = adaptorSig tyName numTyVars adaptorNameN
       adaptorDefinition' =
         case conTys of ConTys   _        ->
-                         adaptorDefinition numTyVars conName adaptorNameN
+                         pure (adaptorDefinition numTyVars conName adaptorNameN)
                        FieldTys fieldTys ->
                          adaptorDefinitionFields conName fieldTys adaptorNameN
 
@@ -57,7 +57,7 @@ makeAdaptorAndInstanceE adaptorNameM info = do
                            return []
 
   return $ do
-    as <- sequence [adaptorSig', pure adaptorDefinition', instanceDefinition']
+    as <- sequence [adaptorSig', adaptorDefinition', instanceDefinition']
     ns <- newtypeInstance'
     return (as ++ ns)
 
@@ -283,25 +283,27 @@ adaptorDefinition numConVars conName = flip FunD [clause]
         wheres = [toTuple conName (toTupleN, numConVars),
                   fromTuple conName (fromTupleN, numConVars)]
 
-adaptorDefinitionFields :: Name -> [(Name, name)] -> Name -> Dec
+adaptorDefinitionFields :: Name -> [(Name, name)] -> Name -> Q Dec
 adaptorDefinitionFields conName fieldsTys adaptorName =
-  FunD adaptorName [clause]
+  fmap (FunD adaptorName . pure) clause
   where fields = map fst fieldsTys
         -- TODO: vv f should be generated in Q
         fP = VarP (mkName "f")
         fE = VarE (mkName "f")
-        clause = Clause [fP] (NormalB body) []
+        clause = fmap (\b -> Clause [fP] (NormalB b) []) body
         body = case fields of
           []             -> error "Can't handle no fields in constructor"
-          field1:fields' -> let first   = (VarE '(***$)) `AppE` (ConE conName)
-                                                         `AppE` (theLmap field1)
-                                app x y = (VarE '(****)) `AppE` x
-                                                         `AppE` (theLmap y)
+          field1:fields' -> let first   = [| $(pure $ VarE '(***$))
+                                                $(pure $ ConE conName)
+                                                $(theLmap field1) |]
+                                app x y = [| $(pure $ VarE '(****))
+                                                $x
+                                                $(theLmap y) |]
                             in foldl app first fields'
 
-        theLmap field = appEAll (VarE 'lmap)
-                                [ VarE field
-                                , VarE field `AppE` fE ]
+        theLmap field = [| $(pure $ VarE 'lmap)
+                              $(pure $ VarE field)
+                              ($(pure $ VarE field) $(pure fE)) |]
 
 xTuple :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> (Name, Int) -> Dec
 xTuple patCon retCon (funN, numTyVars) = FunD funN [clause]
