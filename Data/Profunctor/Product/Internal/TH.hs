@@ -15,7 +15,8 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             Body(NormalB), Q, classP,
                             Exp(ConE, VarE, AppE, TupE, LamE),
                             Pat(TupP, VarP, ConP), Name,
-                            Info(TyConI), reify, conE, conT, varE, varP)
+                            Info(TyConI), reify, conE, conT, varE, varP,
+                            instanceD)
 import Control.Monad ((<=<))
 import Control.Applicative (pure, liftA2, (<$>), (<*>))
 import Control.Arrow (second)
@@ -67,11 +68,10 @@ newtypeInstance conName tyName = do
 
   let body = [ FunD 'N.constructor [simpleClause (NormalB (ConE conName))]
              , FunD 'N.field [simpleClause (NormalB (LamE [ConP conName [VarP x]] (VarE x)))] ]
-#if __GLASGOW_HASKELL__ >= 800
-  return [InstanceD Nothing [] (ConT ''N.Newtype `AppT` ConT tyName) body]
-#else
-  return [InstanceD [] (ConT ''N.Newtype `AppT` ConT tyName) body]
-#endif
+  i <- instanceD (pure [])
+                 [t| $(conT ''N.Newtype) $(conT tyName) |]
+                 (map pure body)
+  pure [i]
 
 data ConTysFields = ConTys   [Type]
                   -- ^^ The type of each constructor field
