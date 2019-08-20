@@ -142,13 +142,13 @@ extractConstructorStuff = conStuffOfConstructor <=< constructorOfConstructors
 
 instanceDefinition :: Name -> Int -> Int -> Name -> Name -> Q Dec
 instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
-  where instanceDec = fmap
+  where instanceDec = liftA2
 #if __GLASGOW_HASKELL__ >= 800
-            (\i -> InstanceD Nothing i instanceType [defDefinition])
+            (\i j -> InstanceD Nothing i j [defDefinition])
 #else
-            (\i -> InstanceD i instanceType [defDefinition])
+            (\i j -> InstanceD i j [defDefinition])
 #endif
-            instanceCxt
+            instanceCxt instanceType
         instanceCxt = mapM (uncurry classP) (pClass:defClasses)
         pClass :: Monad m => (Name, [m Type])
         pClass = (''ProductProfunctor, [return (varTS "p")])
@@ -164,8 +164,11 @@ instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
         pArg :: String -> Type
         pArg s = pArg' tyName' s numTyVars
 
-        instanceType = appTAll (ConT ''Default)
-                               [varTS "p", pArg "0", pArg "1"]
+        instanceType = [t| $(pure $ ConT ''Default)
+                           $(pure $ varTS "p")
+                           $(pure $ pArg "0")
+                           $(pure $ pArg "1")
+                         |]
 
         defDefinition = FunD 'def [simpleClause defBody]
         defBody = NormalB(VarE adaptorName' `AppE` appEAll (ConE conName) defsN)
