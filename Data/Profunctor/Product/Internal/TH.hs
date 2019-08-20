@@ -134,8 +134,7 @@ conStuffOfConstructor (NormalC conName st) = do
 conStuffOfConstructor (RecC conName vst) = do
   conTys <- mapM nameType vst
   return (conName, FieldTys conTys)
-    where nameType (n, _, VarT t) = Right (n, t)
-          nameType (_, _, x)      = Left ("Found a non-variable type " ++ show x)
+    where nameType (n, _, t) = fmap (\t' -> (n, t')) (varNameOfType t)
 
 conStuffOfConstructor _ = Left "I can't deal with your constructor type"
 
