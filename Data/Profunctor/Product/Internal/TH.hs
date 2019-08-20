@@ -44,7 +44,7 @@ makeAdaptorAndInstanceE adaptorNameM info = do
       adaptorSig' = adaptorSig tyName numTyVars adaptorNameN
       adaptorDefinition' =
         case conTys of ConTys   _        ->
-                         pure (adaptorDefinition numTyVars conName adaptorNameN)
+                         adaptorDefinition numTyVars conName adaptorNameN
                        FieldTys fieldTys ->
                          adaptorDefinitionFields conName fieldTys adaptorNameN
 
@@ -270,16 +270,16 @@ tupleAdaptors n = case n of 1  -> 'p1
                    ++ show n
                    ++ " is too many type variables for me!"
 
-adaptorDefinition :: Int -> Name -> Name -> Dec
-adaptorDefinition numConVars conName = flip FunD [clause]
-  where clause = Clause [] body wheres
+adaptorDefinition :: Int -> Name -> Name -> Q Dec
+adaptorDefinition numConVars conName x = fmap (FunD x . pure) clause
+  where clause = fmap (\b -> Clause [] b wheres) body
         toTupleN = mkName "toTuple"
         fromTupleN = mkName "fromTuple"
         toTupleE = VarE toTupleN
         fromTupleE = VarE fromTupleN
-        theDimap = appEAll (VarE 'dimap) [toTupleE, fromTupleE]
+        theDimap = [| $(pure $ VarE 'dimap) $(pure toTupleE) $(pure fromTupleE) |]
         pN = VarE (tupleAdaptors numConVars)
-        body = NormalB (theDimap `o` pN `o` toTupleE)
+        body = fmap NormalB [| $theDimap . $(pure pN) . $(pure toTupleE) |]
         wheres = [toTuple conName (toTupleN, numConVars),
                   fromTuple conName (fromTupleN, numConVars)]
 
