@@ -13,7 +13,7 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             Clause(Clause),
                             Type(VarT, ForallT, AppT, ArrowT, ConT),
                             Body(NormalB), Q, classP,
-                            Exp(ConE, VarE, InfixE, AppE, TupE, LamE),
+                            Exp(ConE, VarE, AppE, TupE, LamE),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify, conE, varE, varP)
 import Control.Monad ((<=<))
@@ -343,9 +343,6 @@ allTyVars numTyVars = map varA tyNums
   where varA i = "a" ++ show i ++ "_"
         tyNums :: [Int]
         tyNums = [1..numTyVars]
-
-o :: Exp -> Exp -> Exp
-o x y = InfixE (Just x) (varS ".") (Just y)
 
 varS :: String -> Exp
 varS = VarE . mkName
