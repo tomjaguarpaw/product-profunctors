@@ -11,7 +11,7 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             mkName, newName, nameBase, TyVarBndr(PlainTV, KindedTV),
                             Con(RecC, NormalC),
                             Clause(Clause),
-                            Type(VarT, ForallT, AppT, ArrowT, ConT),
+                            Type(VarT, ForallT, AppT, ConT),
                             Body(NormalB), Q, classP,
                             Exp(ConE, VarE, AppE, TupE, LamE),
                             Pat(TupP, VarP, ConP), Name,
@@ -365,9 +365,6 @@ appTAll = foldl AppT
 
 appEAll :: Exp -> [Exp] -> Exp
 appEAll = foldl AppE
-
-appArrow :: Type -> Type -> Type
-appArrow l r = appTAll ArrowT [l, r]
 
 simpleClause :: Body -> Clause
 simpleClause x = Clause [] x []
