@@ -73,9 +73,9 @@ newtypeInstance conName tyName = do
   return [InstanceD [] (ConT ''N.Newtype `AppT` ConT tyName) body]
 #endif
 
-data ConTysFields = ConTys   [Name]
+data ConTysFields = ConTys   [Type]
                   -- ^^ The type of each constructor field
-                  | FieldTys [(Name, Name)]
+                  | FieldTys [(Name, Type)]
                   -- ^^ The fieldname and type of each constructor field
 
 lengthCons :: ConTysFields -> Int
@@ -119,22 +119,18 @@ dataDecStuffOfInfo (TyConI (NewtypeD _cxt tyName tyVars constructor _deriving)) 
                         }
 dataDecStuffOfInfo _ = Left "That doesn't look like a data or newtype declaration to me"
 
-varNameOfType :: Type -> Either Error Name
-varNameOfType (VarT n) = Right n
-varNameOfType x = Left $ "Found a non-variable type " ++ show x
-
 varNameOfBinder :: TyVarBndr -> Name
 varNameOfBinder (PlainTV n) = n
 varNameOfBinder (KindedTV n _) = n
 
 conStuffOfConstructor :: Con -> Either Error (Name, ConTysFields)
 conStuffOfConstructor (NormalC conName st) = do
-  conTys <- mapM (varNameOfType . snd) st
+  let conTys = map snd st
   return (conName, ConTys conTys)
 conStuffOfConstructor (RecC conName vst) = do
-  conTys <- mapM nameType vst
+  let conTys = map nameType vst
   return (conName, FieldTys conTys)
-    where nameType (n, _, t) = fmap (\t' -> (n, t')) (varNameOfType t)
+    where nameType (n, _, t) = (n, t)
 
 conStuffOfConstructor _ = Left "I can't deal with your constructor type"
 
