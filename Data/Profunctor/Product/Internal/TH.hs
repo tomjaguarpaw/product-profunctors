@@ -15,7 +15,7 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             Body(NormalB), Q, classP,
                             Exp(ConE, VarE, AppE, TupE, LamE),
                             Pat(TupP, VarP, ConP), Name,
-                            Info(TyConI), reify, conE, varE, varP)
+                            Info(TyConI), reify, conE, conT, varE, varP)
 import Control.Monad ((<=<))
 import Control.Applicative (pure, liftA2, (<$>), (<*>))
 import Control.Arrow (second)
@@ -166,7 +166,7 @@ instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
         pArg :: String -> Type
         pArg s = pArg' tyName' s numTyVars
 
-        instanceType = [t| $(pure $ ConT ''Default)
+        instanceType = [t| $(conT ''Default)
                            $(pure $ p)
                            $(pure $ pArg "0")
                            $(pure $ pArg "1")
