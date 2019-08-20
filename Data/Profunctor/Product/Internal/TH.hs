@@ -17,7 +17,7 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify)
 import Control.Monad ((<=<))
-import Control.Applicative (pure)
+import Control.Applicative (pure, liftA2, (<$>), (<*>))
 import Control.Arrow (second)
 
 makeAdaptorAndInstanceI :: Maybe String -> Name -> Q [Dec]
@@ -173,22 +173,22 @@ instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
 
 adaptorSig :: Name -> Int -> Name -> Q Dec
 adaptorSig tyName' numTyVars n = fmap (SigD n) adaptorType
-  where adaptorType = fmap (\a -> ForallT scope a adaptorAfterCxt) adaptorCxt
-        adaptorAfterCxt = before `appArrow` after
+  where adaptorType = ForallT scope <$> adaptorCxt <*> adaptorAfterCxt
+        adaptorAfterCxt = [t| $before -> $after |]
         adaptorCxt = fmap (:[]) (classP ''ProductProfunctor [return (VarT (mkName "p"))])
-        before = appTAll (ConT tyName') pArgs
-        pType = VarT (mkName "p")
+        before = foldl (liftA2 AppT) (pure (ConT tyName')) pArgs
+        pType = pure $ VarT (mkName "p")
         pArgs = map pApp tyVars
-        pApp :: String  -> Type
-        pApp v = appTAll pType [mkVarTsuffix "0" v, mkVarTsuffix "1" v]
+        pApp :: String  -> Q Type
+        pApp v = [t| $pType $(mkVarTsuffix "0" v) $(mkVarTsuffix "1" v) |]
 
 
         tyVars = allTyVars numTyVars
 
-        pArg :: String -> Type
-        pArg s = pArg' tyName' s numTyVars
+        pArg :: String -> Q Type
+        pArg s = pure $ pArg' tyName' s numTyVars
 
-        after = appTAll pType [pArg "0", pArg "1"]
+        after = [t| $pType $(pArg "0") $(pArg "1") |]
 
         scope = concat [ [PlainTV (mkName "p")]
                        , map (mkTyVarsuffix "0") tyVars
@@ -351,8 +351,8 @@ mkTyVarsuffix s = PlainTV . mkName . (++s)
 mkTySuffix :: String -> String -> Type
 mkTySuffix s = varTS . (++s)
 
-mkVarTsuffix :: String -> String -> Type
-mkVarTsuffix s = VarT . mkName . (++s)
+mkVarTsuffix :: String -> String -> Q Type
+mkVarTsuffix s = pure . VarT . mkName . (++s)
 
 varTS :: String -> Type
 varTS = VarT . mkName
