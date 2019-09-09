@@ -146,4 +146,3 @@ makeAdaptorAndInstance adaptorNameS = makeAdaptorAndInstanceI (Just adaptorNameS
 -- the string \"p\".
 makeAdaptorAndInstance' :: TH.Name -> TH.Q [TH.Dec]
 makeAdaptorAndInstance' = makeAdaptorAndInstanceI Nothing
-
