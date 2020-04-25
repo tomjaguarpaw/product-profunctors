@@ -1,6 +1,6 @@
 name:          product-profunctors
 copyright:     Copyright (c) 2013, Karamaan Group LLC; 2014-2018 Purely Agile Limited; 2019-2020 Tom Ellis
-version:       0.10.0.0
+version:       0.10.0.1
 synopsis:      product-profunctors
 description:   Product profunctors and tools for working with them
 homepage:      https://github.com/tomjaguarpaw/product-profunctors
