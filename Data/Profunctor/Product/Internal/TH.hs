@@ -311,15 +311,27 @@ xTuple patCon retCon (funN, numTyVars) = FunD funN [clause]
         varPats = map varPS (allTyVars numTyVars)
         varExps = map varS (allTyVars numTyVars)
 
+tupP :: [Pat] -> Pat
+tupP [p] = p
+tupP ps  = TupP ps
+
+tupE :: [Exp] -> Exp
+tupE [e] = e
+tupE es  = TupE
+#if MIN_VERSION_template_haskell(2,16,0)
+           $ map Just
+#endif
+           es
+
 fromTuple :: Name -> (Name, Int) -> Dec
 fromTuple conName = xTuple patCon retCon
-  where patCon = TupP
+  where patCon = tupP
         retCon = appEAll (ConE conName)
 
 toTuple :: Name -> (Name, Int) -> Dec
 toTuple conName = xTuple patCon retCon
   where patCon = ConP conName
-        retCon = TupE
+        retCon = tupE
 
 {-
 Note that we can also do the instance definition like this, but it would

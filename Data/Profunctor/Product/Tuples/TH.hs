@@ -129,7 +129,8 @@ pN n = sequence [sig, fun]
       1 -> mkPT (head as) (head bs)
       _ -> foldl appT (tupleT n) (zipWith mkPT as bs)
     mkRightTy = varT p `appT` mkTupT as `appT` mkTupT bs
-    mkTupT = foldl appT (tupleT n) . map varT
+    mkTupT [v] = varT v
+    mkTupT vs  = foldl appT (tupleT n) (map varT vs)
     mkPT a b = varT p `appT` varT a `appT` varT b
     fun = funD nm [ clause [] (normalB bdy) [] ]
     bdy = varE 'convert `appE` unflat `appE` unflat `appE` flat `appE` pT
