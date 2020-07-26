@@ -3,6 +3,8 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Definitions where
 
@@ -12,10 +14,12 @@ import GHC.Generics (Generic)
 -- because we want to ensure that no external names are required to be
 -- imported.
 
-import Data.Profunctor.Product (ProductProfunctor, SumProfunctor)
+import Data.Profunctor
+import Data.Profunctor.Product
 import Data.Profunctor.Product.Adaptor (Unzippable)
-import Data.Profunctor.Product.Default (Default)
-import Data.Profunctor.Product.TH (makeAdaptorAndInstance, makeAdaptorAndInstance')
+import Data.Profunctor.Product.Default (Default, def)
+import Data.Profunctor.Product.TH (makeAdaptorAndInstance, makeAdaptorAndInstance',
+                                  makeAdaptorAndInstanceInferrable)
 
 data Data2 a b = Data2 a b
   deriving Generic
@@ -55,3 +59,38 @@ instance (SumProfunctor p, Default p a a', Default p b b')
 
 instance (ProductProfunctor p, SumProfunctor p, Default p a a', Default p b b', Default p c c')
       => Default p (ProductAndSumGeneric a b c) (ProductAndSumGeneric a' b' c')
+
+data Data2Inferrable a b = Data2Inferrable a b
+data Record2Inferrable a b = Record2Inferrable { a2I :: a, b2I :: b } deriving Show
+
+$(makeAdaptorAndInstanceInferrable "pData2Inferrable" ''Data2Inferrable)
+$(makeAdaptorAndInstanceInferrable "pRecord2Inferrable" ''Record2Inferrable)
+
+newtype Arrow a b = Arrow { unArrow :: a -> b }
+
+instance Profunctor Arrow where
+  dimap f g = Arrow . dimap f g . unArrow
+
+instance ProductProfunctor Arrow where
+  purePP = Arrow . purePP
+  f **** g = Arrow (unArrow f **** unArrow g)
+
+data Unit = Unit
+
+class Pointed a where
+  point :: a
+
+instance Pointed Unit where
+  point = Unit
+
+instance (Pointed a, Pointed b) => Pointed (Data2Inferrable a b) where
+  point = Data2Inferrable point point
+
+instance (Pointed a, Pointed b) => Pointed (Record2Inferrable a b) where
+  point = Record2Inferrable point point
+
+instance {-# INCOHERENT #-} a ~ Unit => Default Arrow Unit a where
+  def = Arrow id
+
+instance {-# INCOHERENT #-} a ~ Unit => Default Arrow a Unit where
+  def = Arrow id

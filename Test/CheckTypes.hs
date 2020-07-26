@@ -9,8 +9,11 @@ import Data.Profunctor.Product.Adaptor
 
 import Definitions (Data2, Data3, Record2, Record3,
                     RecordDefaultName,
+                    Data2Inferrable(Data2Inferrable),
+                    Record2Inferrable(Record2Inferrable),
                     pData2, pData3, pRecord2, pRecord3,
-                    pRecordDefaultName)
+                    pRecordDefaultName,
+                    unArrow, Unit(Unit), point)
 import DefinitionsUndecidable ()
 
 -- The test suite checks that the TH derived adaptor is of the correct
@@ -74,6 +77,22 @@ pRecord2G = pRecord2
 pRecord3G :: ProductProfunctor p
           => Record3 (p a a') (p b b') (p c c') -> p (Record3 a b c) (Record3 a' b' c')
 pRecord3G = pRecord3
+
+-- Can type inference information flow from the left type argument of
+-- a Profunctor to the right?
+inferDataLR :: ()
+inferDataLR   = const () (unArrow def (Data2Inferrable   Unit Unit))
+
+inferRecordLR :: ()
+inferRecordLR = const () (unArrow def (Record2Inferrable Unit Unit))
+
+-- Can type inference information flow from the right type argument of
+-- a Profunctor to the left?
+inferDataRL :: ()
+inferDataRL   = case unArrow def point of Data2Inferrable Unit Unit -> ()
+
+inferRecordRL :: ()
+inferRecordRL = case unArrow def point of Record2Inferrable Unit Unit -> ()
 
 data a :~: b where
   Refl :: a :~: a

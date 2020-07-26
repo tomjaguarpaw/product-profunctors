@@ -16,19 +16,21 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             Exp(ConE, VarE, AppE, TupE, LamE),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify, conE, conT, varE, varP,
-                            instanceD)
+                            instanceD, Overlap(Incoherent))
 import Control.Monad ((<=<))
 import Control.Applicative (pure, liftA2, (<$>), (<*>))
 import Control.Arrow (second)
 
-makeAdaptorAndInstanceI :: Maybe String -> Name -> Q [Dec]
-makeAdaptorAndInstanceI adaptorNameM =
+makeAdaptorAndInstanceI :: Bool -> Maybe String -> Name -> Q [Dec]
+makeAdaptorAndInstanceI inferrable adaptorNameM =
   returnOrFail <=< r makeAandIE <=< reify
   where r = (return .)
         returnOrFail (Right decs) = decs
         returnOrFail (Left errMsg) = fail errMsg
         makeAandIE = makeAdaptorAndInstanceE sides adaptorNameM
-        sides = [Nothing]
+        sides = case inferrable of
+          True  -> [Just (Left ()), Just (Right ())]
+          False -> [Nothing]
 
 type Error = String
 
@@ -153,16 +155,18 @@ instanceDefinition :: Maybe (Either () ())
                    -> Name
                    -> Name
                    -> Q Dec
-instanceDefinition _ tyName' numTyVars numConVars adaptorName' conName =
+instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
   instanceDec
   where instanceDec = liftA2
 #if __GLASGOW_HASKELL__ >= 800
-            (\i j -> InstanceD Nothing i j [defDefinition])
+            (\i j -> InstanceD (Incoherent <$ side) i j [defDefinition])
 #else
             (\i j -> InstanceD i j [defDefinition])
 #endif
             instanceCxt instanceType
         p = varTS "p"
+        x0 = pure $ varTS "x0"
+        x1 = pure $ varTS "x1"
 
         instanceCxt = do
             m <- sequence matches
@@ -172,7 +176,13 @@ instanceDefinition _ tyName' numTyVars numConVars adaptorName' conName =
         pClass :: Monad m => (Name, [m Type])
         pClass = (''ProductProfunctor, [return p])
 
-        (matches, pArg0, pArg1) = ([], pArg0_, pArg1_)
+        (matches, pArg0, pArg1) = case side of
+            Nothing ->         ([],           pArg0_, pArg1_)
+            Just (Left ())  -> ([x0Matches_], x0,     pArg1_)
+            Just (Right ()) -> ([x1Matches_], pArg0_, x1)
+
+        x0Matches_ =  [t| $x0 ~ $(pArg0_) |]
+        x1Matches_ =  [t| $x1 ~ $(pArg1_) |]
 
         pArg0_ = pure $ pArg "0"
         pArg1_ = pure $ pArg "1"
