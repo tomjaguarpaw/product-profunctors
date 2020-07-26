@@ -156,11 +156,15 @@ instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
             instanceCxt instanceType
         p = varTS "p"
 
-        instanceCxt = mapM (uncurry classP) (pClass:defClasses)
+        instanceCxt = do
+            m <- sequence matches
+            others <- mapM (uncurry classP) (pClass:defClasses)
+            pure (m ++ others)
+
         pClass :: Monad m => (Name, [m Type])
         pClass = (''ProductProfunctor, [return p])
 
-        (_, pArg0, pArg1) = ([], pArg0_, pArg1_)
+        (matches, pArg0, pArg1) = ([], pArg0_, pArg1_)
 
         pArg0_ = pure $ pArg "0"
         pArg1_ = pure $ pArg "1"
