@@ -151,13 +151,14 @@ convert :: Profunctor p => (a2 -> a1) -> (tp -> tTp) -> (b1 -> b2)
 convert u u' f c = dimap u f . c . u'
 
 mkDefaultNs :: [Int] -> Q [Dec]
-mkDefaultNs = mapM mkDefaultN
+mkDefaultNs = fmap concat . mapM mkDefaultN
 
-mkDefaultN :: Int -> Q Dec
+mkDefaultN :: Int -> Q [Dec]
 mkDefaultN n =
-  instanceD (sequence (productProfunctor p : mkDefs))
-            (conT ''Default `appT` varT p `appT` mkTupT as `appT` mkTupT bs)
-            [mkFun]
+  sequence [ instanceD (sequence (productProfunctor p : mkDefs))
+                       (conT ''Default `appT` varT p `appT` mkTupT as `appT` mkTupT bs)
+                       [mkFun]
+           ]
   where
     mkDefs = zipWith (\a b -> default_ p a b) as bs
     mkTupT = foldl appT (tupleT n) . map varT
