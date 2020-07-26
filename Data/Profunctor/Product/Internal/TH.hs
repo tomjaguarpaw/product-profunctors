@@ -30,7 +30,9 @@ makeAdaptorAndInstanceI adaptorNameM = returnOrFail <=< r makeAandIE <=< reify
 
 type Error = String
 
-makeAdaptorAndInstanceE :: Maybe String -> Info -> Either Error (Q [Dec])
+makeAdaptorAndInstanceE :: Maybe String
+                        -> Info
+                        -> Either Error (Q [Dec])
 makeAdaptorAndInstanceE adaptorNameM info = do
   dataDecStuff <- dataDecStuffOfInfo info
   let tyName  = dTyName  dataDecStuff
