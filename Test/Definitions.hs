@@ -89,6 +89,9 @@ instance (Pointed a, Pointed b) => Pointed (Data2Inferrable a b) where
 instance (Pointed a, Pointed b) => Pointed (Record2Inferrable a b) where
   point = Record2Inferrable point point
 
+instance (Pointed a, Pointed b) => Pointed (a, b) where
+  point = (point, point)
+
 instance {-# INCOHERENT #-} a ~ Unit => Default Arrow Unit a where
   def = Arrow id
 

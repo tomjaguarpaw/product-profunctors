@@ -155,9 +155,16 @@ mkDefaultNs = fmap concat . mapM mkDefaultN
 
 mkDefaultN :: Int -> Q [Dec]
 mkDefaultN n =
-  sequence [ instanceD (sequence (productProfunctor p : mkDefs))
-                       (conT ''Default `appT` varT p `appT` mkTupT as `appT` mkTupT bs)
-                       [mkFun]
+  sequence [ instanceWithOverlapD
+                 (Just Incoherent)
+                 (sequence (productProfunctor p : x ~~ mkTupT as : mkDefs))
+                 (conT ''Default `appT` varT p `appT` x `appT` mkTupT bs)
+                 [mkFun]
+           , instanceWithOverlapD
+                 (Just Incoherent)
+                 (sequence (productProfunctor p : x ~~ mkTupT bs : mkDefs))
+                 (conT ''Default `appT` varT p `appT` mkTupT as `appT` x)
+                 [mkFun]
            ]
   where
     mkDefs = zipWith (\a b -> default_ p a b) as bs
@@ -167,6 +174,8 @@ mkDefaultN n =
       0 -> varE 'empty
       _ -> varE (mkName $ 'p':show n) `appE` tupE (replicate n (varE 'def))
     p = mkName "p"
+    x = varT (mkName "x")
+    t1 ~~ t2 = [t| $t1 ~ $t2 |]
     as = take n [ mkName $ 'a':show i | i <- [0::Int ..] ]
     bs = take n [ mkName $ 'b':show i | i <- [0::Int ..] ]
 

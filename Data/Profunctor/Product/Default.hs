@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances,
              FlexibleContexts, PolyKinds, TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 -- | For some 'Data.Profunctor.Product.ProductProfunctor's @p@ and
 -- types @a@, @a'@ there is a unique most sensible value of @p a a'@.

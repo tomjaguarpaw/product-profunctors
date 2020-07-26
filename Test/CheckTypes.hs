@@ -86,6 +86,9 @@ inferDataLR   = const () (unArrow def (Data2Inferrable   Unit Unit))
 inferRecordLR :: ()
 inferRecordLR = const () (unArrow def (Record2Inferrable Unit Unit))
 
+inferTupleLR :: ()
+inferTupleLR = const () (unArrow def (Unit, Unit))
+
 -- Can type inference information flow from the right type argument of
 -- a Profunctor to the left?
 inferDataRL :: ()
@@ -93,6 +96,9 @@ inferDataRL   = case unArrow def point of Data2Inferrable Unit Unit -> ()
 
 inferRecordRL :: ()
 inferRecordRL = case unArrow def point of Record2Inferrable Unit Unit -> ()
+
+inferTupleRL :: ()
+inferTupleRL = case unArrow def point of (Unit, Unit) -> ()
 
 data a :~: b where
   Refl :: a :~: a
