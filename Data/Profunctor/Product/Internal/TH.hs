@@ -47,8 +47,9 @@ makeAdaptorAndInstanceE adaptorNameM info = do
         ConTys   _        -> adaptorDefinition numTyVars conName
         FieldTys fieldTys -> adaptorDefinitionFields conName fieldTys
 
-      instanceDefinition' = instanceDefinition Nothing tyName numTyVars numConTys
-                                               adaptorNameN conName
+      instanceDefinition' = map (\side ->
+        instanceDefinition side tyName numTyVars numConTys adaptorNameN conName)
+        [Nothing]
 
       newtypeInstance' = if numConTys == 1 then
                            newtypeInstance conName tyName
@@ -56,9 +57,9 @@ makeAdaptorAndInstanceE adaptorNameM info = do
                            return []
 
   return $ do
-    as <- sequence [ adaptorSig'
-                   , adaptorDefinition' adaptorNameN
-                   , instanceDefinition']
+    as <- sequence ( [ adaptorSig'
+                     , adaptorDefinition' adaptorNameN ]
+                   ++ instanceDefinition' )
     ns <- newtypeInstance'
     return (as ++ ns)
 
