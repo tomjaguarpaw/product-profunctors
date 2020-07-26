@@ -133,7 +133,8 @@ import qualified Language.Haskell.TH                   as TH
 --
 -- generates the 'Default' instance and the adaptor @pFoo@.
 makeAdaptorAndInstance :: String -> TH.Name -> TH.Q [TH.Dec]
-makeAdaptorAndInstance adaptorNameS = makeAdaptorAndInstanceI (Just adaptorNameS)
+makeAdaptorAndInstance adaptorNameS =
+  makeAdaptorAndInstanceI (Just adaptorNameS)
 
 -- | For example
 --
@@ -145,4 +146,5 @@ makeAdaptorAndInstance adaptorNameS = makeAdaptorAndInstanceI (Just adaptorNameS
 -- of the adaptor is chosen by prefixing the type name \"Foo\" with
 -- the string \"p\".
 makeAdaptorAndInstance' :: TH.Name -> TH.Q [TH.Dec]
-makeAdaptorAndInstance' = makeAdaptorAndInstanceI Nothing
+makeAdaptorAndInstance' =
+  makeAdaptorAndInstanceI Nothing
