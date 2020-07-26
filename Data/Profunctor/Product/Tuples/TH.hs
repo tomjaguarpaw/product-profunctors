@@ -154,9 +154,10 @@ mkDefaultNs :: [Int] -> Q [Dec]
 mkDefaultNs = mapM mkDefaultN
 
 mkDefaultN :: Int -> Q Dec
-mkDefaultN n = instanceD (sequence (productProfunctor p : mkDefs))
-                         (conT ''Default `appT` varT p `appT` mkTupT as `appT` mkTupT bs)
-                         [mkFun]
+mkDefaultN n =
+  instanceD (sequence (productProfunctor p : mkDefs))
+            (conT ''Default `appT` varT p `appT` mkTupT as `appT` mkTupT bs)
+            [mkFun]
   where
     mkDefs = zipWith (\a b -> default_ p a b) as bs
     mkTupT = foldl appT (tupleT n) . map varT
