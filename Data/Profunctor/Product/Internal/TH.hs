@@ -160,6 +160,9 @@ instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
         pClass :: Monad m => (Name, [m Type])
         pClass = (''ProductProfunctor, [return p])
 
+        pArg0 = pure $ pArg "0"
+        pArg1 = pure $ pArg "1"
+
         defaultPredOfVar :: String -> (Name, [Type])
         defaultPredOfVar fn = (''Default, [p,
                                            mkTySuffix "0" fn,
@@ -173,8 +176,8 @@ instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
 
         instanceType = [t| $(conT ''Default)
                            $(pure $ p)
-                           $(pure $ pArg "0")
-                           $(pure $ pArg "1")
+                           $pArg0
+                           $pArg1
                          |]
 
         defDefinition = FunD 'def [simpleClause defBody]
