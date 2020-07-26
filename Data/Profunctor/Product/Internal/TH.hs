@@ -22,7 +22,8 @@ import Control.Applicative (pure, liftA2, (<$>), (<*>))
 import Control.Arrow (second)
 
 makeAdaptorAndInstanceI :: Maybe String -> Name -> Q [Dec]
-makeAdaptorAndInstanceI adaptorNameM = returnOrFail <=< r makeAandIE <=< reify
+makeAdaptorAndInstanceI adaptorNameM =
+  returnOrFail <=< r makeAandIE <=< reify
   where r = (return .)
         returnOrFail (Right decs) = decs
         returnOrFail (Left errMsg) = fail errMsg
