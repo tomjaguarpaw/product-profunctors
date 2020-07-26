@@ -27,14 +27,16 @@ makeAdaptorAndInstanceI adaptorNameM =
   where r = (return .)
         returnOrFail (Right decs) = decs
         returnOrFail (Left errMsg) = fail errMsg
-        makeAandIE = makeAdaptorAndInstanceE adaptorNameM
+        makeAandIE = makeAdaptorAndInstanceE sides adaptorNameM
+        sides = [Nothing]
 
 type Error = String
 
-makeAdaptorAndInstanceE :: Maybe String
+makeAdaptorAndInstanceE :: [Maybe (Either () ())]
+                        -> Maybe String
                         -> Info
                         -> Either Error (Q [Dec])
-makeAdaptorAndInstanceE adaptorNameM info = do
+makeAdaptorAndInstanceE sides adaptorNameM info = do
   dataDecStuff <- dataDecStuffOfInfo info
   let tyName  = dTyName  dataDecStuff
       tyVars  = dTyVars  dataDecStuff
@@ -52,7 +54,7 @@ makeAdaptorAndInstanceE adaptorNameM info = do
 
       instanceDefinition' = map (\side ->
         instanceDefinition side tyName numTyVars numConTys adaptorNameN conName)
-        [Nothing]
+        sides
 
       newtypeInstance' = if numConTys == 1 then
                            newtypeInstance conName tyName
