@@ -47,7 +47,7 @@ makeAdaptorAndInstanceE adaptorNameM info = do
         ConTys   _        -> adaptorDefinition numTyVars conName
         FieldTys fieldTys -> adaptorDefinitionFields conName fieldTys
 
-      instanceDefinition' = instanceDefinition tyName numTyVars numConTys
+      instanceDefinition' = instanceDefinition Nothing tyName numTyVars numConTys
                                                adaptorNameN conName
 
       newtypeInstance' = if numConTys == 1 then
@@ -140,13 +140,14 @@ constructorOfConstructors _many =
 extractConstructorStuff :: [Con] -> Either Error (Name, ConTysFields)
 extractConstructorStuff = conStuffOfConstructor <=< constructorOfConstructors
 
-instanceDefinition :: Name
+instanceDefinition :: Maybe (Either () ())
+                   -> Name
                    -> Int
                    -> Int
                    -> Name
                    -> Name
                    -> Q Dec
-instanceDefinition tyName' numTyVars numConVars adaptorName' conName =
+instanceDefinition _ tyName' numTyVars numConVars adaptorName' conName =
   instanceDec
   where instanceDec = liftA2
 #if __GLASGOW_HASKELL__ >= 800
