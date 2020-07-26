@@ -146,7 +146,8 @@ instanceDefinition :: Name
                    -> Name
                    -> Name
                    -> Q Dec
-instanceDefinition tyName' numTyVars numConVars adaptorName' conName=instanceDec
+instanceDefinition tyName' numTyVars numConVars adaptorName' conName =
+  instanceDec
   where instanceDec = liftA2
 #if __GLASGOW_HASKELL__ >= 800
             (\i j -> InstanceD Nothing i j [defDefinition])
