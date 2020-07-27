@@ -168,10 +168,10 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         x = pure $ varTS "x"
 
         instanceCxt = do
-            m <- sequence typeMatch
+            typeMatch' <- sequence typeMatch
             productProfunctor_p' <- productProfunctor_p
             default_p_as0_as1 <- traverse default_p_a0_a1 (allTyVars numTyVars)
-            pure (productProfunctor_p' : m ++ default_p_as0_as1)
+            pure (productProfunctor_p' : typeMatch' ++ default_p_as0_as1)
 
         productProfunctor_p :: Q Pred
         productProfunctor_p = classP ''ProductProfunctor [p]
