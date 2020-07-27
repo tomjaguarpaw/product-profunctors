@@ -184,9 +184,9 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         tyName1 = tyName "1"
 
         defaultPredOfVar :: Applicative m => String -> (Name, [m Type])
-        defaultPredOfVar fn = (''Default, [p,
-                                           pure (mkTySuffix "0" fn),
-                                           pure (mkTySuffix "1" fn)])
+        defaultPredOfVar a  = (''Default, [p,
+                                           pure (mkTySuffix "0" a),
+                                           pure (mkTySuffix "1" a)])
 
         defClasses = map (defaultPredOfVar)
                          (allTyVars numTyVars)
