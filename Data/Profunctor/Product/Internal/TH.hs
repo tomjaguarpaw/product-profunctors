@@ -193,7 +193,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
                          (allTyVars numTyVars)
 
         pArg :: String -> Q Type
-        pArg s = pure $ pArg' tyName' s numTyVars
+        pArg suffix = pure $ pArg' tyName' suffix numTyVars
 
         instanceType = [t| $(conT ''Default)
                            $(pure $ p)
