@@ -168,7 +168,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         x = pure $ varTS "x"
 
         instanceCxt = do
-            m <- sequence matches
+            m <- sequence typeMatch
             productProfunctor_p' <- productProfunctor_p
             default_p_as0_as1 <- traverse default_p_a0_a1 (allTyVars numTyVars)
             pure (productProfunctor_p' : m ++ default_p_as0_as1)
@@ -176,7 +176,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         productProfunctor_p :: Q Pred
         productProfunctor_p = classP ''ProductProfunctor [p]
 
-        (matches, pArg0, pArg1) = case side of
+        (typeMatch, pArg0, pArg1) = case side of
             Nothing ->         ([],                       tyName0, tyName1)
             Just (Left ())  -> ([ [t| $x ~ $tyName0 |] ], x,       tyName1)
             Just (Right ()) -> ([ [t| $x ~ $tyName1 |] ], tyName0, x)
