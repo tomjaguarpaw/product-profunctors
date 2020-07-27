@@ -194,11 +194,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         tyName :: String -> Q Type
         tyName suffix = pure $ pArg' tyName' suffix numTyVars
 
-        instanceType = [t| $(conT ''Default)
-                           $p
-                           $pArg0
-                           $pArg1
-                         |]
+        instanceType = [t| $(conT ''Default) $p $pArg0 $pArg1 |]
 
         defDefinition = FunD 'def [simpleClause defBody]
         defBody = NormalB(VarE adaptorName' `AppE` appEAll (ConE conName) defsN)
