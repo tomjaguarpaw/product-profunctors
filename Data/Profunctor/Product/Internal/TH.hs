@@ -177,12 +177,12 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         pClass = (''ProductProfunctor, [return p])
 
         (matches, pArg0, pArg1) = case side of
-            Nothing ->         ([],                       pArg0_, pArg1_)
-            Just (Left ())  -> ([ [t| $x0 ~ $pArg0_ |] ], x0,     pArg1_)
-            Just (Right ()) -> ([ [t| $x1 ~ $pArg1_ |] ], pArg0_, x1)
+            Nothing ->         ([],                        tyName0, tyName1)
+            Just (Left ())  -> ([ [t| $x0 ~ $tyName0 |] ], x0,      tyName1)
+            Just (Right ()) -> ([ [t| $x1 ~ $tyName1 |] ], tyName0, x1)
 
-        pArg0_ = pArg "0"
-        pArg1_ = pArg "1"
+        tyName0 = tyName "0"
+        tyName1 = tyName "1"
 
         defaultPredOfVar :: String -> (Name, [Type])
         defaultPredOfVar fn = (''Default, [p,
@@ -192,8 +192,8 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         defClasses = map (second (map return) . defaultPredOfVar)
                          (allTyVars numTyVars)
 
-        pArg :: String -> Q Type
-        pArg suffix = pure $ pArg' tyName' suffix numTyVars
+        tyName :: String -> Q Type
+        tyName suffix = pure $ pArg' tyName' suffix numTyVars
 
         instanceType = [t| $(conT ''Default)
                            $(pure $ p)
