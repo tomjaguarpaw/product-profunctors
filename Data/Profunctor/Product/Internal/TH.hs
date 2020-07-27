@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Data.Profunctor.Product.Internal.TH where
@@ -131,10 +132,10 @@ conStuffOfConstructor (RecC conName vst) = do
 conStuffOfConstructor _ = Left "I can't deal with your constructor type"
 
 constructorOfConstructors :: [Con] -> Either Error Con
-constructorOfConstructors [single] = return single
-constructorOfConstructors [] = Left "I need at least one constructor"
-constructorOfConstructors _many =
-  Left "I can't deal with more than one constructor"
+constructorOfConstructors = \case
+  [single] -> return single
+  []       -> Left "I need at least one constructor"
+  _many    -> Left "I can't deal with more than one constructor"
 
 extractConstructorStuff :: [Con] -> Either Error (Name, ConTysFields)
 extractConstructorStuff = conStuffOfConstructor <=< constructorOfConstructors
