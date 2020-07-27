@@ -181,8 +181,8 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
             Just (Left ())  -> ([ [t| $x0 ~ $pArg0_ |] ], x0,     pArg1_)
             Just (Right ()) -> ([ [t| $x1 ~ $pArg1_ |] ], pArg0_, x1)
 
-        pArg0_ = pure $ pArg "0"
-        pArg1_ = pure $ pArg "1"
+        pArg0_ = pArg "0"
+        pArg1_ = pArg "1"
 
         defaultPredOfVar :: String -> (Name, [Type])
         defaultPredOfVar fn = (''Default, [p,
@@ -192,8 +192,8 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         defClasses = map (second (map return) . defaultPredOfVar)
                          (allTyVars numTyVars)
 
-        pArg :: String -> Type
-        pArg s = pArg' tyName' s numTyVars
+        pArg :: String -> Q Type
+        pArg s = pure $ pArg' tyName' s numTyVars
 
         instanceType = [t| $(conT ''Default)
                            $(pure $ p)
