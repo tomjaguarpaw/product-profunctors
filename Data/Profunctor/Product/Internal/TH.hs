@@ -163,7 +163,8 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
             (\i j -> InstanceD i j [defDefinition])
 #endif
             instanceCxt instanceType
-        p = varTS "p"
+        p :: Applicative m => m Type
+        p = pure $ varTS "p"
         x = pure $ varTS "x"
 
         instanceCxt = do
@@ -172,7 +173,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
             pure (m ++ others)
 
         pClass :: Monad m => (Name, [m Type])
-        pClass = (''ProductProfunctor, [return p])
+        pClass = (''ProductProfunctor, [p])
 
         (matches, pArg0, pArg1) = case side of
             Nothing ->         ([],                       tyName0, tyName1)
@@ -183,7 +184,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         tyName1 = tyName "1"
 
         defaultPredOfVar :: Applicative m => String -> (Name, [m Type])
-        defaultPredOfVar fn = (''Default, [pure p,
+        defaultPredOfVar fn = (''Default, [p,
                                            pure (mkTySuffix "0" fn),
                                            pure (mkTySuffix "1" fn)])
 
@@ -194,7 +195,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         tyName suffix = pure $ pArg' tyName' suffix numTyVars
 
         instanceType = [t| $(conT ''Default)
-                           $(pure $ p)
+                           $p
                            $pArg0
                            $pArg1
                          |]
