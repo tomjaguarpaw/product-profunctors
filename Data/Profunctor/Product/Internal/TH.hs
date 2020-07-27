@@ -181,8 +181,8 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
             Just (Left ())  -> ([x0Matches_], x0,     pArg1_)
             Just (Right ()) -> ([x1Matches_], pArg0_, x1)
 
-        x0Matches_ =  [t| $x0 ~ $(pArg0_) |]
-        x1Matches_ =  [t| $x1 ~ $(pArg1_) |]
+        x0Matches_ =  [t| $x0 ~ $pArg0_ |]
+        x1Matches_ =  [t| $x1 ~ $pArg1_ |]
 
         pArg0_ = pure $ pArg "0"
         pArg1_ = pure $ pArg "1"
