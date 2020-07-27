@@ -124,12 +124,10 @@ varNameOfBinder (PlainTV n) = n
 varNameOfBinder (KindedTV n _) = n
 
 conStuffOfConstructor :: Con -> Either Error (Name, ConTysFields)
-conStuffOfConstructor (NormalC conName st) =
-  return (conName, ConTys (map snd st))
-conStuffOfConstructor (RecC conName vst) =
-  return (conName, FieldTys (map (\(n, _, t) -> (n, t)) vst))
-
-conStuffOfConstructor _ = Left "I can't deal with your constructor type"
+conStuffOfConstructor = \case
+  NormalC conName st -> return (conName, ConTys (map snd st))
+  RecC conName vst -> return (conName, FieldTys (map (\(n, _, t) -> (n, t)) vst))
+  _ -> Left "I can't deal with your constructor type"
 
 constructorOfConstructors :: [Con] -> Either Error Con
 constructorOfConstructors = \case
