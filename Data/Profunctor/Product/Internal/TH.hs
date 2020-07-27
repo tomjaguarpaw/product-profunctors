@@ -12,10 +12,10 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             Con(RecC, NormalC),
                             Clause(Clause),
                             Type(VarT, ForallT, AppT, ConT),
-                            Body(NormalB), Q, classP,
+                            Body(NormalB), Q,
                             Exp(ConE, VarE, AppE, TupE, LamE),
                             Pat(TupP, VarP, ConP), Name,
-                            Info(TyConI), reify, conE, conT, varE, varP,
+                            Info(TyConI), reify, conE, appT, conT, varE, varP,
                             instanceD, Overlap(Incoherent), Pred)
 import Control.Monad ((<=<))
 import Control.Applicative (pure, liftA2, (<$>), (<*>))
@@ -334,6 +334,9 @@ xTuple patCon retCon (funN, numTyVars) = FunD funN [clause]
         body = NormalB (retCon varExps)
         varPats = map varPS (allTyVars numTyVars)
         varExps = map varS (allTyVars numTyVars)
+
+classP :: Name -> [Q Type] -> Q Type
+classP class_ = foldl appT (conT class_)
 
 tupP :: [Pat] -> Pat
 tupP [p] = p
