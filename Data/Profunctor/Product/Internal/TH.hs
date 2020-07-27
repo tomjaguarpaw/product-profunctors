@@ -16,7 +16,7 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             Exp(ConE, VarE, AppE, TupE, LamE),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify, conE, conT, varE, varP,
-                            instanceD, Overlap(Incoherent))
+                            instanceD, Overlap(Incoherent), Pred)
 import Control.Monad ((<=<))
 import Control.Applicative (pure, liftA2, (<$>), (<*>))
 
@@ -169,11 +169,11 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
 
         instanceCxt = do
             m <- sequence matches
-            others <- mapM (uncurry classP) (pClass:defClasses)
+            others <- sequence (pClass:defClasses)
             pure (m ++ others)
 
-        pClass :: Monad m => (Name, [m Type])
-        pClass = (''ProductProfunctor, [p])
+        pClass :: Q Pred
+        pClass = classP ''ProductProfunctor [p]
 
         (matches, pArg0, pArg1) = case side of
             Nothing ->         ([],                       tyName0, tyName1)
@@ -183,8 +183,8 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         tyName0 = tyName "0"
         tyName1 = tyName "1"
 
-        defaultPredOfVar :: Applicative m => String -> (Name, [m Type])
-        defaultPredOfVar a  = (''Default, [p, tvar a "0", tvar a "1"])
+        defaultPredOfVar :: String -> Q Pred
+        defaultPredOfVar a  = classP ''Default [p, tvar a "0", tvar a "1"]
 
         tvar a i = pure (mkTySuffix i a)
 
