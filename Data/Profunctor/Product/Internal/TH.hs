@@ -165,8 +165,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
 #endif
             instanceCxt instanceType
         p = varTS "p"
-        x0 = pure $ varTS "x0"
-        x1 = pure $ varTS "x1"
+        x = pure $ varTS "x"
 
         instanceCxt = do
             m <- sequence matches
@@ -177,9 +176,9 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         pClass = (''ProductProfunctor, [return p])
 
         (matches, pArg0, pArg1) = case side of
-            Nothing ->         ([],                        tyName0, tyName1)
-            Just (Left ())  -> ([ [t| $x0 ~ $tyName0 |] ], x0,      tyName1)
-            Just (Right ()) -> ([ [t| $x1 ~ $tyName1 |] ], tyName0, x1)
+            Nothing ->         ([],                       tyName0, tyName1)
+            Just (Left ())  -> ([ [t| $x ~ $tyName0 |] ], x,       tyName1)
+            Just (Right ()) -> ([ [t| $x ~ $tyName1 |] ], tyName0, x)
 
         tyName0 = tyName "0"
         tyName1 = tyName "1"
