@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -68,13 +67,6 @@ data Select = Fst | Snd
 -- For 8.0.1 and newer versions, 'Unzip' is an independent type family
 -- and 'Unzippable' is just an empty class for backwards compatibility.
 class Unzippable (a :: k) where
-#if __GLASGOW_HASKELL__ < 800
-  type Unzip (z :: Select) a :: k
-  type Unzip z a = a
-
-instance Unzippable (f :: * -> k') => Unzippable (f a) where
-  type Unzip z (f a) = Unzip z f (Project z a)
-#else
 
 type family Unzip (z :: Select) (a :: k) :: k where
   Unzip z (f a) = Unzip' z f (Project z a)
@@ -83,7 +75,6 @@ type family Unzip (z :: Select) (a :: k) :: k where
 -- | A hack to enable kind-polymorphic recursion.
 type family Unzip' (z :: Select) (a :: k) :: k where
   Unzip' z a = Unzip z a
-#endif
 
 -- There is a bug in GHC < 8 apparently preventing us from using pure
 -- type families. https://ghc.haskell.org/trac/ghc/ticket/11699

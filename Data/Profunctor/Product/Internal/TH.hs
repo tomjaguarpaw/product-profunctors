@@ -97,11 +97,7 @@ data DataDecStuff = DataDecStuff {
   }
 
 dataDecStuffOfInfo :: Info -> Either Error DataDecStuff
-#if __GLASGOW_HASKELL__ >= 800
 dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars _kind constructors _deriving)) =
-#else
-dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars constructors _deriving)) =
-#endif
   do
     (conName, conTys) <- extractConstructorStuff constructors
     let tyVars' = map varNameOfBinder tyVars
@@ -111,11 +107,7 @@ dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars constructors _deriving)) =
                         , dConTys  = conTys
                         }
 
-#if __GLASGOW_HASKELL__ >= 800
 dataDecStuffOfInfo (TyConI (NewtypeD _cxt tyName tyVars _kind constructor _deriving)) =
-#else
-dataDecStuffOfInfo (TyConI (NewtypeD _cxt tyName tyVars constructor _deriving)) =
-#endif
   do
     (conName, conTys) <- extractConstructorStuff [constructor]
     let tyVars' = map varNameOfBinder tyVars
@@ -157,11 +149,7 @@ instanceDefinition :: Maybe (Either () ())
 instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
   instanceDec
   where instanceDec = liftA2
-#if __GLASGOW_HASKELL__ >= 800
             (\i j -> InstanceD (Incoherent <$ side) i j [defDefinition])
-#else
-            (\i j -> InstanceD i j [defDefinition])
-#endif
             instanceCxt instanceType
         p :: Applicative m => m Type
         p = pure $ varTS "p"
