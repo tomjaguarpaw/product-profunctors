@@ -19,7 +19,6 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             instanceD, Overlap(Incoherent))
 import Control.Monad ((<=<))
 import Control.Applicative (pure, liftA2, (<$>), (<*>))
-import Control.Arrow (second)
 
 makeAdaptorAndInstanceI :: Bool -> Maybe String -> Name -> Q [Dec]
 makeAdaptorAndInstanceI inferrable adaptorNameM =
@@ -183,12 +182,12 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         tyName0 = tyName "0"
         tyName1 = tyName "1"
 
-        defaultPredOfVar :: String -> (Name, [Type])
-        defaultPredOfVar fn = (''Default, [p,
-                                           mkTySuffix "0" fn,
-                                           mkTySuffix "1" fn])
+        defaultPredOfVar :: Applicative m => String -> (Name, [m Type])
+        defaultPredOfVar fn = (''Default, [pure p,
+                                           pure (mkTySuffix "0" fn),
+                                           pure (mkTySuffix "1" fn)])
 
-        defClasses = map (second (map return) . defaultPredOfVar)
+        defClasses = map (defaultPredOfVar)
                          (allTyVars numTyVars)
 
         tyName :: String -> Q Type
