@@ -177,12 +177,9 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         pClass = (''ProductProfunctor, [return p])
 
         (matches, pArg0, pArg1) = case side of
-            Nothing ->         ([],           pArg0_, pArg1_)
-            Just (Left ())  -> ([x0Matches_], x0,     pArg1_)
-            Just (Right ()) -> ([x1Matches_], pArg0_, x1)
-
-        x0Matches_ =  [t| $x0 ~ $pArg0_ |]
-        x1Matches_ =  [t| $x1 ~ $pArg1_ |]
+            Nothing ->         ([],                       pArg0_, pArg1_)
+            Just (Left ())  -> ([ [t| $x0 ~ $pArg0_ |] ], x0,     pArg1_)
+            Just (Right ()) -> ([ [t| $x1 ~ $pArg1_ |] ], pArg0_, x1)
 
         pArg0_ = pure $ pArg "0"
         pArg1_ = pure $ pArg "1"
