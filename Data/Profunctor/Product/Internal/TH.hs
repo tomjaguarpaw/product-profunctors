@@ -170,7 +170,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         instanceCxt = do
             m <- sequence matches
             productProfunctor_p' <- productProfunctor_p
-            others <- sequence defClasses
+            others <- traverse default_p_a0_a1 (allTyVars numTyVars)
             pure (productProfunctor_p' : m ++ others)
 
         productProfunctor_p :: Q Pred
@@ -188,9 +188,6 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         default_p_a0_a1 a  = classP ''Default [p, tvar a "0", tvar a "1"]
 
         tvar a i = pure (mkTySuffix i a)
-
-        defClasses = map default_p_a0_a1
-                         (allTyVars numTyVars)
 
         tyName :: String -> Q Type
         tyName suffix = pure $ pArg' tyName' suffix numTyVars
