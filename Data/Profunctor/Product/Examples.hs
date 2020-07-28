@@ -97,8 +97,15 @@ instance PP.ProductProfunctor (Take a) where
 
 newtype Traverse f a b = Traverse { runTraverse :: a -> f b } deriving Functor
 
+-- | Use 'sequenceT' instead.  It has a better name.
 traverseT :: D.Default (Traverse f) a b => a -> f b
 traverseT = runTraverse D.def
+
+-- | Actually, @Sequence@ is a better name for this
+type Sequence = Traverse
+
+sequenceT :: D.Default (Sequence f) a b => a -> f b
+sequenceT = runTraverse D.def
 
 instance D.Default (Traverse f) (f a) a where
   def = Traverse id
