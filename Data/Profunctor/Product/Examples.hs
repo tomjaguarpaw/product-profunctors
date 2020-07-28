@@ -104,9 +104,20 @@ traverseT = runTraverse D.def
 -- | Actually, @Sequence@ is a better name for this
 type Sequence = Traverse
 
+-- | A higher-order generalisation of 'Data.Traversable.sequenceA'.  For example
+--
+-- @
+-- > sequenceT (print 3110, putStrLn "World") :: IO ((), ())
+-- 3110
+-- World
+-- ((),())
+-- @
 sequenceT :: D.Default (Sequence f) a b => a -> f b
 sequenceT = runTraverse D.def
 
+-- If we used this then inference may get better:
+--
+--    instance a ~ b => D.Default (Traverse f) (f a) b where
 instance D.Default (Traverse f) (f a) a where
   def = Traverse id
 
