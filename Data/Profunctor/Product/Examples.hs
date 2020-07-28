@@ -2,13 +2,15 @@
 {-# LANGUAGE DeriveFunctor         #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies          #-}
 
 module Data.Profunctor.Product.Examples where
 
 import qualified Data.Profunctor                 as P
 import qualified Data.Profunctor.Product         as PP
 import qualified Data.Profunctor.Product.Default as D
-import           Control.Applicative             (Applicative, liftA2, pure, (<*>))
+import           Control.Applicative             (Applicative, liftA2, pure, (<*>),
+                                                  ZipList(ZipList), getZipList)
 
 newtype Replicator r f a b = Replicator (r -> f b)
   deriving Functor
@@ -133,3 +135,41 @@ instance Functor f => P.Profunctor (Traverse f) where
 instance Applicative f => PP.ProductProfunctor (Traverse f) where
   purePP = pure
   (****) = (<*>)
+
+newtype Zipper a b = Zipper { unZipper :: Traverse ZipList a b }
+  deriving Functor
+
+instance a ~ b => D.Default Zipper [a] b where
+  def = Zipper (P.dimap ZipList id D.def)
+
+-- { Boilerplate
+
+instance P.Profunctor Zipper where
+  dimap f g = Zipper . P.dimap f g . unZipper
+
+instance Applicative (Zipper a) where
+  pure = Zipper . pure
+  f <*> x = Zipper ((<*>) (unZipper f) (unZipper x))
+
+instance PP.ProductProfunctor Zipper where
+  purePP = pure
+  (****) = (<*>)
+
+-- }
+
+-- | A challenge from a Clojurist on Hacker News
+-- (https://news.ycombinator.com/item?id=23939350)
+--
+-- @
+-- > cl_map (uncurry (+)) ([1,2,3], [4,5,6])
+-- [5,7,9]
+--
+-- > cl_map (+3) [1,2,3]
+-- [4,5,6]
+--
+-- > let max3 (x, y, z) = x `max` y `max` z
+-- > cl_map max3 ([1,20], [3,4], [5,6])
+-- [5,20]
+-- @
+cl_map :: D.Default Zipper a b => (b -> r) -> a -> [r]
+cl_map f = getZipList . fmap f . runTraverse (unZipper D.def)
