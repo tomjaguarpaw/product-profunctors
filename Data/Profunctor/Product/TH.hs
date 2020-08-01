@@ -152,3 +152,7 @@ makeAdaptorAndInstance' =
 makeAdaptorAndInstanceInferrable :: String -> TH.Name -> TH.Q [TH.Dec]
 makeAdaptorAndInstanceInferrable adaptorNameS =
   makeAdaptorAndInstanceI True (Just adaptorNameS)
+
+makeAdaptorAndInstanceInferrable' :: TH.Name -> TH.Q [TH.Dec]
+makeAdaptorAndInstanceInferrable' =
+  makeAdaptorAndInstanceI False Nothing
