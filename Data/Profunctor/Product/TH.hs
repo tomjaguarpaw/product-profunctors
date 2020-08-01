@@ -155,4 +155,4 @@ makeAdaptorAndInstanceInferrable adaptorNameS =
 
 makeAdaptorAndInstanceInferrable' :: TH.Name -> TH.Q [TH.Dec]
 makeAdaptorAndInstanceInferrable' =
-  makeAdaptorAndInstanceI False Nothing
+  makeAdaptorAndInstanceI True Nothing
