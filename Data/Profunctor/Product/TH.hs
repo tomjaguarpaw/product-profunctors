@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 -- | If you have a data declaration which is a polymorphic product,
 -- for example
 --
