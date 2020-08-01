@@ -16,7 +16,7 @@
 -- \"adaptor\" with the following splice:
 --
 -- @
--- \$(makeAdaptorAndInstance \"pFoo\" ''Foo)
+-- \$(makeAdaptorAndInstanceInferrable \"pFoo\" ''Foo)
 -- @
 --
 -- The adaptor for a type @Foo@ is by convention called @pFoo@, but in
@@ -24,7 +24,7 @@
 -- the name @pFoo@ yourself you can use
 --
 -- @
--- \$(makeAdaptorAndInstance' ''Foo)
+-- \$(makeAdaptorAndInstanceInferrable' ''Foo)
 -- @
 --
 -- and it will be named @pFoo@ automatically.
@@ -126,31 +126,37 @@ import qualified Language.Haskell.TH                   as TH
 -- | For example
 --
 -- @
--- \$(makeAdaptorAndInstance \"pFoo\" ''Foo)
+-- \$(makeAdaptorAndInstanceInferrable \"pFoo\" ''Foo)
 -- @
 --
 -- generates the 'Default' instance and the adaptor @pFoo@.
-makeAdaptorAndInstance :: String -> TH.Name -> TH.Q [TH.Dec]
-makeAdaptorAndInstance adaptorNameS =
-  makeAdaptorAndInstanceI False (Just adaptorNameS)
+makeAdaptorAndInstanceInferrable :: String -> TH.Name -> TH.Q [TH.Dec]
+makeAdaptorAndInstanceInferrable adaptorNameS =
+  makeAdaptorAndInstanceI True (Just adaptorNameS)
 
 -- | For example
 --
 -- @
--- \$(makeAdaptorAndInstance' ''Foo)
+-- \$(makeAdaptorAndInstanceInferrable' ''Foo)
 -- @
 --
 -- generates the 'Default' instance and the adaptor @pFoo@.  The name
 -- of the adaptor is chosen by prefixing the type name \"Foo\" with
 -- the string \"p\".
-makeAdaptorAndInstance' :: TH.Name -> TH.Q [TH.Dec]
-makeAdaptorAndInstance' =
-  makeAdaptorAndInstanceI False Nothing
-
-makeAdaptorAndInstanceInferrable :: String -> TH.Name -> TH.Q [TH.Dec]
-makeAdaptorAndInstanceInferrable adaptorNameS =
-  makeAdaptorAndInstanceI True (Just adaptorNameS)
-
 makeAdaptorAndInstanceInferrable' :: TH.Name -> TH.Q [TH.Dec]
 makeAdaptorAndInstanceInferrable' =
   makeAdaptorAndInstanceI True Nothing
+
+-- | Use 'makeAdaptorAndInstanceInferrable' instead, because it
+-- generates instances with better inference properties.  Will be
+-- deprecated in version 0.12.
+makeAdaptorAndInstance :: String -> TH.Name -> TH.Q [TH.Dec]
+makeAdaptorAndInstance adaptorNameS =
+  makeAdaptorAndInstanceI False (Just adaptorNameS)
+
+-- | Use 'makeAdaptorAndInstanceInferrable' instead, because it
+-- generates instances with better inference properties.  Will be
+-- deprecated in version 0.12.
+makeAdaptorAndInstance' :: TH.Name -> TH.Q [TH.Dec]
+makeAdaptorAndInstance' =
+  makeAdaptorAndInstanceI False Nothing
