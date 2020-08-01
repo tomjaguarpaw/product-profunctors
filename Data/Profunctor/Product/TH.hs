@@ -16,7 +16,7 @@
 -- \"adaptor\" with the following splice:
 --
 -- @
--- \$(makeAdaptorAndInstanceInferrable \"pFoo\" ''Foo)
+-- \$('makeAdaptorAndInstanceInferrable' \"pFoo\" ''Foo)
 -- @
 --
 -- The adaptor for a type @Foo@ is by convention called @pFoo@, but in
@@ -24,7 +24,7 @@
 -- the name @pFoo@ yourself you can use
 --
 -- @
--- \$(makeAdaptorAndInstanceInferrable' ''Foo)
+-- \$('makeAdaptorAndInstanceInferrable'' ''Foo)
 -- @
 --
 -- and it will be named @pFoo@ automatically.
@@ -32,7 +32,7 @@
 -- @pFoo@ will have the type
 --
 -- @
--- pFoo :: ProductProfunctor p
+-- pFoo :: 'Data.Profunctor.Product.ProductProfunctor' p
 --      => Foo (p a a') (p b b') (p c c')
 --      -> p (Foo a b c) (Foo a' b' c')
 -- @
@@ -40,7 +40,7 @@
 -- and the instance generated will be
 --
 -- @
--- instance (ProductProfunctor p, Default p a a', Default p b b', Default p c c')
+-- instance ('Data.Profunctor.Product.ProductProfunctor' p, Default p a a', Default p b b', Default p c c')
 --       => Default p (Foo a b c) (Foo a' b' c')
 -- @
 --
@@ -49,7 +49,7 @@
 -- (its implementation is given below).
 --
 -- @
--- pFooApplicative :: Applicative f
+-- pFooApplicative :: 'Control.Applicative.Applicative' f
 --                 => Foo (f a) (f b) (f c)
 --                 -> f (Foo a b c)
 -- @
@@ -89,32 +89,32 @@
 -- @Applicative@ case.  For an @Applicative@ we would write
 --
 -- @
--- pFooApplicative :: Applicative f
+-- pFooApplicative :: 'Control.Applicative.Applicative' f
 --                 => Foo (f a) (f b) (f c) -> f (Foo a b c)
--- pFooApplicative f = Foo \<$\> foo f
---                         \<*\> bar f
---                         \<*\> baz f
+-- pFooApplicative f = Foo 'Control.Applicative.<$>' foo f
+--                         'Control.Applicative.<*>' bar f
+--                         'Control.Applicative.<*>' baz f
 -- @
 --
 -- whereas for a @ProductProfunctor@ we write
 --
 -- @
--- import Data.Profunctor (lmap)
--- import Data.Profunctor.Product ((***$), (****))
+-- import "Data.Profunctor" ('Data.Profunctor.lmap')
+-- import "Data.Profunctor.Product" (('Data.Profunctor.Product.***$'), ('Data.Profunctor.Product.****'))
 --
--- pFoo :: ProductProfunctor p
+-- pFoo :: 'Data.Profunctor.Product.ProductProfunctor' p
 --      => Foo (p a a') (p b b') (p c c') -> p (Foo a b c) (Foo a' b' c')
--- pFoo f = Foo ***$ lmap foo (foo f)
---              **** lmap bar (bar f)
---              **** lmap baz (baz f)
+-- pFoo f = Foo 'Data.Profunctor.Product.***$' 'Data.Profunctor.lmap' foo (foo f)
+--              'Data.Profunctor.Product.****' 'Data.Profunctor.lmap' bar (bar f)
+--              'Data.Profunctor.Product.****' 'Data.Profunctor.lmap' baz (baz f)
 -- @
 --
 -- The 'Default' instance is then very simple.
 --
 -- @
--- instance (ProductProfunctor p, Default p a a', Default p b b', Default p c c')
---       => Default p (Foo a b c) (Foo a' b' c') where
---     def = pFoo (Foo def def def)
+-- instance ('Data.Profunctor.Product.ProductProfunctor' p, 'Data.Profunctor.Product.Default.Default' p a a', 'Data.Profunctor.Product.Default.Default' p b b', 'Data.Profunctor.Product.Default.Default' p c c')
+--       => 'Data.Profunctor.Product.Default.Default' p (Foo a b c) (Foo a' b' c') where
+--     'Data.Profunctor.Product.Default.def' = pFoo (Foo 'Data.Profunctor.Product.Default.def' 'Data.Profunctor.Product.Default.def' 'Data.Profunctor.Product.Default.def')
 -- @
 
 
