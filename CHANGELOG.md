@@ -1,3 +1,11 @@
+# 0.11.0.0
+
+* Added `makeAdaptorAndInstanceInferrable` which has better inference
+  properties, at the cost having to turn on `UndecidableInstances`.
+  The tuple instances are now made by this method too.
+
+# 0.10.0.1
+
 * Added `Data.Profunctor.Product.Examples`
 
 # 0.10.0.0
