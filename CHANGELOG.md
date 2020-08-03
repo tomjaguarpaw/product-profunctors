@@ -4,6 +4,15 @@
   properties, at the cost having to turn on `UndecidableInstances`.
   The tuple instances are now made by this method too.
 
+  Please note that if you have written your own `Default` instances
+  containing tuples they will no longer work, or may break in
+  unexpected ways.  For example, the following are no longer supported
+
+  ```haskell
+  instance Default MyProfunctor (Foo, Bar) Baz
+  instance Default MyProfunctor Foo,  (Bar, Baz)
+  ```
+
 # 0.10.0.1
 
 * Added `Data.Profunctor.Product.Examples`
