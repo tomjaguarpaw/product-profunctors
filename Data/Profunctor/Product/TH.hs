@@ -75,12 +75,12 @@
 -- then you will also get the instance
 --
 -- @
--- instance 'N.Newtype' Foo where
---   'N.constructor' = Foo
---   'N.field'       = \\(Foo x) -> x
+-- instance 'Data.Profunctor.Product.Newtype.Newtype' Foo where
+--   'Data.Profunctor.Product.Newtype.constructor' = Foo
+--   'Data.Profunctor.Product.Newtype.field'       = \\(Foo x) -> x
 -- @
 --
--- which allows you to use the polymorphic function 'N.pNewtype'
+-- which allows you to use the polymorphic function 'Data.Profunctor.Product.Newtype.pNewtype'
 -- instead of @pFoo@.
 --
 -- If you prefer not to use Template Haskell then the generated code
