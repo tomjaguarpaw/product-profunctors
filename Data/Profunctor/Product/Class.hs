@@ -2,6 +2,7 @@ module Data.Profunctor.Product.Class where
 
 import           Data.Profunctor (Profunctor)
 import qualified Data.Profunctor as Profunctor
+import           Data.Void (Void)
 
 --- vv These are redundant imports but they're needeed for Haddock
 --- links. AIUI Haddock can't link to something you haven't imported.
@@ -95,6 +96,9 @@ class Profunctor p => ProductProfunctor p where
                   **** Profunctor.lmap snd g
 
 class Profunctor p => SumProfunctor p where
-  -- Morally we should have 'zero :: p Void Void' but I don't think
-  -- that would actually be useful
   (+++!) :: p a b -> p a' b' -> p (Either a a') (Either b b')
+
+  -- | Unit of @('+++!')@. You might expect this to be @p Void Void@,
+  -- but that can be immediately generalised by
+  -- @'Data.Profunctor.rmap' 'Data.Void.absurd'@.
+  void :: p Void a

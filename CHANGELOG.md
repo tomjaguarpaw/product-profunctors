@@ -1,3 +1,8 @@
+# Unreleased
+
+* Added `void :: SumProfunctor p => p Void a` to the `SumProfunctor`
+  typeclass.
+
 # 0.11.0.0
 
 * Added `makeAdaptorAndInstanceInferrable` which has better inference

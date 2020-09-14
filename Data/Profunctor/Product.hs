@@ -31,10 +31,12 @@ import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow, Star(..), Costar)
 import qualified Data.Profunctor as Profunctor
 import Data.Profunctor.Composition (Procompose(..))
 import Data.Functor.Contravariant (Contravariant, contramap)
-import Data.Functor.Contravariant.Divisible (Divisible(..), Decidable, chosen)
+import Data.Functor.Contravariant.Divisible (Divisible(..), Decidable, chosen, lost)
+import Data.Void (absurd)
 import Control.Category (id)
 import Control.Arrow (Arrow, (***), (<<<), arr, (&&&), ArrowChoice, (+++))
 import Control.Applicative (Applicative, liftA2, pure, (<*>), Alternative, (<|>), (<$>))
+import qualified Control.Applicative as Applicative
 
 import Data.Monoid (Monoid, mempty, (<>))
 import Data.Tagged
@@ -155,27 +157,35 @@ instance (Applicative f, ProductProfunctor p) => ProductProfunctor (Tannen f p) 
 
 instance SumProfunctor (->) where
   f +++! g = either (Left . f) (Right . g)
+  void = absurd
 
 instance ArrowChoice arr => SumProfunctor (WrappedArrow arr) where
   (+++!) = (+++)
+  void = Profunctor.WrapArrow $ arr void
 
 instance Applicative f => SumProfunctor (Star f) where
   Star f +++! Star g = Star $ either (fmap Left . f) (fmap Right . g)
+  void = Star $ absurd
 
 instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Procompose p q) where
   Procompose pa qa +++! Procompose pb qb = Procompose (pa +++! pb) (qa +++! qb)
+  void = Procompose void void
 
 instance Alternative f => SumProfunctor (Joker f) where
   Joker f +++! Joker g = Joker $ Left <$> f <|> Right <$> g
+  void = Joker Applicative.empty
 
 instance Decidable f => SumProfunctor (Clown f) where
   Clown f +++! Clown g = Clown $ chosen f g
+  void = Clown lost
 
 instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Product p q) where
   Pair l1 l2 +++! Pair r1 r2 = Pair (l1 +++! r1) (l2 +++! r2)
+  void = Pair void void
 
 instance (Applicative f, SumProfunctor p) => SumProfunctor (Tannen f p) where
   Tannen l +++! Tannen r = Tannen $ liftA2 (+++!) l r
+  void = Tannen $ pure void
 
 -- | A generalisation of @map :: (a -> b) -> [a] -> [b]@.  It is also,
 -- in spirit, a generalisation of @traverse :: (a -> f b) -> [a] -> f
