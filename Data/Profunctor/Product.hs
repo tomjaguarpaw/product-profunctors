@@ -31,10 +31,13 @@ import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow, Star(..), Costar)
 import qualified Data.Profunctor as Profunctor
 import Data.Profunctor.Composition (Procompose(..))
 import Data.Functor.Contravariant (Contravariant, contramap)
-import Data.Functor.Contravariant.Divisible (Divisible(..), Decidable, chosen)
+import Data.Functor.Contravariant.Divisible (Divisible(..), Decidable, chosen,
+                                              lose, lost)
+import Data.Void (absurd)
 import Control.Category (id)
 import Control.Arrow (Arrow, (***), (<<<), arr, (&&&), ArrowChoice, (+++))
 import Control.Applicative (Applicative, liftA2, pure, (<*>), Alternative, (<|>), (<$>))
+import qualified Control.Applicative as Applicative
 
 import Data.Monoid (Monoid, mempty, (<>))
 import Data.Tagged
@@ -153,26 +156,50 @@ instance (Applicative f, ProductProfunctor p) => ProductProfunctor (Tannen f p) 
 
 -- { Sum
 
+instance VoidProfunctor (->) where
+  loseP = (absurd .)
+
 instance SumProfunctor (->) where
   f +++! g = either (Left . f) (Right . g)
+
+instance ArrowChoice arr => VoidProfunctor (WrappedArrow arr) where
+  loseP f = Profunctor.WrapArrow $ arr (loseP f)
 
 instance ArrowChoice arr => SumProfunctor (WrappedArrow arr) where
   (+++!) = (+++)
 
+instance Applicative f => VoidProfunctor (Star f) where
+  loseP = Star . loseP
+
 instance Applicative f => SumProfunctor (Star f) where
   Star f +++! Star g = Star $ either (fmap Left . f) (fmap Right . g)
+
+instance (VoidProfunctor p, VoidProfunctor q) => VoidProfunctor (Procompose p q) where
+  loseP f = Procompose (loseP f) (loseP f)
 
 instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Procompose p q) where
   Procompose pa qa +++! Procompose pb qb = Procompose (pa +++! pb) (qa +++! qb)
 
+instance Alternative f => VoidProfunctor (Joker f) where
+  loseP _ = Joker Applicative.empty
+
 instance Alternative f => SumProfunctor (Joker f) where
   Joker f +++! Joker g = Joker $ Left <$> f <|> Right <$> g
+
+instance Decidable f => VoidProfunctor (Clown f) where
+  loseP = Clown . lose
 
 instance Decidable f => SumProfunctor (Clown f) where
   Clown f +++! Clown g = Clown $ chosen f g
 
+instance (VoidProfunctor p, VoidProfunctor q) => VoidProfunctor (Product p q) where
+  loseP f = Pair (loseP f) (loseP f)
+
 instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Product p q) where
   Pair l1 l2 +++! Pair r1 r2 = Pair (l1 +++! r1) (l2 +++! r2)
+
+instance (Applicative f, VoidProfunctor p) => VoidProfunctor (Tannen f p) where
+  loseP f = Tannen $ pure (loseP f)
 
 instance (Applicative f, SumProfunctor p) => SumProfunctor (Tannen f p) where
   Tannen l +++! Tannen r = Tannen $ liftA2 (+++!) l r

@@ -1,3 +1,5 @@
+* Added `VoidProfunctor` typeclass.
+
 # 0.11.0.0
 
 * Added `makeAdaptorAndInstanceInferrable` which has better inference
