@@ -9,7 +9,7 @@ import Data.Profunctor.Product hiding (constructor, field)
 import Data.Profunctor.Product.Default (Default, def)
 import qualified Data.Profunctor.Product.Newtype as N
 import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
-                            mkName, newName, nameBase, TyVarBndr(PlainTV, KindedTV),
+                            mkName, newName, nameBase,
                             Con(RecC, NormalC),
                             Clause(Clause),
                             Type(VarT, ForallT, AppT, ConT),
@@ -18,6 +18,8 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify, conE, appT, conT, varE, varP,
                             instanceD, Overlap(Incoherent), Pred)
+import Language.Haskell.TH.Datatype.TyVarBndr (TyVarBndr_, TyVarBndrSpec,
+                                               plainTVSpecified, tvName)
 import Control.Monad ((<=<))
 import Control.Applicative (pure, liftA2, (<$>), (<*>))
 
@@ -119,9 +121,8 @@ dataDecStuffOfInfo (TyConI (NewtypeD _cxt tyName tyVars _kind constructor _deriv
                         }
 dataDecStuffOfInfo _ = Left "That doesn't look like a data or newtype declaration to me"
 
-varNameOfBinder :: TyVarBndr -> Name
-varNameOfBinder (PlainTV n) = n
-varNameOfBinder (KindedTV n _) = n
+varNameOfBinder :: TyVarBndr_ flag -> Name
+varNameOfBinder = tvName
 
 conStuffOfConstructor :: Con -> Either Error (Name, ConTysFields)
 conStuffOfConstructor = \case
@@ -205,7 +206,7 @@ adaptorSig tyName' numTyVars n = fmap (SigD n) adaptorType
 
         after = [t| $pType $(pArg "0") $(pArg "1") |]
 
-        scope = concat [ [PlainTV p]
+        scope = concat [ [plainTVSpecified p]
                        , map (mkTyVarsuffix "0") tyVars
                        , map (mkTyVarsuffix "1") tyVars ]
 
@@ -372,8 +373,8 @@ varS = VarE . mkName
 varPS :: String -> Pat
 varPS = VarP . mkName
 
-mkTyVarsuffix :: String -> String -> TyVarBndr
-mkTyVarsuffix s = PlainTV . mkName . (++s)
+mkTyVarsuffix :: String -> String -> TyVarBndrSpec
+mkTyVarsuffix s = plainTVSpecified . mkName . (++s)
 
 mkTySuffix :: String -> String -> Type
 mkTySuffix s = varTS . (++s)
