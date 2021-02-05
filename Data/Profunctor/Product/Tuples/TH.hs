@@ -10,6 +10,7 @@ module Data.Profunctor.Product.Tuples.TH
   ) where
 
 import Language.Haskell.TH
+import Language.Haskell.TH.Datatype.TyVarBndr
 
 import Data.Profunctor (Profunctor (dimap))
 import Data.Profunctor.Product.Class (ProductProfunctor, (***!), empty)
@@ -23,7 +24,7 @@ mkT :: Int -> Q Dec
 mkT n = tySynD (tyName n) tyVars tyDef
   where
     tyName n' = mkName ('T':show n')
-    tyVars = map PlainTV . take n $ allNames
+    tyVars = map plainTV . take n $ allNames
     tyDef = case n of
       0 -> tupleT 0
       1 -> varT (head allNames)
@@ -48,7 +49,7 @@ pTn :: Int -> Q [Dec]
 pTn n = sequence [sig, fun]
   where
     p = mkName "p"
-    sig = sigD (pT n) (forallT (map PlainTV $ p : take n as ++ take n bs)
+    sig = sigD (pT n) (forallT (map plainTVSpecified $ p : take n as ++ take n bs)
                                (sequence [productProfunctor p])
                                (arrowT `appT` mkLeftTy `appT` mkRightTy)
                       )
@@ -73,7 +74,7 @@ mkFlattenNs = fmap concat . mapM mkFlattenN
 mkFlattenN :: Int -> Q [Dec]
 mkFlattenN n = sequence [sig, fun]
   where
-    sig = sigD nm (forallT (map PlainTV names) (pure []) $ arrowT `appT` unflatT names `appT` flatT names)
+    sig = sigD nm (forallT (map plainTVSpecified names) (pure []) $ arrowT `appT` unflatT names `appT` flatT names)
     fun = funD nm [ clause [mkTupPat names] (normalB bdy) [] ]
     bdy = mkFlatExp names
     unflatT [] = tupleT 0
@@ -97,7 +98,7 @@ mkUnflattenNs = fmap concat . mapM mkUnflattenN
 mkUnflattenN :: Int -> Q [Dec]
 mkUnflattenN n = sequence [sig, fun]
   where
-    sig = sigD nm (forallT (map PlainTV names) (pure []) $ arrowT `appT` flatT names `appT` unflatT names)
+    sig = sigD nm (forallT (map plainTVSpecified names) (pure []) $ arrowT `appT` flatT names `appT` unflatT names)
     fun = funD nm [ clause [mkTupPat names] (normalB bdy) [] ]
     bdy = mkUnflatExp names
     unflatT [] = tupleT 0
@@ -121,7 +122,7 @@ pNs = fmap concat . mapM pN
 pN :: Int -> Q [Dec]
 pN n = sequence [sig, fun]
   where
-    sig = sigD nm (forallT (map PlainTV $ p : as ++ bs)
+    sig = sigD nm (forallT (map plainTVSpecified $ p : as ++ bs)
                            (sequence [productProfunctor p])
                            (arrowT `appT` mkLeftTy `appT` mkRightTy)
                    )
