@@ -1,3 +1,7 @@
+# 0.11.0.2
+
+* Support GHC 9.0
+
 # 0.11.0.0
 
 * Added `makeAdaptorAndInstanceInferrable` which has better inference
