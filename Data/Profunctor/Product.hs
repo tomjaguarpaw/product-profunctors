@@ -1,8 +1,23 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Data.Profunctor.Product (module Data.Profunctor.Product.Class,
-                                module Data.Profunctor.Product.Newtype,
+module Data.Profunctor.Product (-- * @ProductProfunctor@
+                                ProductProfunctor(..),
+                                (***$),
+                                -- * @SumProfunctor@
+                                SumProfunctor(..),
+                                list,
+                                -- * @Newtype@
+                                Newtype(..),
+                                pNewtype,
+                                -- * Deprecated versions
+                                -- | Do not use.  Will be removed in a
+                                -- future version.
+                                defaultEmpty,
+                                defaultProfunctorProduct,
+                                defaultPoint,
+                                -- * Re-exports
+                                module Data.Profunctor.Product.Class,
                                 module Data.Profunctor.Product) where
 
 import Prelude hiding (id)
