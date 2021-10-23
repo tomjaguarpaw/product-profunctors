@@ -3,13 +3,6 @@ module Data.Profunctor.Product.Class where
 import           Data.Profunctor (Profunctor)
 import qualified Data.Profunctor as Profunctor
 
---- vv These are redundant imports but they're needeed for Haddock
---- links. AIUI Haddock can't link to something you haven't imported.
---
---     https://github.com/haskell/haddock/issues/796
-import qualified Control.Applicative
-import qualified Data.Profunctor
-
 -- | 'ProductProfunctor' is a generalization of
 -- 'Control.Applicative.Applicative'.
 -- It has the usual 'Control.Applicative.Applicative' "output"
