@@ -43,8 +43,7 @@
 -- product type has a different composition function.
 
 module Data.Profunctor.Product.Default
-  ( module Data.Profunctor.Product.Default
-  , module Data.Profunctor.Product.Default.Class
+  ( module Data.Profunctor.Product.Default.Class
   ) where
 
 import Control.Applicative (Const (Const))
