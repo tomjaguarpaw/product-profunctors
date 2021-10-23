@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
 -- | If @p@ is an instance of 'ProductProfunctor' then @p a a'@
