@@ -34,7 +34,7 @@ mkT n = tySynD (tyName n) tyVars tyDef
 
 chain :: ProductProfunctor p => (t -> p a2 b2) -> (p a1 b1, t)
       -> p (a1, a2) (b1, b2)
-chain rest (a, as) = uncurry (***!) (a, rest as)
+chain rest (a, as) = a ***! rest as
 
 pTns :: [Int] -> Q [Dec]
 pTns = fmap concat . mapM pTn
