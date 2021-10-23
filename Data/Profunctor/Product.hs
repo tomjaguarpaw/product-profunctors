@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 -- | If @p@ is an instance of 'ProductProfunctor' then @p a a'@
 -- represents a sort of process for turning @a@s into @a'@s that can
