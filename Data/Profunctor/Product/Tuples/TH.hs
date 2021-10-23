@@ -62,7 +62,7 @@ pTn n = sequence [sig, fun]
       0 -> [| const empty |]
       1 -> [| id |]
       2 -> [| uncurry (***!) |]
-      _ -> varE 'chain `appE` varE (pT (n - 1))
+      _ -> [| chain $(varE (pT (n - 1))) |]
     pT n' = mkName ("pT" ++ show n')
     tN = mkName ('T':show n)
     as = [ mkName $ 'a':show i | i <- [0::Int ..] ]
@@ -134,7 +134,7 @@ pN n = sequence [sig, fun]
     mkTupT vs  = foldl appT (tupleT n) (map varT vs)
     mkPT a b = varT p `appT` varT a `appT` varT b
     fun = funD nm [ clause [] (normalB bdy) [] ]
-    bdy = varE 'convert `appE` unflat `appE` unflat `appE` flat `appE` pT
+    bdy = [| convert $(unflat) $(unflat) $(flat) $(pT) |]
     unflat = varE $ mkName unflatNm
     flat = varE $ mkName flatNm
     pT = varE $ mkName pTNm
@@ -173,7 +173,7 @@ mkDefaultN n =
     mkFun = funD 'def [clause [] bdy []]
     bdy = normalB $ case n of
       0 -> varE 'empty
-      _ -> varE (mkName $ 'p':show n) `appE` tupE (replicate n (varE 'def))
+      _ -> varE (mkName $ 'p':show n) `appE` tupE (replicate n [| def |])
     p = mkName "p"
     x = varT (mkName "x")
     t1 ~~ t2 = [t| $t1 ~ $t2 |]
