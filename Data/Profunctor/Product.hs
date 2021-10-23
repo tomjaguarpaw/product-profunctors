@@ -28,16 +28,15 @@ module Data.Profunctor.Product (module Data.Profunctor.Product.Class,
                                 module Data.Profunctor.Product) where
 
 import Prelude hiding (id)
-import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow, Star(Star), Costar, Forget(Forget))
+import Data.Profunctor (Profunctor, lmap, WrappedArrow, Star(Star), Costar, Forget(Forget))
 import qualified Data.Profunctor as Profunctor
 import Data.Profunctor.Composition (Procompose(..))
-import Data.Functor.Contravariant (Contravariant, contramap)
 import Data.Functor.Contravariant.Divisible (Divisible(..), Decidable, chosen)
 import Control.Category (id)
-import Control.Arrow (Arrow, (***), (<<<), arr, (&&&), ArrowChoice, (+++))
+import Control.Arrow (Arrow, (***), ArrowChoice, (+++))
 import Control.Applicative (Applicative, liftA2, pure, (<*>), Alternative, (<|>), (<$>))
 
-import Data.Monoid (Monoid, mempty, (<>))
+import Data.Monoid (Monoid, mempty)
 import Data.Tagged
 
 import Data.Bifunctor.Biff
