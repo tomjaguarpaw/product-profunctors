@@ -75,13 +75,13 @@ import Data.Profunctor.Product.Tuples.TH (pTns, maxTupleSize, pNs)
 -- Still, at least we now have default implementations of the class
 -- methods, which makes things simpler.
 
--- | '***$' is the generalisation of @Applicative@'s @\<$\>@.
+-- | '***$' is the generalisation of @Functor@'s @\<$\>@.
 --
 -- '***$' = 'Profunctor.rmap', just like '<$>' = 'fmap'.
 --
 -- (You probably won't need to use this.  @\<$\>@ should be
 -- sufficient.)
-(***$) :: ProductProfunctor p => (b -> c) -> p a b -> p a c
+(***$) :: Profunctor p => (b -> c) -> p a b -> p a c
 (***$) = Profunctor.rmap
 
 instance ProductProfunctor (->) where
