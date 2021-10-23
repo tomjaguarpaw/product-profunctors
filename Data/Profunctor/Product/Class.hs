@@ -36,6 +36,28 @@ import qualified Data.Profunctor as Profunctor
 -- |    -> f b'                 -> p a b'
 -- @
 --
+-- If @p@ is an instance of 'ProductProfunctor' then @p a a'@
+-- represents a sort of process for turning @a@s into @a'@s that can
+-- be "laid out side-by-side" with other values of @p@ to form "wider"
+-- processes.  For example, if I have
+--
+-- @
+-- a :: p a a' -- a process for turning as into a's
+-- b :: p b b' -- a process for turning bs into b's
+-- c :: p c c' -- a process for turning cs into c's
+-- @
+--
+-- then I can combine them using 'p3' to get
+--
+-- @
+-- p3 a b c :: p (a, b, c) (a', b', c')
+-- -- a process for turning (a, b, c)s into (a', b', c')s
+-- @
+--
+-- You would typically compose 'ProductProfunctor's using
+-- 'Profunctors''s 'Profunctor.lmap' and 'Applicative''s 'pure',
+-- '<$>' / 'fmap' and '<*>'.
+--
 -- It's easy to make instances of 'ProductProfunctor'.  Just make
 -- instances
 --
