@@ -168,7 +168,7 @@ mkDefaultN n =
                  [mkFun]
            ]
   where
-    mkDefs = zipWith (\a b -> default_ p a b) as bs
+    mkDefs = zipWith (default_ p) as bs
     mkTupT = foldl appT (tupleT n) . map varT
     mkFun = funD 'def [clause [] bdy []]
     bdy = normalB $ case n of
