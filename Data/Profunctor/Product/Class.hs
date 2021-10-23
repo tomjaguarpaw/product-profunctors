@@ -42,15 +42,15 @@ import qualified Data.Profunctor as Profunctor
 -- processes.  For example, if I have
 --
 -- @
--- a :: p a x -- a process for turning as into xs
--- b :: p b y -- a process for turning bs into ys
--- c :: p c z -- a process for turning cs into zs
+-- p :: p a x -- a process for turning as into xs
+-- q :: p b y -- a process for turning bs into ys
+-- r :: p c z -- a process for turning cs into zs
 -- @
 --
 -- then I can combine them using 'p3' to get
 --
 -- @
--- p3 a b c :: p (a, b, c) (x, y, z)
+-- p3 p q r :: p (a, b, c) (x, y, z)
 -- -- a process for turning (a, b, c)s into (x, y, z)s
 -- @
 --
