@@ -40,10 +40,12 @@ pTns :: [Int] -> Q [Dec]
 pTns = fmap concat . mapM pTn
 
 productProfunctor :: Name -> Q Pred
-productProfunctor p = classP ''ProductProfunctor [pure (VarT p)]
+productProfunctor p = [t| ProductProfunctor $(v p) |]
+  where v = pure . VarT
 
 default_ :: Name -> Name -> Name -> Q Pred
-default_ p a b = classP ''Default (map (pure . VarT) [p, a, b])
+default_ p a b = [t| Default $(v p) $(v a) $(v b) |]
+  where v = pure . VarT
 
 pTn :: Int -> Q [Dec]
 pTn n = sequence [sig, fun]
