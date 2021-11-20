@@ -78,9 +78,11 @@ newtypeInstance conName tyName = do
 
   let body = [ FunD 'N.constructor [simpleClause (NormalB (ConE conName))]
              , FunD 'N.field [simpleClause (NormalB (LamE [conP conName [VarP x]] (VarE x)))] ]
-  i <- instanceD (pure [])
+  i <- do
+    body' <- pure body
+    instanceD (pure [])
                  [t| N.Newtype $(conT tyName) |]
-                 (map pure body)
+                 (map pure body')
   pure [i]
 
 data ConTysFields = ConTys   [Type]
