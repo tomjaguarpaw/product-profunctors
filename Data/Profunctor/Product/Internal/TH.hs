@@ -292,16 +292,15 @@ adaptorDefinition numConVars conName x = do
         pN = varE (tupleAdaptors numConVars)
 
 adaptorDefinitionFields :: Name -> [(Name, name)] -> Name -> Q [Dec]
-adaptorDefinitionFields conName fieldsTys adaptorName =
+adaptorDefinitionFields conName fieldsTys adaptorName = do
+  fP' <- fP
+  b <- body
+  let clause = pure (Clause [fP'] (NormalB b) [])
   fmap (pure . FunD adaptorName . pure) clause
   where fields = map fst fieldsTys
         -- TODO: vv f should be generated in Q
         fP = varP (mkName "f")
         fE = varE (mkName "f")
-        clause = do
-          fP' <- fP
-          b <- body
-          pure (Clause [fP'] (NormalB b) [])
         body = case fields of
           []             -> error "Can't handle no fields in constructor"
           field1:fields' ->
