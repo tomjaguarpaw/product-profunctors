@@ -76,8 +76,8 @@ newtypeInstance :: Name -> Name -> Q [Dec]
 newtypeInstance conName tyName = do
   x <- newName "x"
 
-  let body = [d| $(pure $ VarP 'N.constructor) = $(pure $ ConE conName)
-                 $(pure $ VarP 'N.field) = \ $(pure $ conP conName [VarP x]) -> $(varE x) |]
+  let body = [d| $(varP 'N.constructor) = $(pure $ ConE conName)
+                 $(varP 'N.field) = \ $(pure $ conP conName [VarP x]) -> $(varE x) |]
 
   i <- do
     body' <- body
@@ -154,7 +154,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
   where instanceDec = do
           instanceCxt' <- instanceCxt
           instanceType' <- [t| Default $p $pArg0 $pArg1 |]
-          defDefinition' <- [d| $(pure $ VarP 'def) = $adaptorNameQ $(pure $ appEAll (ConE conName) defsN) |]
+          defDefinition' <- [d| $(varP 'def) = $adaptorNameQ $(pure $ appEAll (ConE conName) defsN) |]
           pure (InstanceD (Incoherent <$ side) instanceCxt' instanceType' defDefinition')
 
         p :: Applicative m => m Type
