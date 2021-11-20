@@ -11,9 +11,8 @@ import qualified Data.Profunctor.Product.Newtype as N
 import Language.Haskell.TH (Dec(DataD, SigD, InstanceD, NewtypeD),
                             mkName, newName, nameBase,
                             Con(RecC, NormalC),
-                            Clause(Clause),
                             Type(VarT, ForallT, AppT, ConT),
-                            Body, Q,
+                            Q,
                             Exp(ConE, VarE, AppE, TupE, LamE),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify, conE, conT, varE, varP,
@@ -388,6 +387,3 @@ appTAll = foldl AppT
 
 appEAll :: Exp -> [Exp] -> Exp
 appEAll = foldl AppE
-
-simpleClause :: Body -> Clause
-simpleClause x = Clause [] x []
