@@ -281,7 +281,10 @@ tupleAdaptors n = case n of 1  -> 'p1
 
 adaptorDefinition :: Int -> Name -> Name -> Q Dec
 adaptorDefinition numConVars conName x = do
-  clause' <- fmap (\b -> Clause [] (NormalB b) wheres) [| $theDimap . $pN . $toTupleE |]
+  clause' <- fmap (\b -> Clause [] (NormalB b) [])
+                  [| let $(varP toTupleN) = $(pure $ toTuple conName numConVars)
+                         $(varP fromTupleN) = $(pure $ fromTuple conName numConVars)
+                     in $theDimap . $pN . $toTupleE |]
   pure ((FunD x . pure) clause')
   where toTupleN = mkName "toTuple"
         fromTupleN = mkName "fromTuple"
@@ -289,8 +292,6 @@ adaptorDefinition numConVars conName x = do
         fromTupleE = varE fromTupleN
         theDimap = [| $(varE 'dimap) $toTupleE $fromTupleE |]
         pN = varE (tupleAdaptors numConVars)
-        wheres = [let_ toTupleN (toTuple conName numConVars),
-                  let_ fromTupleN (fromTuple conName numConVars)]
 
 adaptorDefinitionFields :: Name -> [(Name, name)] -> Name -> Q Dec
 adaptorDefinitionFields conName fieldsTys adaptorName =
@@ -337,9 +338,6 @@ conP conname = ConP conname
 #if MIN_VERSION_template_haskell(2,18,0)
                []
 #endif
-
-let_ :: Name -> Exp -> Dec
-let_ funN expr = FunD funN [Clause [] (NormalB expr) []]
 
 fromTuple :: Name -> Int -> Exp
 fromTuple conName numTyVars = expr
