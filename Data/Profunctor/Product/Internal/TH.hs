@@ -188,7 +188,7 @@ adaptorSig tyName' numTyVars n = fmap (SigD n) adaptorType
   where p = mkName "p"
         adaptorType = ForallT scope <$> adaptorCxt <*> [t| $before -> $after |]
         adaptorCxt = fmap (:[]) [t| ProductProfunctor $pType |]
-        before = foldl (\x y -> [t| $x $y |]) (pure (ConT tyName')) (map pApp tyVars)
+        before = foldl (\x y -> [t| $x $(pApp y) |]) (pure (ConT tyName')) tyVars
         pType = pure $ VarT p
         pApp :: String  -> Q Type
         pApp v = [t| $pType $(mkVarTsuffix "0" v) $(mkVarTsuffix "1" v) |]
