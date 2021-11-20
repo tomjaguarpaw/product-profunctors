@@ -150,8 +150,8 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
   instanceDec
   where instanceDec = do
           instanceCxt' <- instanceCxt
-          instanceType' <- instanceType
-          defDefinition' <- defDefinition
+          instanceType' <- [t| $(conT ''Default) $p $pArg0 $pArg1 |]
+          defDefinition' <- [d| $(pure $ VarP 'def) = $adaptorNameQ $(pure $ appEAll (ConE conName) defsN) |]
           pure (InstanceD (Incoherent <$ side) instanceCxt' instanceType' defDefinition')
 
         p :: Applicative m => m Type
@@ -179,10 +179,6 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
 
         tyName :: String -> Q Type
         tyName suffix = pure $ pArg' tyName' suffix numTyVars
-
-        instanceType = [t| $(conT ''Default) $p $pArg0 $pArg1 |]
-
-        defDefinition = [d| $(pure $ VarP 'def) = $adaptorNameQ $(pure $ appEAll (ConE conName) defsN) |]
 
         adaptorNameQ = pure $ VarE adaptorName'
 
