@@ -317,9 +317,6 @@ xTuple patCon retCon (funN, numTyVars) = FunD funN [clause]
         varPats = map varPS (allTyVars numTyVars)
         varExps = map varS (allTyVars numTyVars)
 
-classP :: Name -> [Q Type] -> Q Type
-classP class_ = foldl appT (conT class_)
-
 tupP :: [Pat] -> Pat
 tupP [p] = p
 tupP ps  = TupP ps
