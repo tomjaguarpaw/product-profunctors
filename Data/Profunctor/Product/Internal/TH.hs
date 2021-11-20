@@ -274,11 +274,12 @@ adaptorDefinition :: Int -> Name -> Name -> Q [Dec]
 adaptorDefinition numConVars conName x = do
   [d| $(varP x) = let $(varP toTupleN) = $(pure $ toTuple conName numConVars)
                       $(varP fromTupleN) = $(pure $ fromTuple conName numConVars)
-                  in $theDimap . $pN . $(varE toTupleN) |]
+                      $(varP theDimapN) = $(varE 'dimap) $(varE toTupleN) $fromTupleE
+                  in $(varE theDimapN) . $pN . $(varE toTupleN) |]
   where toTupleN = mkName "toTuple"
         fromTupleN = mkName "fromTuple"
+        theDimapN = mkName "theDimap"
         fromTupleE = varE fromTupleN
-        theDimap = [| $(varE 'dimap) $(varE toTupleN) $fromTupleE |]
         pN = varE (tupleAdaptors numConVars)
 
 lam :: String -> (Exp -> Q Exp) -> Q Exp
