@@ -77,7 +77,11 @@ newtypeInstance conName tyName = do
   x <- newName "x"
 
   let body = [ FunD 'N.constructor [simpleClause (NormalB (ConE conName))]
-             , FunD 'N.field [simpleClause (NormalB (LamE [ConP conName [VarP x]] (VarE x)))] ]
+             , FunD 'N.field [simpleClause (NormalB (LamE [ConP conName
+#if MIN_VERSION_template_haskell(2,18,0)
+                                                           []
+#endif
+                                                           [VarP x]] (VarE x)))] ]
   i <- instanceD (pure [])
                  [t| $(conT ''N.Newtype) $(conT tyName) |]
                  (map pure body)
@@ -344,6 +348,9 @@ fromTuple conName = xTuple patCon retCon
 toTuple :: Name -> (Name, Int) -> Dec
 toTuple conName = xTuple patCon retCon
   where patCon = ConP conName
+#if MIN_VERSION_template_haskell(2,18,0)
+                 []
+#endif
         retCon = tupE
 
 {-
