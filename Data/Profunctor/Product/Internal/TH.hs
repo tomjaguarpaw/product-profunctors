@@ -275,7 +275,7 @@ tupleAdaptors n = case n of 1  -> 'p1
                    ++ " is too many type variables for me!"
 
 adaptorDefinition :: Int -> Name -> Name -> Q [Dec]
-adaptorDefinition numConVars conName x = do
+adaptorDefinition numConVars conName x =
   [d| $(varP x) = $(let_ "toTupleN" (pure $ toTuple conName numConVars)
                 $ \toTupleN -> let_ "fromTuple" (pure $ fromTuple conName numConVars)
                 $ \fromTupleN -> let_ "theDimap" [| $(varE 'dimap) $toTupleN $fromTupleN |]
