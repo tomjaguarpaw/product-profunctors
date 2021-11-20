@@ -148,9 +148,11 @@ instanceDefinition :: Maybe (Either () ())
                    -> Q Dec
 instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
   instanceDec
-  where instanceDec = liftA2
-            (\i j -> InstanceD (Incoherent <$ side) i j [defDefinition])
-            instanceCxt instanceType
+  where instanceDec = do
+          instanceCxt' <- instanceCxt
+          instanceType' <- instanceType
+          pure (InstanceD (Incoherent <$ side) instanceCxt' instanceType' [defDefinition])
+
         p :: Applicative m => m Type
         p = pure $ varTS "p"
         x = pure $ varTS "x"
