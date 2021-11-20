@@ -105,9 +105,8 @@ dataDecStuffOfInfo :: Info -> Either Error DataDecStuff
 dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars _kind constructors _deriving)) =
   do
     (conName, conTys) <- extractConstructorStuff constructors
-    let tyVars' = map tvName tyVars
     return DataDecStuff { dTyName  = tyName
-                        , dTyVars  = tyVars'
+                        , dTyVars  = map tvName tyVars
                         , dConName = conName
                         , dConTys  = conTys
                         }
@@ -115,9 +114,8 @@ dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars _kind constructors _derivin
 dataDecStuffOfInfo (TyConI (NewtypeD _cxt tyName tyVars _kind constructor _deriving)) =
   do
     (conName, conTys) <- extractConstructorStuff [constructor]
-    let tyVars' = map tvName tyVars
     return DataDecStuff { dTyName  = tyName
-                        , dTyVars  = tyVars'
+                        , dTyVars  = map tvName tyVars
                         , dConName = conName
                         , dConTys  = conTys
                         }
