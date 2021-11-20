@@ -86,13 +86,13 @@ newtypeInstance conName tyName = do
                  (map pure body')
   pure [i]
 
-data ConTysFields = ConTys   [Type]
-                  -- ^^ The type of each constructor field
+data ConTysFields = ConTys   Int
+                  -- ^^ The number of constructor fields
                   | FieldTys [Name]
                   -- ^^ The fieldname of each constructor field
 
 lengthCons :: ConTysFields -> Int
-lengthCons (ConTys l)   = length l
+lengthCons (ConTys n)   = n
 lengthCons (FieldTys l) = length l
 
 data DataDecStuff = DataDecStuff {
@@ -129,7 +129,7 @@ varNameOfBinder = tvName
 
 conStuffOfConstructor :: Con -> Either Error (Name, ConTysFields)
 conStuffOfConstructor = \case
-  NormalC conName st -> return (conName, ConTys (map snd st))
+  NormalC conName st -> return (conName, ConTys (length st))
   RecC conName vst -> return (conName, FieldTys (map (\(n, _, _) -> n) vst))
   _ -> Left "I can't deal with your constructor type"
 
