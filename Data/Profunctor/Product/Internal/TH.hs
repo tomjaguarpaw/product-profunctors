@@ -16,12 +16,12 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             Body(NormalB), Q,
                             Exp(ConE, VarE, AppE, TupE, LamE),
                             Pat(TupP, VarP, ConP), Name,
-                            Info(TyConI), reify, conE, appT, conT, varE, varP,
+                            Info(TyConI), reify, conE, conT, varE, varP,
                             instanceD, Overlap(Incoherent), Pred)
 import Language.Haskell.TH.Datatype.TyVarBndr (TyVarBndr_, TyVarBndrSpec,
                                                plainTVSpecified, tvName)
 import Control.Monad ((<=<))
-import Control.Applicative (pure, liftA2, (<$>), (<*>))
+import Control.Applicative (liftA2)
 
 makeAdaptorAndInstanceI :: Bool -> Maybe String -> Name -> Q [Dec]
 makeAdaptorAndInstanceI inferrable adaptorNameM =
