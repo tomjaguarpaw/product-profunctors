@@ -339,14 +339,12 @@ conP conname = ConP conname
 #endif
 
 fromTuple :: Name -> (Name, Int) -> Dec
-fromTuple conName = xTuple patCon retCon
-  where patCon = tupP
-        retCon = appEAll (ConE conName)
+fromTuple conName = xTuple tupP retCon
+  where retCon = appEAll (ConE conName)
 
 toTuple :: Name -> (Name, Int) -> Dec
-toTuple conName = xTuple patCon retCon
+toTuple conName = xTuple patCon tupE
   where patCon = conP conName
-        retCon = tupE
 
 {-
 Note that we can also do the instance definition like this, but it would
