@@ -5,6 +5,8 @@
 
 module Data.Profunctor.Product.Internal.TH where
 
+import Control.Monad (ap)
+
 import Data.Profunctor (dimap, lmap)
 import Data.Profunctor.Product hiding (constructor, field)
 import Data.Profunctor.Product.Default (Default, def)
@@ -75,7 +77,10 @@ newtypeInstance :: Name -> Name -> Q [Dec]
 newtypeInstance conName tyName = do
   i <- do
     body' <- [d| $(varP 'N.constructor) = $(conE conName)
-                 $(varP 'N.field) = $(lam "x" (\x -> letCon1 conName "y" x (\y -> y))) |]
+                 $(varP 'N.field) = $(runQC' $ do
+                                         x <- lam "x"
+                                         y <- letCon1 conName "y" x
+                                         pure y) |]
     instanceD (pure [])
                  [t| N.Newtype $(conT tyName) |]
                  (map pure body')
@@ -278,34 +283,53 @@ adaptorDefinition numConVars conName x = do
 
   where pN = varE (tupleAdaptors numConVars)
 
+newtype QC r a = QC { runQC :: (a -> Q r) -> Q r }
+
+runQC' :: QC r r -> Q r
+runQC' q = runQC q pure
+
+liftQC :: Q a -> QC r a
+liftQC q = QC (q >>=)
+
+instance Functor (QC r) where
+  fmap f (QC g) = QC (\q -> g (q . f))
+
+instance Applicative (QC r) where
+  (<*>) = ap
+  pure x = QC (\q -> q x)
+
+instance Monad (QC r) where
+  return = pure
+  m >>= k = QC (\c -> runQC m (\a -> runQC (k a) c))
+
 type MExp = forall m. Monad m => m Exp
 
-lam :: String -> (MExp -> Q Exp) -> Q Exp
-lam n f = do
+lam :: String -> QC Exp Exp
+lam n = QC $ \f -> do
   x <- newName n
-  [| \ $(varP x) -> $(f (pure (VarE x))) |]
+  [| \ $(varP x) -> $(f (VarE x)) |]
 
 let_ :: String -> Q Exp -> (MExp -> Q Exp) -> Q Exp
 let_ n rhs body = do
   x <- newName n
   [| let $(varP x) = $rhs in $(body (pure (VarE x))) |]
 
-letCon1 :: Name -> String -> Q Exp -> (MExp -> Q Exp) -> Q Exp
-letCon1 conName n rhs f = do
+letCon1 :: Name -> String -> Exp -> QC Exp Exp
+letCon1 conName n rhs = QC $ \f -> do
   x <- newName n
-  [| let $(pure $ conP conName [VarP x]) = $rhs in $(f (pure (VarE x))) |]
+  [| let $(pure $ conP conName [VarP x]) = $(pure rhs) in $(f (VarE x)) |]
 
 adaptorDefinitionFields :: Name -> [Name] -> Name -> Q [Dec]
 adaptorDefinitionFields conName fields adaptorName = do
-  [d| $(varP adaptorName) = $(lam "f" body) |]
-  where body :: MExp -> Q Exp
+  [d| $(varP adaptorName) = $(runQC' (lam "f" >>= liftQC . body)) |]
+  where body :: Exp -> Q Exp
         body fE = case fields of
           []             -> error "Can't handle no fields in constructor"
           field1:fields' ->
             let first =
-                  [| $(varE '(***$)) $(conE conName) $(theLmap field1 fE) |]
+                  [| $(varE '(***$)) $(conE conName) $(theLmap field1 (pure fE)) |]
                 app x y =
-                  [| $(varE '(****)) $x $(theLmap y fE) |]
+                  [| $(varE '(****)) $x $(theLmap y (pure fE)) |]
             in foldl app first fields'
 
         theLmap field fE =
