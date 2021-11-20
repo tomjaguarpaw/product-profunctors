@@ -77,7 +77,7 @@ newtypeInstance :: Name -> Name -> Q [Dec]
 newtypeInstance conName tyName = do
   i <- do
     body' <- [d| $(varP 'N.constructor) = $(conE conName)
-                 $(varP 'N.field) = $(runQC' $ lam (letCon1 conName)) |]
+                 $(varP 'N.field) = $(runQC' $ lam (unwrapCon1 conName)) |]
     instanceD (pure [])
                  [t| N.Newtype $(conT tyName) |]
                  (map pure body')
@@ -312,8 +312,8 @@ let_ rhs = QC $ \body -> do
   x <- newName "x"
   [| let $(varP x) = $(pure rhs) in $(body (VarE x)) |]
 
-letCon1 :: Name -> Exp -> QC Exp Exp
-letCon1 conName rhs = QC $ \f -> do
+unwrapCon1 :: Name -> Exp -> QC Exp Exp
+unwrapCon1 conName rhs = QC $ \f -> do
   x <- newName "x"
   [| let $(pure $ conP conName [VarP x]) = $(pure rhs) in $(f (VarE x)) |]
 
