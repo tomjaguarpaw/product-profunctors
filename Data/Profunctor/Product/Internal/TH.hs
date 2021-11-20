@@ -184,9 +184,10 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
 
         defDefinition = do
           defBody' <- pure defBody
-          pure (FunD 'def [simpleClause defBody'])
+          pure (FunD 'def [simpleClause (NormalB defBody')])
 
-        defBody = NormalB(VarE adaptorName' `AppE` appEAll (ConE conName) defsN)
+        defBody = VarE adaptorName' `AppE` appEAll (ConE conName) defsN
+
         defsN = replicate numConVars (VarE 'def)
 
 adaptorSig :: Name -> Int -> Name -> Q Dec
