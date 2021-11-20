@@ -295,7 +295,7 @@ adaptorDefinitionFields :: Name -> [(Name, name)] -> Name -> Q [Dec]
 adaptorDefinitionFields conName fieldsTys adaptorName = do
   fP' <- fP
   b <- body
-  fmap (pure . FunD adaptorName . pure) (pure (Clause [fP'] (NormalB b) []))
+  fmap (pure . FunD adaptorName . pure) (pure (Clause [] (NormalB (LamE [fP'] b)) []))
   where fields = map fst fieldsTys
         -- TODO: vv f should be generated in Q
         fP = varP (mkName "f")
