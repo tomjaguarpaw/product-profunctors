@@ -293,22 +293,21 @@ adaptorDefinition numConVars conName x = do
 
 adaptorDefinitionFields :: Name -> [(Name, name)] -> Name -> Q [Dec]
 adaptorDefinitionFields conName fieldsTys adaptorName =
-  [d| $(varP adaptorName) = \ $fP -> $body |]
+  [d| $(varP adaptorName) = \ $fP -> $(body (VarE (mkName "f"))) |]
   where fields = map fst fieldsTys
         -- TODO: vv f should be generated in Q
         fP = varP (mkName "f")
-        fE = varE (mkName "f")
-        body = case fields of
+        body fE = case fields of
           []             -> error "Can't handle no fields in constructor"
           field1:fields' ->
             let first =
-                  [| $(varE '(***$)) $(conE conName) $(theLmap field1) |]
+                  [| $(varE '(***$)) $(conE conName) $(theLmap field1 fE) |]
                 app x y =
-                  [| $(varE '(****)) $x $(theLmap y) |]
+                  [| $(varE '(****)) $x $(theLmap y fE) |]
             in foldl app first fields'
 
-        theLmap field =
-          [| $(varE 'lmap) $(varE field) ($(varE field) $fE) |]
+        theLmap field fE =
+          [| $(varE 'lmap) $(varE field) ($(varE field) $(pure fE)) |]
 
 xTuple' :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> Int -> Exp
 xTuple' patCon retCon numTyVars = expr
