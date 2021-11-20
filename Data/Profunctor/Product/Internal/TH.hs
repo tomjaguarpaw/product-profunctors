@@ -151,7 +151,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
   where instanceDec = do
           instanceCxt' <- instanceCxt
           instanceType' <- instanceType
-          defDefinition' <- fmap (:[]) defDefinition
+          defDefinition' <- defDefinition
           pure (InstanceD (Incoherent <$ side) instanceCxt' instanceType' defDefinition')
 
         p :: Applicative m => m Type
@@ -182,9 +182,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
 
         instanceType = [t| $(conT ''Default) $p $pArg0 $pArg1 |]
 
-        defDefinition = do
-          defBody' <- pure defBody
-          pure (FunD 'def [simpleClause (NormalB defBody')])
+        defDefinition = [d| $(pure $ VarP 'def) = $(pure defBody) |]
 
         defBody = VarE adaptorName' `AppE` appEAll (ConE conName) defsN
 
