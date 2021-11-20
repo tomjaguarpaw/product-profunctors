@@ -182,9 +182,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
 
         instanceType = [t| $(conT ''Default) $p $pArg0 $pArg1 |]
 
-        defDefinition = [d| $(pure $ VarP 'def) = $defBody |]
-
-        defBody = [e| $adaptorNameQ $(pure $ appEAll (ConE conName) defsN) |]
+        defDefinition = [d| $(pure $ VarP 'def) = $adaptorNameQ $(pure $ appEAll (ConE conName) defsN) |]
 
         adaptorNameQ = pure $ VarE adaptorName'
 
