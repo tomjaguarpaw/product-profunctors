@@ -54,7 +54,7 @@ makeAdaptorAndInstanceE sides adaptorNameM info = do
       adaptorSig' = adaptorSig tyName numTyVars adaptorNameN
       adaptorDefinition' = case conTys of
         ConTys   _        -> adaptorDefinition numTyVars conName
-        FieldTys fieldTys -> adaptorDefinitionFields conName fieldTys
+        FieldTys fieldTys -> (fmap . fmap) (:[]) (adaptorDefinitionFields conName fieldTys)
 
       instanceDefinition' = map (\side ->
         instanceDefinition side tyName numTyVars numConTys adaptorNameN conName)
@@ -66,8 +66,9 @@ makeAdaptorAndInstanceE sides adaptorNameM info = do
                            return []
 
   return $ do
-    as <- sequence ( [ adaptorSig'
-                     , adaptorDefinition' adaptorNameN ]
+    adaptorDefinition'' <- adaptorDefinition' adaptorNameN
+    as <- sequence ( [ adaptorSig' ]
+                   ++ fmap pure adaptorDefinition''
                    ++ instanceDefinition' )
     ns <- newtypeInstance'
     return (as ++ ns)
@@ -279,13 +280,13 @@ tupleAdaptors n = case n of 1  -> 'p1
                    ++ show n
                    ++ " is too many type variables for me!"
 
-adaptorDefinition :: Int -> Name -> Name -> Q Dec
+adaptorDefinition :: Int -> Name -> Name -> Q [Dec]
 adaptorDefinition numConVars conName x = do
   clause' <- fmap (\b -> Clause [] (NormalB b) [])
                   [| let $(varP toTupleN) = $(pure $ toTuple conName numConVars)
                          $(varP fromTupleN) = $(pure $ fromTuple conName numConVars)
                      in $theDimap . $pN . $toTupleE |]
-  pure ((FunD x . pure) clause')
+  pure (pure ((FunD x . pure) clause'))
   where toTupleN = mkName "toTuple"
         fromTupleN = mkName "fromTuple"
         toTupleE = varE toTupleN
