@@ -14,7 +14,7 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             Clause(Clause),
                             Type(VarT, ForallT, AppT, ConT),
                             Body(NormalB), Q,
-                            Exp(ConE, VarE, AppE, TupE, LamE),
+                            Exp(ConE, VarE, AppE, TupE),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify, conE, conT, varE, varP,
                             instanceD, Overlap(Incoherent), Pred)
@@ -77,8 +77,8 @@ newtypeInstance conName tyName = do
   x <- newName "x"
 
   let body = do
-        body1 <- pure [ FunD 'N.constructor [simpleClause (NormalB (ConE conName))] ]
-        body2 <- pure [ FunD 'N.field [simpleClause (NormalB (LamE [conP conName [VarP x]] (VarE x)))] ]
+        body1 <- [d| $(pure $ VarP 'N.constructor) = $(pure $ ConE conName) |]
+        body2 <- [d| $(pure $ VarP 'N.field) = \ $(pure $ conP conName [VarP x]) -> $(pure $ VarE x) |]
         pure (body1 ++ body2)
 
   i <- do
