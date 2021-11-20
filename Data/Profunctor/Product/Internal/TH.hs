@@ -18,7 +18,7 @@ import Language.Haskell.TH (Dec(DataD, SigD, InstanceD, NewtypeD),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify, conE, conT, varE, varP,
                             instanceD, Overlap(Incoherent), Pred)
-import Language.Haskell.TH.Datatype.TyVarBndr (TyVarBndr_, TyVarBndrSpec,
+import Language.Haskell.TH.Datatype.TyVarBndr (TyVarBndrSpec,
                                                plainTVSpecified, tvName)
 import Control.Monad ((<=<))
 
@@ -106,7 +106,7 @@ dataDecStuffOfInfo :: Info -> Either Error DataDecStuff
 dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars _kind constructors _deriving)) =
   do
     (conName, conTys) <- extractConstructorStuff constructors
-    let tyVars' = map varNameOfBinder tyVars
+    let tyVars' = map tvName tyVars
     return DataDecStuff { dTyName  = tyName
                         , dTyVars  = tyVars'
                         , dConName = conName
@@ -116,16 +116,13 @@ dataDecStuffOfInfo (TyConI (DataD _cxt tyName tyVars _kind constructors _derivin
 dataDecStuffOfInfo (TyConI (NewtypeD _cxt tyName tyVars _kind constructor _deriving)) =
   do
     (conName, conTys) <- extractConstructorStuff [constructor]
-    let tyVars' = map varNameOfBinder tyVars
+    let tyVars' = map tvName tyVars
     return DataDecStuff { dTyName  = tyName
                         , dTyVars  = tyVars'
                         , dConName = conName
                         , dConTys  = conTys
                         }
 dataDecStuffOfInfo _ = Left "That doesn't look like a data or newtype declaration to me"
-
-varNameOfBinder :: TyVarBndr_ flag -> Name
-varNameOfBinder = tvName
 
 conStuffOfConstructor :: Con -> Either Error (Name, ConTysFields)
 conStuffOfConstructor = \case
