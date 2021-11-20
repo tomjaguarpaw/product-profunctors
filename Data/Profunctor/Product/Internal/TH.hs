@@ -76,7 +76,7 @@ newtypeInstance :: Name -> Name -> Q [Dec]
 newtypeInstance conName tyName = do
   x <- newName "x"
 
-  let body = [d| $(varP 'N.constructor) = $(pure $ ConE conName)
+  let body = [d| $(varP 'N.constructor) = $(conE conName)
                  $(varP 'N.field) = \ $(pure $ conP conName [VarP x]) -> $(varE x) |]
 
   i <- do
