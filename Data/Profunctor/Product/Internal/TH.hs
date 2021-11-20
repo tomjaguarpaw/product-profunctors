@@ -162,7 +162,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
             pure (productProfunctor_p' : typeMatch' ++ default_p_as0_as1)
 
         productProfunctor_p :: Q Pred
-        productProfunctor_p = classP ''ProductProfunctor [p]
+        productProfunctor_p = [t| ProductProfunctor $p |]
 
         (typeMatch, pArg0, pArg1) = case side of
             Nothing ->         ([],                       tyName0, tyName1)
