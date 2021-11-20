@@ -30,6 +30,7 @@ library
                  , tagged >= 0.0 && < 1
                  , template-haskell < 2.21
                  , th-abstraction >= 0.4 && < 0.5
+                 , transformers >= 0.5.6.2
   exposed-modules: Data.Profunctor.Product,
                    Data.Profunctor.Product.Adaptor
                    Data.Profunctor.Product.Default,

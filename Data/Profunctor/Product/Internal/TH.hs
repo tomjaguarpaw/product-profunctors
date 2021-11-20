@@ -5,8 +5,6 @@
 
 module Data.Profunctor.Product.Internal.TH where
 
-import Control.Monad (ap)
-
 import Data.Profunctor (dimap, lmap)
 import Data.Profunctor.Product hiding (constructor, field)
 import Data.Profunctor.Product.Default (Default, def)
@@ -23,6 +21,8 @@ import Language.Haskell.TH (Dec(DataD, SigD, InstanceD, NewtypeD),
 import Language.Haskell.TH.Datatype.TyVarBndr (TyVarBndrSpec,
                                                plainTVSpecified, tvName)
 import Control.Monad ((<=<))
+import Control.Monad.Trans.Cont (ContT(ContT), runContT)
+import Control.Monad.Trans.Class (lift)
 
 makeAdaptorAndInstanceI :: Bool -> Maybe String -> Name -> Q [Dec]
 makeAdaptorAndInstanceI inferrable adaptorNameM =
@@ -281,26 +281,13 @@ adaptorDefinition numConVars conName x =
 
   where pN = varE (tupleAdaptors numConVars)
 
-newtype QC r a = QC { runQC :: (a -> Q r) -> Q r }
+type QC r = ContT r Q
 
 runQC' :: QC r r -> Q r
-runQC' q = runQC q pure
+runQC' q = runContT q pure
 
 liftQC :: Q a -> QC r a
-liftQC q = QC (q >>=)
-
-instance Functor (QC r) where
-  fmap f (QC g) = QC (\q -> g (q . f))
-
-instance Applicative (QC r) where
-  (<*>) = ap
-  pure x = QC (\q -> q x)
-
-instance Monad (QC r) where
-  return = pure
-  m >>= k = QC (\c -> runQC m (\a -> runQC (k a) c))
-
-type MExp = forall m. Monad m => m Exp
+liftQC = lift
 
 lam :: (Exp -> QC Exp Exp) -> QC r Exp
 lam = \f -> liftQC $ do
@@ -308,12 +295,12 @@ lam = \f -> liftQC $ do
   [| \ $(varP x) -> $(runQC' $ f (VarE x)) |]
 
 let_ :: Exp -> QC Exp Exp
-let_ rhs = QC $ \body -> do
+let_ rhs = ContT $ \body -> do
   x <- newName "x"
   [| let $(varP x) = $(pure rhs) in $(body (VarE x)) |]
 
 unwrapCon1 :: Name -> Exp -> QC Exp Exp
-unwrapCon1 conName rhs = QC $ \f -> do
+unwrapCon1 conName rhs = ContT $ \f -> do
   x <- newName "x"
   [| let $(pure $ conP conName [VarP x]) = $(pure rhs) in $(f (VarE x)) |]
 
