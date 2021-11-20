@@ -292,10 +292,10 @@ let_ n rhs body = do
   x <- newName n
   [| let $(varP x) = $rhs in $(body (pure (VarE x))) |]
 
-letCon1 :: Name -> String -> Exp -> (MExp -> Q Exp) -> Q Exp
+letCon1 :: Name -> String -> Q Exp -> (MExp -> Q Exp) -> Q Exp
 letCon1 conName n rhs f = do
   x <- newName n
-  [| let $(pure $ conP conName [VarP x]) = $(pure rhs) in $(f (pure (VarE x))) |]
+  [| let $(pure $ conP conName [VarP x]) = $rhs in $(f (pure (VarE x))) |]
 
 adaptorDefinitionFields :: Name -> [Name] -> Name -> Q [Dec]
 adaptorDefinitionFields conName fields adaptorName = do
