@@ -21,7 +21,6 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
 import Language.Haskell.TH.Datatype.TyVarBndr (TyVarBndr_, TyVarBndrSpec,
                                                plainTVSpecified, tvName)
 import Control.Monad ((<=<))
-import Control.Applicative (liftA2)
 
 makeAdaptorAndInstanceI :: Bool -> Maybe String -> Name -> Q [Dec]
 makeAdaptorAndInstanceI inferrable adaptorNameM =
@@ -299,7 +298,10 @@ adaptorDefinitionFields conName fieldsTys adaptorName =
         -- TODO: vv f should be generated in Q
         fP = varP (mkName "f")
         fE = varE (mkName "f")
-        clause = liftA2 (\fP' b -> Clause [fP'] (NormalB b) []) fP body
+        clause = do
+          fP' <- fP
+          b <- body
+          pure (Clause [fP'] (NormalB b) [])
         body = case fields of
           []             -> error "Can't handle no fields in constructor"
           field1:fields' ->
