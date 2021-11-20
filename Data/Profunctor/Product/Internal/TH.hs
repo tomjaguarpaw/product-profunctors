@@ -53,7 +53,7 @@ makeAdaptorAndInstanceE sides adaptorNameM info = do
       adaptorSig' = adaptorSig tyName numTyVars adaptorNameN
       adaptorDefinition' = case conTys of
         ConTys   _        -> adaptorDefinition numTyVars conName
-        FieldTys fieldTys -> adaptorDefinitionFields conName fieldTys
+        FieldTys fieldTys -> adaptorDefinitionFields conName (map fst fieldTys)
 
       instanceDefinition' = map (\side ->
         instanceDefinition side tyName numTyVars numConTys adaptorNameN conName)
@@ -296,11 +296,10 @@ lam n f = do
   x <- newName n
   [| \ $(varP x) -> $(f (VarE x)) |]
 
-adaptorDefinitionFields :: Name -> [(Name, name)] -> Name -> Q [Dec]
-adaptorDefinitionFields conName fieldsTys adaptorName = do
+adaptorDefinitionFields :: Name -> [Name] -> Name -> Q [Dec]
+adaptorDefinitionFields conName fields adaptorName = do
   [d| $(varP adaptorName) = $(lam "f" body) |]
-  where fields = map fst fieldsTys
-        body fE = case fields of
+  where body fE = case fields of
           []             -> error "Can't handle no fields in constructor"
           field1:fields' ->
             let first =
