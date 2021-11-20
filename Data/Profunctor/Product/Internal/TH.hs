@@ -53,7 +53,7 @@ makeAdaptorAndInstanceE sides adaptorNameM info = do
       adaptorSig' = adaptorSig tyName numTyVars adaptorNameN
       adaptorDefinition' = case conTys of
         ConTys   _        -> adaptorDefinition numTyVars conName
-        FieldTys fieldTys -> adaptorDefinitionFields conName (map fst fieldTys)
+        FieldTys fieldTys -> adaptorDefinitionFields conName fieldTys
 
       instanceDefinition' = map (\side ->
         instanceDefinition side tyName numTyVars numConTys adaptorNameN conName)
@@ -88,8 +88,8 @@ newtypeInstance conName tyName = do
 
 data ConTysFields = ConTys   [Type]
                   -- ^^ The type of each constructor field
-                  | FieldTys [(Name, Type)]
-                  -- ^^ The fieldname and type of each constructor field
+                  | FieldTys [Name]
+                  -- ^^ The fieldname of each constructor field
 
 lengthCons :: ConTysFields -> Int
 lengthCons (ConTys l)   = length l
@@ -130,7 +130,7 @@ varNameOfBinder = tvName
 conStuffOfConstructor :: Con -> Either Error (Name, ConTysFields)
 conStuffOfConstructor = \case
   NormalC conName st -> return (conName, ConTys (map snd st))
-  RecC conName vst -> return (conName, FieldTys (map (\(n, _, t) -> (n, t)) vst))
+  RecC conName vst -> return (conName, FieldTys (map (\(n, _, _) -> n) vst))
   _ -> Left "I can't deal with your constructor type"
 
 constructorOfConstructors :: [Con] -> Either Error Con
