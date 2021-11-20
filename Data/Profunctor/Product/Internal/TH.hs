@@ -314,6 +314,10 @@ adaptorDefinitionFields conName fieldsTys adaptorName =
 
 xTuple :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> (Name, Int) -> Dec
 xTuple patCon retCon (funN, numTyVars) = FunD funN [Clause [] (NormalB expr) []]
+  where expr = xTuple' patCon retCon numTyVars
+
+xTuple' :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> Int -> Exp
+xTuple' patCon retCon numTyVars = expr
   where expr = LamE [pat] body
         pat = patCon varPats
         body = retCon varExps
