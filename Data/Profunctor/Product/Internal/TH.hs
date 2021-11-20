@@ -72,10 +72,8 @@ makeAdaptorAndInstanceE sides adaptorNameM info = do
 
 newtypeInstance :: Name -> Name -> Q [Dec]
 newtypeInstance conName tyName = do
-  x <- newName "x"
-
   let body = [d| $(varP 'N.constructor) = $(conE conName)
-                 $(varP 'N.field) = \ $(pure $ conP conName [VarP x]) -> $(varE x) |]
+                 $(varP 'N.field) = $(lam "x" (\x -> letCon1 conName "y" x (\y -> pure y))) |]
 
   i <- do
     body' <- body
@@ -288,6 +286,11 @@ lam :: String -> (Exp -> Q Exp) -> Q Exp
 lam n f = do
   x <- newName n
   [| \ $(varP x) -> $(f (VarE x)) |]
+
+letCon1 :: Name -> String -> Exp -> (Exp -> Q Exp) -> Q Exp
+letCon1 conName n rhs f = do
+  x <- newName n
+  [| let $(pure $ conP conName [VarP x]) = $(pure rhs) in $(f (VarE x)) |]
 
 adaptorDefinitionFields :: Name -> [Name] -> Name -> Q [Dec]
 adaptorDefinitionFields conName fields adaptorName = do
