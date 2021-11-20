@@ -313,8 +313,8 @@ adaptorDefinitionFields conName fieldsTys adaptorName =
           [| $(varE 'lmap) $(varE field) ($(varE field) $fE) |]
 
 xTuple :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> (Name, Int) -> Dec
-xTuple patCon retCon (funN, numTyVars) = FunD funN [clause]
-  where clause = Clause [] (NormalB (LamE [pat] body)) []
+xTuple patCon retCon (funN, numTyVars) = FunD funN [Clause [] (NormalB expr) []]
+  where expr = LamE [pat] body
         pat = patCon varPats
         body = retCon varExps
         varPats = map varPS (allTyVars numTyVars)
