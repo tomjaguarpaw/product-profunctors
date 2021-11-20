@@ -300,7 +300,8 @@ letCon1 conName n rhs f = do
 adaptorDefinitionFields :: Name -> [Name] -> Name -> Q [Dec]
 adaptorDefinitionFields conName fields adaptorName = do
   [d| $(varP adaptorName) = $(lam "f" body) |]
-  where body fE = case fields of
+  where body :: MExp -> Q Exp
+        body fE = case fields of
           []             -> error "Can't handle no fields in constructor"
           field1:fields' ->
             let first =
