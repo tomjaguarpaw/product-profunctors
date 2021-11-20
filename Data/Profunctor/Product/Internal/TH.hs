@@ -281,7 +281,7 @@ tupleAdaptors n = case n of 1  -> 'p1
 
 adaptorDefinition :: Int -> Name -> Name -> Q Dec
 adaptorDefinition numConVars conName x = do
-  clause' <- fmap (\b -> Clause [] b wheres) body
+  clause' <- fmap (\b -> Clause [] b wheres) $ fmap NormalB [| $theDimap . $pN . $toTupleE |]
   pure ((FunD x . pure) clause')
   where toTupleN = mkName "toTuple"
         fromTupleN = mkName "fromTuple"
@@ -289,7 +289,6 @@ adaptorDefinition numConVars conName x = do
         fromTupleE = varE fromTupleN
         theDimap = [| $(varE 'dimap) $toTupleE $fromTupleE |]
         pN = varE (tupleAdaptors numConVars)
-        body = fmap NormalB [| $theDimap . $pN . $toTupleE |]
         wheres = [toTuple conName (toTupleN, numConVars),
                   fromTuple conName (fromTupleN, numConVars)]
 
