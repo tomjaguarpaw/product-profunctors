@@ -280,12 +280,14 @@ adaptorDefinition numConVars conName x = do
 
   where pN = varE (tupleAdaptors numConVars)
 
+type MExp = forall m. Monad m => m Exp
+
 lam :: String -> (Exp -> Q Exp) -> Q Exp
 lam n f = do
   x <- newName n
   [| \ $(varP x) -> $(f (VarE x)) |]
 
-let_ :: String -> Q Exp -> ((forall m. Monad m => m Exp) -> Q Exp) -> Q Exp
+let_ :: String -> Q Exp -> (MExp -> Q Exp) -> Q Exp
 let_ n rhs body = do
   x <- newName n
   [| let $(varP x) = $rhs in $(body (pure (VarE x))) |]
