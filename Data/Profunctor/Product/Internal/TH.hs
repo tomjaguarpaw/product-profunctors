@@ -77,7 +77,7 @@ newtypeInstance conName tyName = do
   x <- newName "x"
 
   let body = [d| $(pure $ VarP 'N.constructor) = $(pure $ ConE conName)
-                 $(pure $ VarP 'N.field) = \ $(pure $ conP conName [VarP x]) -> $(pure $ VarE x) |]
+                 $(pure $ VarP 'N.field) = \ $(pure $ conP conName [VarP x]) -> $(varE x) |]
 
   i <- do
     body' <- body
@@ -183,7 +183,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         tyName :: String -> Q Type
         tyName suffix = pure $ pArg' tyName' suffix numTyVars
 
-        adaptorNameQ = pure $ VarE adaptorName'
+        adaptorNameQ = varE adaptorName'
 
         defsN = replicate numConVars (VarE 'def)
 
