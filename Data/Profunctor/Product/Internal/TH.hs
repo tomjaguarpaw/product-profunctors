@@ -289,8 +289,8 @@ adaptorDefinition numConVars conName x = do
         fromTupleE = varE fromTupleN
         theDimap = [| $(varE 'dimap) $toTupleE $fromTupleE |]
         pN = varE (tupleAdaptors numConVars)
-        wheres = [toTuple conName (toTupleN, numConVars),
-                  fromTuple conName (fromTupleN, numConVars)]
+        wheres = [let_ toTupleN (toTuple conName numConVars),
+                  let_ fromTupleN (fromTuple conName numConVars)]
 
 adaptorDefinitionFields :: Name -> [(Name, name)] -> Name -> Q Dec
 adaptorDefinitionFields conName fieldsTys adaptorName =
@@ -341,13 +341,13 @@ conP conname = ConP conname
 let_ :: Name -> Exp -> Dec
 let_ funN expr = FunD funN [Clause [] (NormalB expr) []]
 
-fromTuple :: Name -> (Name, Int) -> Dec
-fromTuple conName (funN, numTyVars) = let_ funN expr
+fromTuple :: Name -> Int -> Exp
+fromTuple conName numTyVars = expr
   where retCon = appEAll (ConE conName)
         expr = xTuple' tupP retCon numTyVars
 
-toTuple :: Name -> (Name, Int) -> Dec
-toTuple conName (funN, numTyVars) = let_ funN expr
+toTuple :: Name -> Int -> Exp
+toTuple conName numTyVars = expr
   where patCon = conP conName
         expr = xTuple' patCon tupE numTyVars
 
