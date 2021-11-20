@@ -292,10 +292,8 @@ adaptorDefinition numConVars conName x = do
         pN = varE (tupleAdaptors numConVars)
 
 adaptorDefinitionFields :: Name -> [(Name, name)] -> Name -> Q [Dec]
-adaptorDefinitionFields conName fieldsTys adaptorName = do
-  fP' <- fP
-  b <- body
-  [d| $(varP adaptorName) = \ $(pure fP') -> $(pure b) |]
+adaptorDefinitionFields conName fieldsTys adaptorName =
+  [d| $(varP adaptorName) = \ $fP -> $body |]
   where fields = map fst fieldsTys
         -- TODO: vv f should be generated in Q
         fP = varP (mkName "f")
