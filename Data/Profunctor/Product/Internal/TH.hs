@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Data.Profunctor.Product.Internal.TH where
@@ -272,20 +273,22 @@ tupleAdaptors n = case n of 1  -> 'p1
 
 adaptorDefinition :: Int -> Name -> Name -> Q [Dec]
 adaptorDefinition numConVars conName x = do
-  [d| $(varP x) = let $(varP toTupleN) = $(pure $ toTuple conName numConVars)
-                      $(varP fromTupleN) = $(pure $ fromTuple conName numConVars)
-                      $(varP theDimapN) = $(varE 'dimap) $(varE toTupleN) $fromTupleE
-                  in $(varE theDimapN) . $pN . $(varE toTupleN) |]
-  where toTupleN = mkName "toTuple"
-        fromTupleN = mkName "fromTuple"
-        theDimapN = mkName "theDimap"
-        fromTupleE = varE fromTupleN
-        pN = varE (tupleAdaptors numConVars)
+  [d| $(varP x) = $(let_ "toTupleN" (pure $ toTuple conName numConVars)
+                $ \toTupleN -> let_ "fromTuple" (pure $ fromTuple conName numConVars)
+                $ \fromTupleN -> let_ "theDimap" [| $(varE 'dimap) $toTupleN $fromTupleN |]
+                $ \theDimapN -> [| $theDimapN . $pN . $toTupleN |] ) |]
+
+  where pN = varE (tupleAdaptors numConVars)
 
 lam :: String -> (Exp -> Q Exp) -> Q Exp
 lam n f = do
   x <- newName n
   [| \ $(varP x) -> $(f (VarE x)) |]
+
+let_ :: String -> Q Exp -> ((forall m. Monad m => m Exp) -> Q Exp) -> Q Exp
+let_ n rhs body = do
+  x <- newName n
+  [| let $(varP x) = $rhs in $(body (pure (VarE x))) |]
 
 letCon1 :: Name -> String -> Exp -> (Exp -> Q Exp) -> Q Exp
 letCon1 conName n rhs f = do
