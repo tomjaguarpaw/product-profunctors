@@ -1,3 +1,7 @@
+# 0.11.0.3
+
+* Support GHC 9.2
+
 # 0.11.0.2
 
 * Support GHC 9.0
