@@ -14,7 +14,7 @@ import Language.Haskell.TH (Dec(DataD, SigD, FunD, InstanceD, NewtypeD),
                             Clause(Clause),
                             Type(VarT, ForallT, AppT, ConT),
                             Body(NormalB), Q,
-                            Exp(ConE, VarE, AppE, TupE),
+                            Exp(ConE, VarE, AppE, TupE, LamE),
                             Pat(TupP, VarP, ConP), Name,
                             Info(TyConI), reify, conE, conT, varE, varP,
                             instanceD, Overlap(Incoherent), Pred)
@@ -314,9 +314,9 @@ adaptorDefinitionFields conName fieldsTys adaptorName =
 
 xTuple :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> (Name, Int) -> Dec
 xTuple patCon retCon (funN, numTyVars) = FunD funN [clause]
-  where clause = Clause [pat] body []
+  where clause = Clause [] (NormalB (LamE [pat] body)) []
         pat = patCon varPats
-        body = NormalB (retCon varExps)
+        body = retCon varExps
         varPats = map varPS (allTyVars numTyVars)
         varExps = map varS (allTyVars numTyVars)
 
