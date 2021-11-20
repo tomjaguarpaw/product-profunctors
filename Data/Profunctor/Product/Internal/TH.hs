@@ -173,7 +173,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
         tyName1 = tyName "1"
 
         default_p_a0_a1 :: String -> Q Pred
-        default_p_a0_a1 a  = classP ''Default [p, tvar a "0", tvar a "1"]
+        default_p_a0_a1 a  = [t| Default $p $(tvar a "0") $(tvar a "1") |]
 
         tvar a i = pure (mkTySuffix i a)
 
