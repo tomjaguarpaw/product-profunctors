@@ -73,11 +73,9 @@ makeAdaptorAndInstanceE sides adaptorNameM info = do
 
 newtypeInstance :: Name -> Name -> Q [Dec]
 newtypeInstance conName tyName = do
-  let body = [d| $(varP 'N.constructor) = $(conE conName)
-                 $(varP 'N.field) = $(lam "x" (\x -> letCon1 conName "y" x (\y -> y))) |]
-
   i <- do
-    body' <- body
+    body' <- [d| $(varP 'N.constructor) = $(conE conName)
+                 $(varP 'N.field) = $(lam "x" (\x -> letCon1 conName "y" x (\y -> y))) |]
     instanceD (pure [])
                  [t| N.Newtype $(conT tyName) |]
                  (map pure body')
