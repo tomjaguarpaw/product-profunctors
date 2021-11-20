@@ -279,8 +279,8 @@ adaptorDefinition numConVars conName x =
   [d| $(varP x) = $(runQC' $ do
                        toTupleN   <- let_ "toTupleN"  (pure $ toTuple conName numConVars)
                        fromTupleN <- let_ "fromTuple" (pure $ fromTuple conName numConVars)
-                       theDimapN  <- let_ "theDimap"  [| $(varE 'dimap) $toTupleN $fromTupleN |]
-                       liftQC [| $theDimapN . $pN . $toTupleN |] ) |]
+                       theDimapN  <- let_ "theDimap"  [| $(varE 'dimap) $(pure toTupleN) $(pure fromTupleN) |]
+                       liftQC [| $(pure theDimapN) . $pN . $(pure toTupleN) |] ) |]
 
   where pN = varE (tupleAdaptors numConVars)
 
@@ -310,10 +310,10 @@ lam n = QC $ \f -> do
   x <- newName n
   [| \ $(varP x) -> $(f (VarE x)) |]
 
-let_ :: String -> Q Exp -> QC Exp (Q Exp)
+let_ :: String -> Q Exp -> QC Exp Exp
 let_ n rhs = QC $ \body -> do
   x <- newName n
-  [| let $(varP x) = $rhs in $(body (pure (VarE x))) |]
+  [| let $(varP x) = $rhs in $(body (VarE x)) |]
 
 letCon1 :: Name -> String -> Exp -> QC Exp Exp
 letCon1 conName n rhs = QC $ \f -> do
