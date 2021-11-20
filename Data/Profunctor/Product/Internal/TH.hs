@@ -151,7 +151,8 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
   where instanceDec = do
           instanceCxt' <- instanceCxt
           instanceType' <- instanceType
-          pure (InstanceD (Incoherent <$ side) instanceCxt' instanceType' [defDefinition])
+          defDefinition' <- pure [defDefinition]
+          pure (InstanceD (Incoherent <$ side) instanceCxt' instanceType' defDefinition')
 
         p :: Applicative m => m Type
         p = pure $ varTS "p"
