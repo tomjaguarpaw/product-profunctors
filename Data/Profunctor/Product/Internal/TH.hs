@@ -54,7 +54,7 @@ makeAdaptorAndInstanceE sides adaptorNameM info = do
       adaptorSig' = adaptorSig tyName numTyVars adaptorNameN
       adaptorDefinition' = case conTys of
         ConTys   _        -> adaptorDefinition numTyVars conName
-        FieldTys fieldTys -> (fmap . fmap) (:[]) (adaptorDefinitionFields conName fieldTys)
+        FieldTys fieldTys -> adaptorDefinitionFields conName fieldTys
 
       instanceDefinition' = map (\side ->
         instanceDefinition side tyName numTyVars numConTys adaptorNameN conName)
@@ -292,9 +292,9 @@ adaptorDefinition numConVars conName x = do
         theDimap = [| $(varE 'dimap) $toTupleE $fromTupleE |]
         pN = varE (tupleAdaptors numConVars)
 
-adaptorDefinitionFields :: Name -> [(Name, name)] -> Name -> Q Dec
+adaptorDefinitionFields :: Name -> [(Name, name)] -> Name -> Q [Dec]
 adaptorDefinitionFields conName fieldsTys adaptorName =
-  fmap (FunD adaptorName . pure) clause
+  fmap (pure . FunD adaptorName . pure) clause
   where fields = map fst fieldsTys
         -- TODO: vv f should be generated in Q
         fP = varP (mkName "f")
