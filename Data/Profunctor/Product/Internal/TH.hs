@@ -281,10 +281,9 @@ tupleAdaptors n = case n of 1  -> 'p1
 
 adaptorDefinition :: Int -> Name -> Name -> Q Dec
 adaptorDefinition numConVars conName x = do
-  clause' <- clause
+  clause' <- fmap (\b -> Clause [] b wheres) body
   pure ((FunD x . pure) clause')
-  where clause = fmap (\b -> Clause [] b wheres) body
-        toTupleN = mkName "toTuple"
+  where toTupleN = mkName "toTuple"
         fromTupleN = mkName "fromTuple"
         toTupleE = varE toTupleN
         fromTupleE = varE fromTupleN
