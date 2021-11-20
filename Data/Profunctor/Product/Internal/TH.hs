@@ -312,10 +312,6 @@ adaptorDefinitionFields conName fieldsTys adaptorName =
         theLmap field =
           [| $(varE 'lmap) $(varE field) ($(varE field) $fE) |]
 
-xTuple :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> (Name, Int) -> Dec
-xTuple patCon retCon (funN, numTyVars) = FunD funN [Clause [] (NormalB expr) []]
-  where expr = xTuple' patCon retCon numTyVars
-
 xTuple' :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> Int -> Exp
 xTuple' patCon retCon numTyVars = expr
   where expr = LamE [pat] body
@@ -343,12 +339,14 @@ conP conname = ConP conname
 #endif
 
 fromTuple :: Name -> (Name, Int) -> Dec
-fromTuple conName = xTuple tupP retCon
+fromTuple conName (funN, numTyVars) = FunD funN [Clause [] (NormalB expr) []]
   where retCon = appEAll (ConE conName)
+        expr = xTuple' tupP retCon numTyVars
 
 toTuple :: Name -> (Name, Int) -> Dec
-toTuple conName = xTuple patCon tupE
+toTuple conName (funN, numTyVars) = FunD funN [Clause [] (NormalB expr) []]
   where patCon = conP conName
+        expr = xTuple' patCon tupE numTyVars
 
 {-
 Note that we can also do the instance definition like this, but it would
