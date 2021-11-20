@@ -186,7 +186,9 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
 adaptorSig :: Name -> Int -> Name -> Q Dec
 adaptorSig tyName' numTyVars n = fmap (SigD n) adaptorType
   where p = mkName "p"
-        adaptorType = ForallT scope <$> adaptorCxt <*> [t| $before -> $after |]
+        adaptorType = ForallT scope
+                      <$> adaptorCxt
+                      <*> [t| $before -> $pType $(pArg "0") $(pArg "1") |]
         adaptorCxt = fmap (:[]) [t| ProductProfunctor $pType |]
         before = foldl (\x y -> [t| $x $(pApp y) |]) (pure (ConT tyName')) tyVars
         pType = pure $ VarT p
@@ -198,8 +200,6 @@ adaptorSig tyName' numTyVars n = fmap (SigD n) adaptorType
 
         pArg :: String -> Q Type
         pArg s = pure $ pArg' tyName' s numTyVars
-
-        after = [t| $pType $(pArg "0") $(pArg "1") |]
 
         scope = concat [ [plainTVSpecified p]
                        , map (mkTyVarsuffix "0") tyVars
