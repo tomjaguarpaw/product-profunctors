@@ -291,12 +291,15 @@ adaptorDefinition numConVars conName x = do
         theDimap = [| $(varE 'dimap) $toTupleE $fromTupleE |]
         pN = varE (tupleAdaptors numConVars)
 
+lam :: String -> (Exp -> Q Exp) -> Q Exp
+lam n f = do
+  x <- newName n
+  [| \ $(varP x) -> $(f (VarE x)) |]
+
 adaptorDefinitionFields :: Name -> [(Name, name)] -> Name -> Q [Dec]
-adaptorDefinitionFields conName fieldsTys adaptorName =
-  [d| $(varP adaptorName) = \ $fP -> $(body (VarE (mkName "f"))) |]
+adaptorDefinitionFields conName fieldsTys adaptorName = do
+  [d| $(varP adaptorName) = $(lam "f" body) |]
   where fields = map fst fieldsTys
-        -- TODO: vv f should be generated in Q
-        fP = varP (mkName "f")
         body fE = case fields of
           []             -> error "Can't handle no fields in constructor"
           field1:fields' ->
