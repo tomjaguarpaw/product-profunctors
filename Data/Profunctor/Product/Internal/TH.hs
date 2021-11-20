@@ -77,7 +77,7 @@ newtypeInstance :: Name -> Name -> Q [Dec]
 newtypeInstance conName tyName = do
   i <- do
     body' <- [d| $(varP 'N.constructor) = $(conE conName)
-                 $(varP 'N.field) = $(runQC' $ lam "x" (letCon1 conName "y")) |]
+                 $(varP 'N.field) = $(runQC' $ lam (letCon1 conName "y")) |]
     instanceD (pure [])
                  [t| N.Newtype $(conT tyName) |]
                  (map pure body')
@@ -302,9 +302,9 @@ instance Monad (QC r) where
 
 type MExp = forall m. Monad m => m Exp
 
-lam :: String -> (Exp -> QC Exp Exp) -> QC r Exp
-lam n = \f -> liftQC $ do
-  x <- newName n
+lam :: (Exp -> QC Exp Exp) -> QC r Exp
+lam = \f -> liftQC $ do
+  x <- newName "x"
   [| \ $(varP x) -> $(runQC' $ f (VarE x)) |]
 
 let_ :: String -> Exp -> QC Exp Exp
@@ -319,7 +319,7 @@ letCon1 conName n rhs = QC $ \f -> do
 
 adaptorDefinitionFields :: Name -> [Name] -> Name -> Q [Dec]
 adaptorDefinitionFields conName fields adaptorName = do
-  [d| $(varP adaptorName) = $(runQC' (lam "f" (liftQC . body))) |]
+  [d| $(varP adaptorName) = $(runQC' (lam (liftQC . body))) |]
   where body :: Exp -> Q Exp
         body fE = case fields of
           []             -> error "Can't handle no fields in constructor"
