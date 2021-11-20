@@ -157,12 +157,9 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
 
         instanceCxt = do
             typeMatch' <- sequence typeMatch
-            productProfunctor_p' <- productProfunctor_p
+            productProfunctor_p' <- [t| ProductProfunctor $p |]
             default_p_as0_as1 <- traverse default_p_a0_a1 (allTyVars numTyVars)
             pure (productProfunctor_p' : typeMatch' ++ default_p_as0_as1)
-
-        productProfunctor_p :: Q Pred
-        productProfunctor_p = [t| ProductProfunctor $p |]
 
         (typeMatch, pArg0, pArg1) = case side of
             Nothing ->         ([],                       tyName0, tyName1)
