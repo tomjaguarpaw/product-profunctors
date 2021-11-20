@@ -280,7 +280,9 @@ tupleAdaptors n = case n of 1  -> 'p1
                    ++ " is too many type variables for me!"
 
 adaptorDefinition :: Int -> Name -> Name -> Q Dec
-adaptorDefinition numConVars conName x = fmap (FunD x . pure) clause
+adaptorDefinition numConVars conName x = do
+  clause' <- clause
+  pure ((FunD x . pure) clause')
   where clause = fmap (\b -> Clause [] b wheres) body
         toTupleN = mkName "toTuple"
         fromTupleN = mkName "fromTuple"
