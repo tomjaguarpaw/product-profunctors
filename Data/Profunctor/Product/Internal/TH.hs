@@ -338,13 +338,16 @@ conP conname = ConP conname
                []
 #endif
 
+let_ :: Name -> Exp -> Dec
+let_ funN expr = FunD funN [Clause [] (NormalB expr) []]
+
 fromTuple :: Name -> (Name, Int) -> Dec
-fromTuple conName (funN, numTyVars) = FunD funN [Clause [] (NormalB expr) []]
+fromTuple conName (funN, numTyVars) = let_ funN expr
   where retCon = appEAll (ConE conName)
         expr = xTuple' tupP retCon numTyVars
 
 toTuple :: Name -> (Name, Int) -> Dec
-toTuple conName (funN, numTyVars) = FunD funN [Clause [] (NormalB expr) []]
+toTuple conName (funN, numTyVars) = let_ funN expr
   where patCon = conP conName
         expr = xTuple' patCon tupE numTyVars
 
