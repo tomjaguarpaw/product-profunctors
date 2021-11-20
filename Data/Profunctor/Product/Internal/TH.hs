@@ -282,10 +282,10 @@ adaptorDefinition numConVars conName x = do
 
 type MExp = forall m. Monad m => m Exp
 
-lam :: String -> (Exp -> Q Exp) -> Q Exp
+lam :: String -> (MExp -> Q Exp) -> Q Exp
 lam n f = do
   x <- newName n
-  [| \ $(varP x) -> $(f (VarE x)) |]
+  [| \ $(varP x) -> $(f (pure (VarE x))) |]
 
 let_ :: String -> Q Exp -> (MExp -> Q Exp) -> Q Exp
 let_ n rhs body = do
@@ -310,7 +310,7 @@ adaptorDefinitionFields conName fields adaptorName = do
             in foldl app first fields'
 
         theLmap field fE =
-          [| $(varE 'lmap) $(varE field) ($(varE field) $(pure fE)) |]
+          [| $(varE 'lmap) $(varE field) ($(varE field) $fE) |]
 
 xTuple' :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> Int -> Exp
 xTuple' patCon retCon numTyVars = expr
