@@ -65,11 +65,12 @@ makeAdaptorAndInstanceE sides adaptorNameM info = do
 
   return $ do
     adaptorDefinition'' <- adaptorDefinition' adaptorNameN
-    as <- sequence ( [ adaptorSig' ]
-                   ++ fmap pure adaptorDefinition''
+    adaptorSig'' <- adaptorSig'
+
+    as <- sequence (  fmap pure adaptorDefinition''
                    ++ instanceDefinition' )
     ns <- newtypeInstance'
-    return (as ++ ns)
+    return ([adaptorSig''] ++ as ++ ns)
 
 newtypeInstance :: Name -> Name -> Q [Dec]
 newtypeInstance conName tyName = do
