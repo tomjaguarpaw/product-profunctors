@@ -184,7 +184,9 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
 
         defDefinition = [d| $(pure $ VarP 'def) = $defBody |]
 
-        defBody = [e| $(pure $ VarE adaptorName') $(pure $ appEAll (ConE conName) defsN) |]
+        defBody = [e| $adaptorNameQ $(pure $ appEAll (ConE conName) defsN) |]
+
+        adaptorNameQ = pure $ VarE adaptorName'
 
         defsN = replicate numConVars (VarE 'def)
 
