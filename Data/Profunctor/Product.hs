@@ -43,7 +43,7 @@ module Data.Profunctor.Product (module Data.Profunctor.Product.Class,
                                 module Data.Profunctor.Product) where
 
 import Prelude hiding (id)
-import Data.Profunctor (Profunctor, lmap, dimap, WrappedArrow, Star(Star), Costar)
+import Data.Profunctor (Profunctor, lmap, dimap, WrappedArrow, Star(Star), Costar, Forget(Forget))
 import qualified Data.Profunctor as Profunctor
 import Data.Profunctor.Composition (Procompose(Procompose))
 import Data.Functor.Contravariant.Divisible (Divisible, divide, conquer, Decidable, chosen, lost)
@@ -164,6 +164,12 @@ instance ArrowChoice arr => SemisumProfunctor (WrappedArrow arr) where
 
 instance ArrowChoice arr => SumProfunctor (WrappedArrow arr) where
   voidP = arr id
+
+instance SemisumProfunctor (Forget r) where
+  Forget f +++! Forget g = Forget $ either f g
+
+instance SumProfunctor (Forget r) where
+  voidP = Forget absurd
 
 instance Functor f => SemisumProfunctor (Star f) where
   Star f +++! Star g = Star $ either (fmap Left . f) (fmap Right . g)
