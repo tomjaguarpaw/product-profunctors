@@ -9,8 +9,7 @@ module Data.Profunctor.Product.Examples where
 import qualified Data.Profunctor                 as P
 import qualified Data.Profunctor.Product         as PP
 import qualified Data.Profunctor.Product.Default as D
-import           Control.Applicative             (Applicative, liftA2, pure, (<*>),
-                                                  ZipList(ZipList), getZipList)
+import           Control.Applicative             (liftA2, ZipList(..))
 
 newtype Replicator r f a b = Replicator (r -> f b)
   deriving Functor
@@ -48,9 +47,11 @@ instance Applicative f => Applicative (Replicator r f a) where
 instance Functor f => P.Profunctor (Replicator r f) where
   dimap _ h (Replicator f) = Replicator ((fmap . fmap) h f)
 
-instance Applicative f=> PP.ProductProfunctor (Replicator r f) where
-  purePP = pure
+instance Applicative f => PP.SemiproductProfunctor (Replicator r f) where
   (****) = (<*>)
+
+instance Applicative f => PP.ProductProfunctor (Replicator r f) where
+  pureP = pure
 
 -- In the real world this would be 'StateT [a] Maybe b' but I don't want to
 -- pick up the transformers dependency here
@@ -93,9 +94,11 @@ instance Applicative (Take a z) where
 instance P.Profunctor (Take a) where
   dimap _ g (Take h) = Take ((fmap . fmap . fmap) g h)
 
-instance PP.ProductProfunctor (Take a) where
-  purePP = pure
+instance PP.SemiproductProfunctor (Take a) where
   (****) = (<*>)
+
+instance PP.ProductProfunctor (Take a) where
+  pureP = pure
 
 newtype Traverse f a b = Traverse { runTraverse :: a -> f b } deriving Functor
 
@@ -132,9 +135,11 @@ instance Applicative f => Applicative (Traverse f a) where
 instance Functor f => P.Profunctor (Traverse f) where
   dimap g h (Traverse f) = Traverse (P.dimap g (fmap h) f)
 
-instance Applicative f => PP.ProductProfunctor (Traverse f) where
-  purePP = pure
+instance Applicative f => PP.SemiproductProfunctor (Traverse f) where
   (****) = (<*>)
+
+instance Applicative f => PP.ProductProfunctor (Traverse f) where
+  pureP = pure
 
 newtype Zipper a b = Zipper { unZipper :: Traverse ZipList a b }
   deriving Functor
@@ -151,9 +156,11 @@ instance Applicative (Zipper a) where
   pure = Zipper . pure
   f <*> x = Zipper ((<*>) (unZipper f) (unZipper x))
 
-instance PP.ProductProfunctor Zipper where
-  purePP = pure
+instance PP.SemiproductProfunctor Zipper where
   (****) = (<*>)
+
+instance PP.ProductProfunctor Zipper where
+  pureP = pure
 
 -- }
 

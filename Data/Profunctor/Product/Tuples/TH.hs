@@ -13,7 +13,7 @@ import Language.Haskell.TH
 import Language.Haskell.TH.Datatype.TyVarBndr
 
 import Data.Profunctor (Profunctor (dimap))
-import Data.Profunctor.Product.Class (ProductProfunctor, (***!), empty)
+import Data.Profunctor.Product.Class (ProductProfunctor, (***!), unitP)
 import Data.Profunctor.Product.Default.Class (Default (def))
 import Control.Applicative (pure)
 
@@ -61,7 +61,7 @@ pTn n = sequence [sig, fun]
                        `appT` foldl appT (conT tN) (map varT . take n $ bs)
     fun = funD (pT n) [ clause [] (normalB bdy) [] ]
     bdy = case n of
-      0 -> [| const empty |]
+      0 -> [| const unitP |]
       1 -> [| id |]
       2 -> [| uncurry (***!) |]
       _ -> [| chain $(varE (pT (n - 1))) |]
@@ -174,7 +174,7 @@ mkDefaultN n =
     mkTupT = foldl appT (tupleT n) . map varT
     mkFun = funD 'def [clause [] bdy []]
     bdy = normalB $ case n of
-      0 -> varE 'empty
+      0 -> [| unitP |]
       _ -> varE (mkName $ 'p':show n) `appE` tupE (replicate n [| def |])
     p = mkName "p"
     x = varT (mkName "x")
