@@ -71,9 +71,11 @@ newtype Arrow a b = Arrow { unArrow :: a -> b }
 instance Profunctor Arrow where
   dimap f g = Arrow . dimap f g . unArrow
 
-instance ProductProfunctor Arrow where
-  purePP = Arrow . purePP
+instance SemiproductProfunctor Arrow where
   f **** g = Arrow (unArrow f **** unArrow g)
+
+instance ProductProfunctor Arrow where
+  pureP = Arrow . pureP
 
 data Unit = Unit
 

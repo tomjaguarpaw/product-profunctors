@@ -1,44 +1,58 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 {-# LANGUAGE TemplateHaskell #-}
 
--- | If @p@ is an instance of 'ProductProfunctor' then @p a a'@
--- represents a sort of process for turning @a@s into @a'@s that can
--- be "laid out side-by-side" with other values of @p@ to form "wider"
--- processes.  For example, if I have
+-- | The classes in this module provide "profunctorial" analogues to
+-- the operations from the 'Applicative' (@Apply@),
+-- 'Data.Functor.Contravariant.Divisible.Divisible' (@Divise@) and
+-- 'Data.Functor.Contravariant.Divisible.Decidable' (@Conclude@) type
+-- classes:
 --
 -- @
--- a :: p a a' -- a process for turning as into a's
--- b :: p b b' -- a process for turning bs into b's
--- c :: p c c' -- a process for turning cs into c's
+-- ('<*>')  :: 'Applicative'           f => f   (a -> b) -> f   a -> f   b
+-- ('****') :: 'SemiproductProfunctor' p => p x (a -> b) -> p x a -> p x b
+--
+-- 'Control.Applicative.liftA2' :: 'Applicative'           f => (a -> b -> c) -> f   a -> f   b -> f   c
+-- 'liftP2' :: 'SemiproductProfunctor' p => (a -> b -> c) -> p x a -> p x b -> p x c
+--
+-- pure  :: 'Applicative'           f => a -> f   a
+-- 'pureP' :: 'SemiproductProfunctor' p => a -> p x a
+--
+-- divide  ::                           'Data.Functor.Contravariant.Divisible.Divisible' f  => (a -> (b, c)) -> f b   -> f c   -> f a -- From contravariant
+-- divise  ::                              Divise f  => (a -> (b, c)) -> f b   -> f c   -> f a -- From semigroupoids
+-- 'diviseP' :: ('Semigroup' x, 'SemiproductProfunctor' p) => (a -> (b, c)) -> p a x -> p b x -> p c x
+--
+-- conquer ::                      'Data.Functor.Contravariant.Divisible.Decidable' f => f a -- From contravariant
+-- 'conquerP' :: ('Monoid' x, 'ProductProfunctor' p) => p a x
+--
+-- choose  :: 'Data.Functor.Contravariant.Divisible.Decidable'         f => (a -> 'Either' b c) -> f b   -> f c   -> f a -- From contravariant
+-- decide  :: Decide            f => (a -> 'Either' b c) -> f b   -> f c   -> f a -- From semigroupoids
+-- 'decideP' :: 'SemisumProfunctor' p => (a -> 'Either' b c) -> p b x -> p c x -> p a x
+--
+-- lose      :: 'Data.Functor.Contravariant.Divisible.Decidable'     f => (a -> 'Void') -> f a -- From contravariant
+-- conclude  :: Conclude      f => (a -> 'Void') -> f a -- From semigroupoids
+-- 'concludeP' :: 'SumProfunctor' p => (a -> 'Void') -> p a x
 -- @
 --
--- then I can combine them using 'p3' to get
---
--- @
--- p3 a b c :: p (a, b, c) (a', b', c')
--- -- a process for turning (a, b, c)s into (a', b', c')s
--- @
---
--- You would typically compose 'ProductProfunctor's using
--- 'Profunctors''s 'Profunctor.lmap' and 'Applicative''s 'pure',
--- '<$>' / 'fmap' and '<*>'.
-
+-- The @(Semi){Sum,Product}Profunctor@ classes also provide more
+-- primitive operations using @Either@ and @(,)@. These can be very
+-- useful with the @<https://hackage.haskell.org/package/generics-eot generics-eot>@
+-- package, which can automatically convert data types that have a
+-- 'Generic' instance into Eithers-of-Tuples.
 module Data.Profunctor.Product (module Data.Profunctor.Product.Class,
                                 module Data.Profunctor.Product.Newtype,
                                 module Data.Profunctor.Product) where
 
 import Prelude hiding (id)
-import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow, Star(..), Costar)
+import Data.Profunctor (Profunctor, lmap, dimap, WrappedArrow, Star(Star), Costar, Forget(Forget))
 import qualified Data.Profunctor as Profunctor
-import Data.Profunctor.Composition (Procompose(..))
-import Data.Functor.Contravariant (Contravariant, contramap)
-import Data.Functor.Contravariant.Divisible (Divisible(..), Decidable, chosen)
+import Data.Profunctor.Composition (Procompose(Procompose))
+import Data.Functor.Contravariant.Divisible (Divisible, divide, conquer, Decidable, chosen, lost)
 import Control.Category (id)
-import Control.Arrow (Arrow, (***), (<<<), arr, (&&&), ArrowChoice, (+++))
-import Control.Applicative (Applicative, liftA2, pure, (<*>), Alternative, (<|>), (<$>))
+import Control.Arrow (Arrow, arr, (***), ArrowChoice, (+++))
+import Control.Applicative (Applicative, liftA2, pure, (<*>), Alternative, empty, (<|>), (<$>))
 
-import Data.Monoid (Monoid, mempty, (<>))
 import Data.Tagged
+import Data.Void (absurd)
 
 import Data.Bifunctor.Biff
 import Data.Bifunctor.Clown
@@ -53,145 +67,161 @@ import Data.Profunctor.Product.Flatten
 import Data.Profunctor.Product.Tuples
 import Data.Profunctor.Product.Tuples.TH (pTns, maxTupleSize, pNs)
 
--- ProductProfunctor and ProductContravariant are potentially
--- redundant type classes.  It seems to me that these are equivalent
--- to Profunctor with Applicative, and Contravariant with Monoid
--- respectively:
---
---    import Data.Profunctor
---    import Control.Applicative hiding (empty)
---    import Data.Functor.Contravariant
---    import Data.Monoid
---
---    empty :: (Applicative (p ())) => p () ()
---    empty = pure ()
---
---    (***!) :: (Applicative (p (a, a')), Profunctor p) =>
---                p a b -> p a' b' -> p (a, a') (b, b')
---    p ***! p' = (,) <$> lmap fst p <*> lmap snd p'
---
---    point :: Monoid (f ()) => f ()
---    point = mempty
---
---    (***<) :: (Monoid (f (a, b)), Contravariant f) =>
---                f a -> f b -> f (a, b)
---    p ***< p' = contramap fst p <> contramap snd p'
---
---
--- The only thing that makes me think that they are not *completely*
--- redundant is that (***!) and (***<) have to be defined
--- polymorphically in the type arguments, whereas if we took the
--- Profunctor+Applicative or Contravariant+Monoid approach we do not
--- have a guarantee that these operations are polymorphic.
---
--- Previously I wanted to replace ProductProfunctor and
--- ProductContravariant entirely.  This proved difficult as it is not
--- possible to expand the class constraints to require Applicative and
--- Monoid respectively.  We can't enforce a constraint 'Applicative (p
--- a)' where 'a' does not appear in the head.  This seems closely
--- related to the above issue of adhoc implementations.
---
--- There is a potential method of working around this issue using the
--- 'constraints' package:
--- stackoverflow.com/questions/12718268/polymorphic-constraint/12718620
---
--- Still, at least we now have default implementations of the class
--- methods, which makes things simpler.
-
--- | '***$' is the generalisation of @Applicative@'s @\<$\>@.
+-- | '***$' is the generalisation of 'Functor''s @\<$\>@.
 --
 -- '***$' = 'Profunctor.rmap', just like '<$>' = 'fmap'.
 --
 -- (You probably won't need to use this.  @\<$\>@ should be
 -- sufficient.)
-(***$) :: ProductProfunctor p => (b -> c) -> p a b -> p a c
+(***$) :: Profunctor p => (b -> c) -> p a b -> p a c
 (***$) = Profunctor.rmap
 
-instance ProductProfunctor (->) where
-  purePP = pure
+-- { Product
+
+instance SemiproductProfunctor (->) where
   (****) = (<*>)
 
-instance Arrow arr => ProductProfunctor (WrappedArrow arr) where
-  empty  = id
+instance ProductProfunctor (->) where
+  pureP = pure
+
+instance Arrow arr => SemiproductProfunctor (WrappedArrow arr) where
   (***!) = (***)
 
+instance Arrow arr => ProductProfunctor (WrappedArrow arr) where
+  unitP = arr id
+
+instance SemiproductProfunctor Tagged where
+  (****) = (<*>)
+
 instance ProductProfunctor Tagged where
-  purePP = pure
+  pureP = pure
+
+-- Should this use Apply?
+instance Applicative f => SemiproductProfunctor (Star f) where
   (****) = (<*>)
 
 instance Applicative f => ProductProfunctor (Star f) where
-  purePP = pure
+  pureP = pure
+
+instance Functor f => SemiproductProfunctor (Costar f) where
   (****) = (<*>)
 
 instance Functor f => ProductProfunctor (Costar f) where
-  purePP = pure
-  (****) = (<*>)
+  pureP = pure
+
+instance (SemiproductProfunctor p, SemiproductProfunctor q) => SemiproductProfunctor (Procompose p q) where
+  Procompose pf qf **** Procompose pa qa =
+    Procompose (lmap fst pf **** lmap snd pa) (liftP2 (,) qf qa)
 
 instance (ProductProfunctor p, ProductProfunctor q) => ProductProfunctor (Procompose p q) where
-  purePP a = Procompose (purePP a) (purePP ())
-  Procompose pf qf **** Procompose pa qa =
-    Procompose (lmap fst pf **** lmap snd pa) ((,) ***$ qf **** qa)
+  pureP a = Procompose (pureP a) (pureP ())
+
+instance (Functor f, Applicative g, SemiproductProfunctor p) => SemiproductProfunctor (Biff p f g) where
+  Biff abc **** Biff ab = Biff $ liftP2 (<*>) abc ab
 
 instance (Functor f, Applicative g, ProductProfunctor p) => ProductProfunctor (Biff p f g) where
-  purePP = Biff . purePP . pure
-  Biff abc **** Biff ab = Biff $ (<*>) ***$ abc **** ab
+  pureP = Biff . pureP . pure
 
-instance Applicative f => ProductProfunctor (Joker f) where
-  purePP = Joker . pure
+-- Should this use Apply?
+instance Applicative f => SemiproductProfunctor (Joker f) where
   Joker bc **** Joker b = Joker $ bc <*> b
 
-instance Divisible f => ProductProfunctor (Clown f) where
-  purePP _ = Clown conquer
+instance Applicative f => ProductProfunctor (Joker f) where
+  pureP = Joker . pure
+
+-- Should this use Devise?
+instance Divisible f => SemiproductProfunctor (Clown f) where
   Clown l **** Clown r = Clown $ divide (\a -> (a, a)) l r
 
-instance (ProductProfunctor p, ProductProfunctor q) => ProductProfunctor (Product p q) where
-  purePP a = Pair (purePP a) (purePP a)
+instance Divisible f => ProductProfunctor (Clown f) where
+  pureP _ = Clown conquer
+
+instance (SemiproductProfunctor p, SemiproductProfunctor q) => SemiproductProfunctor (Product p q) where
   Pair l1 l2 **** Pair r1 r2 = Pair (l1 **** r1) (l2 **** r2)
 
-instance (Applicative f, ProductProfunctor p) => ProductProfunctor (Tannen f p) where
-  purePP = Tannen . pure . purePP
+instance (ProductProfunctor p, ProductProfunctor q) => ProductProfunctor (Product p q) where
+  pureP a = Pair (pureP a) (pureP a)
+
+-- Should this use Apply?
+instance (Applicative f, SemiproductProfunctor p) => SemiproductProfunctor (Tannen f p) where
   Tannen f **** Tannen a = Tannen $ liftA2 (****) f a
+
+instance (Applicative f, ProductProfunctor p) => ProductProfunctor (Tannen f p) where
+  pureP = Tannen . pure . pureP
+
+-- }
 
 -- { Sum
 
-instance SumProfunctor (->) where
+instance SemisumProfunctor (->) where
   f +++! g = either (Left . f) (Right . g)
 
-instance ArrowChoice arr => SumProfunctor (WrappedArrow arr) where
+instance SumProfunctor (->) where
+  voidP = id
+
+instance ArrowChoice arr => SemisumProfunctor (WrappedArrow arr) where
   (+++!) = (+++)
 
-instance Applicative f => SumProfunctor (Star f) where
+instance ArrowChoice arr => SumProfunctor (WrappedArrow arr) where
+  voidP = arr id
+
+instance SemisumProfunctor (Forget r) where
+  Forget f +++! Forget g = Forget $ either f g
+
+instance SumProfunctor (Forget r) where
+  voidP = Forget absurd
+
+instance Functor f => SemisumProfunctor (Star f) where
   Star f +++! Star g = Star $ either (fmap Left . f) (fmap Right . g)
 
-instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Procompose p q) where
+instance Applicative f => SumProfunctor (Star f) where
+  voidP = Star pure
+
+instance (SemisumProfunctor p, SemisumProfunctor q) => SemisumProfunctor (Procompose p q) where
   Procompose pa qa +++! Procompose pb qb = Procompose (pa +++! pb) (qa +++! qb)
 
-instance Alternative f => SumProfunctor (Joker f) where
+instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Procompose p q) where
+  voidP = Procompose voidP voidP
+
+-- Should this use Alt?
+instance Alternative f => SemisumProfunctor (Joker f) where
   Joker f +++! Joker g = Joker $ Left <$> f <|> Right <$> g
 
-instance Decidable f => SumProfunctor (Clown f) where
+instance Alternative f => SumProfunctor (Joker f) where
+  voidP = Joker $ absurd <$> empty
+
+-- Should this use Decide?
+instance Decidable f => SemisumProfunctor (Clown f) where
   Clown f +++! Clown g = Clown $ chosen f g
 
-instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Product p q) where
+-- Should this use Conclude?
+instance Decidable f => SumProfunctor (Clown f) where
+  voidP = Clown lost
+
+instance (SemisumProfunctor p, SemisumProfunctor q) => SemisumProfunctor (Product p q) where
   Pair l1 l2 +++! Pair r1 r2 = Pair (l1 +++! r1) (l2 +++! r2)
 
-instance (Applicative f, SumProfunctor p) => SumProfunctor (Tannen f p) where
+instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Product p q) where
+  voidP = Pair voidP voidP
+
+-- Should this use Apply?
+instance (Applicative f, SemisumProfunctor p) => SemisumProfunctor (Tannen f p) where
   Tannen l +++! Tannen r = Tannen $ liftA2 (+++!) l r
+
+instance (Applicative f, SumProfunctor p) => SumProfunctor (Tannen f p) where
+  voidP = Tannen $ pure voidP
 
 -- | A generalisation of @map :: (a -> b) -> [a] -> [b]@.  It is also,
 -- in spirit, a generalisation of @traverse :: (a -> f b) -> [a] -> f
 -- [b]@, but the types need to be shuffled around a bit to make that
 -- work.
 list :: (ProductProfunctor p, SumProfunctor p) => p a b -> p [a] [b]
-list p = Profunctor.dimap fromList toList (empty +++! (p ***! list p))
+list p = Profunctor.dimap fromList toList (unitP +++! (p ***! list p))
   where toList :: Either () (a, [a]) -> [a]
         toList = either (const []) (uncurry (:))
         fromList :: [a] -> Either () (a, [a])
         fromList []     = Left ()
         fromList (a:as) = Right (a, as)
-
--- SumContravariant would be 'Data.Functor.Contravariant.Decidable'
--- (without the requirement to also be Divisible).
 
 -- }
 

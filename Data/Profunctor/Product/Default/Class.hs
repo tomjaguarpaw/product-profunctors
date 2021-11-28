@@ -76,7 +76,7 @@ class GDefault p f g where
 
 instance ProductProfunctor p => GDefault p U1 U1 where
   type GDefCnstr p U1 U1 = ()
-  gdef1 = dimap (const ()) (const U1) empty
+  gdef1 = dimap (const ()) (const U1) unitP
 
 instance (Profunctor p, GDefault p f g) => GDefault p (M1 i c f) (M1 i c g) where
   type GDefCnstr p (M1 i c f) (M1 i c g) = GDefCnstr p f g
