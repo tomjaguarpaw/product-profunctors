@@ -49,7 +49,6 @@ module Data.Profunctor.Product.Default
 import Control.Applicative (Const (Const))
 import Data.Functor.Identity (Identity (Identity))
 import Data.Profunctor (Profunctor, dimap)
--- TODO: vv this imports a lot of names.  Should we list them all?
 import Data.Profunctor.Product
 import Data.Tagged (Tagged (Tagged))
 
