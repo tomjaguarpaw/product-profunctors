@@ -117,10 +117,7 @@ type Sequence = Traverse
 sequenceT :: D.Default (Sequence f) a b => a -> f b
 sequenceT = runTraverse D.def
 
--- If we used this then inference may get better:
---
---    instance a ~ b => D.Default (Traverse f) (f a) b where
-instance D.Default (Traverse f) (f a) a where
+instance a ~ a' => D.Default (Traverse f) (f a) a' where
   def = Traverse id
 
 -- Boilerplate that is derivable using generics but I never got round
