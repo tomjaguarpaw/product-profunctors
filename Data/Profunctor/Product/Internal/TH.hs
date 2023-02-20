@@ -276,7 +276,7 @@ adaptorDefinition numConVars conName x =
   [d| $(varP x) = $(runQC' $ do
                        toTupleN   <- let_ (toTuple conName numConVars)
                        fromTupleN <- let_ (fromTuple conName numConVars)
-                       theDimapN  <- let_ =<< liftQC [| $(varE 'dimap) $(pure toTupleN) $(pure fromTupleN) |]
+                       theDimapN  <- let_ =<< liftQC [| dimap $(pure toTupleN) $(pure fromTupleN) |]
                        liftQC [| $(pure theDimapN) . $pN . $(pure toTupleN) |] ) |]
 
   where pN = varE (tupleAdaptors numConVars)
@@ -312,13 +312,13 @@ adaptorDefinitionFields conName fields adaptorName = do
           []             -> error "Can't handle no fields in constructor"
           field1:fields' ->
             let first =
-                  [| $(varE '(***$)) $(conE conName) $(theLmap field1 (pure fE)) |]
+                  [| (***$) $(conE conName) $(theLmap field1 (pure fE)) |]
                 app x y =
-                  [| $(varE '(****)) $x $(theLmap y (pure fE)) |]
+                  [| (****) $x $(theLmap y (pure fE)) |]
             in foldl app first fields'
 
         theLmap field fE =
-          [| $(varE 'lmap) $(varE field) ($(varE field) $fE) |]
+          [| lmap $(varE field) ($(varE field) $fE) |]
 
 xTuple' :: ([Pat] -> Pat) -> ([Exp] -> Exp) -> Int -> Exp
 xTuple' patCon retCon numTyVars = expr
