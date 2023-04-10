@@ -66,10 +66,9 @@ import Data.Profunctor.Product.Flatten
 import Data.Profunctor.Product.Tuples
 import Data.Profunctor.Product.Tuples.TH (pTns, maxTupleSize, pNs)
 
--- SemiproductProfunctor and ProductContravariant are potentially
--- redundant type classes.  It seems to me that these are equivalent
--- to Profunctor with Applicative, and Contravariant with Monoid
--- respectively:
+-- Is SemiproductProfunctor potentially a redundant type class?
+-- It seems to me that these are equivalent to Profunctor with
+-- Applicative, and Contravariant with Monoid respectively:
 --
 --    import Data.Profunctor
 --    import Control.Applicative hiding (empty)
@@ -97,12 +96,12 @@ import Data.Profunctor.Product.Tuples.TH (pTns, maxTupleSize, pNs)
 -- Profunctor+Applicative or Contravariant+Monoid approach we do not
 -- have a guarantee that these operations are polymorphic.
 --
--- Previously I wanted to replace SemiproductProfunctor and
--- ProductContravariant entirely.  This proved difficult as it is not
--- possible to expand the class constraints to require Applicative and
--- Monoid respectively.  We can't enforce a constraint 'Applicative (p
--- a)' where 'a' does not appear in the head.  This seems closely
--- related to the above issue of adhoc implementations.
+-- Previously I wanted to replace SemiproductProfunctor entirely.
+-- This proved difficult as it is not possible to expand the class
+-- constraints to require Applicative and Monoid respectively.  We
+-- can't enforce a constraint 'Applicative (p a)' where 'a' does not
+-- appear in the head.  This seems closely related to the above issue
+-- of adhoc implementations.
 --
 -- There is a potential method of working around this issue using the
 -- 'constraints' package:
