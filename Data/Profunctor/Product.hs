@@ -41,12 +41,10 @@ module Data.Profunctor.Product (-- * @ProductProfunctor@
                                 module Data.Profunctor.Product.Class,
                                 module Data.Profunctor.Product) where
 
-import Prelude hiding (id)
 import Data.Profunctor (Profunctor, lmap, WrappedArrow, Star(Star), Costar, Forget(Forget))
 import qualified Data.Profunctor as Profunctor
 import Data.Profunctor.Composition (Procompose(..))
 import Data.Functor.Contravariant.Divisible (Divisible(..), Decidable, chosen)
-import Control.Category (id)
 import Control.Arrow (Arrow(arr), (***), ArrowChoice, (+++))
 import Control.Applicative (Applicative, liftA2, pure, (<*>), Alternative, (<|>), (<$>))
 
@@ -131,7 +129,7 @@ instance Arrow arr => SemiproductProfunctor (WrappedArrow arr) where
   (***!) = (***)
 
 instance Arrow arr => ProductProfunctor (WrappedArrow arr) where
-  unitP = arr id
+  unitP = arr (const ())
 
 instance SemiproductProfunctor Tagged where
   (****) = (<*>)
@@ -149,10 +147,13 @@ instance Functor f => SemiproductProfunctor (Costar f) where
   (****) = (<*>)
 
 -- | @since 0.11.1.0
-instance Monoid r => SemiproductProfunctor (Forget r) where
-  purePP _ = Forget (const mempty)
+--
+-- /Since 0.12.0.0:/ Superclass constraint relaxed from @'Monoid' r@
+-- to @'Semigroup' r@.
+instance Semigroup r => SemiproductProfunctor (Forget r) where
   Forget f ***! Forget g = Forget $ \(a, a') -> f a <> g a'
 
+-- | @since 0.11.1.0
 instance Monoid r => ProductProfunctor (Forget r) where
   unitP = Forget $ const mempty
 
@@ -230,8 +231,8 @@ instance (Applicative f, SumProfunctor p) => SumProfunctor (Tannen f p) where
 -- in spirit, a generalisation of @traverse :: (a -> f b) -> [a] -> f
 -- [b]@, but the types need to be shuffled around a bit to make that
 -- work.
-list :: (SemiproductProfunctor p, SumProfunctor p) => p a b -> p [a] [b]
-list p = Profunctor.dimap fromList toList (empty +++! (p ***! list p))
+list :: (ProductProfunctor p, SumProfunctor p) => p a b -> p [a] [b]
+list p = Profunctor.dimap fromList toList (unitP +++! (p ***! list p))
   where toList :: Either () (a, [a]) -> [a]
         toList = either (const []) (uncurry (:))
         fromList :: [a] -> Either () (a, [a])

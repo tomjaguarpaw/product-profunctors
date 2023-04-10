@@ -77,15 +77,6 @@ import qualified Data.Profunctor as Profunctor
 --    ('****') = ('Control.Applicative.<*>')
 -- @
 class Profunctor p => SemiproductProfunctor p where
-  -- | 'purePP' is the generalisation of @Applicative@'s
-  -- 'Control.Applicative.pure'.
-  --
-  -- (You probably won't need to use this except to define
-  -- 'SemiproductProfunctor' instances.  In your own code @pure@ should be
-  -- sufficient.)
-  purePP :: b -> p a b
-  purePP b = Profunctor.dimap (const ()) (const b) empty
-
   -- | '****' is the generalisation of @Applicative@'s
   -- 'Control.Applicative.<*>'.
   --
@@ -95,11 +86,6 @@ class Profunctor p => SemiproductProfunctor p where
   (****) :: p a (b -> c) -> p a b -> p a c
   (****) f x = Profunctor.dimap dup (uncurry ($)) (f ***! x)
     where dup y = (y, y)
-
-  -- | Use @pure ()@ instead.  @empty@ may be deprecated in a future
-  -- version.
-  empty  :: p () ()
-  empty = purePP ()
 
   -- | Use @\\f g -> (,) 'Control.Applicative.<$>'
   -- 'Data.Profunctor.lmap' fst f 'Control.Applicative.<*>'
@@ -111,7 +97,7 @@ class Profunctor p => SemiproductProfunctor p where
 
 class SemiproductProfunctor p => ProductProfunctor p where
   -- | Unit for @('***!')@.
-  unitP :: p () ()
+  unitP :: p x ()
   unitP = pureP ()
 
   -- | Analogue to 'pure'.
@@ -124,6 +110,17 @@ class SemiproductProfunctor p => ProductProfunctor p where
   conquerP :: Monoid x => p a x
   conquerP = pureP mempty
   {-# MINIMAL unitP | pureP #-}
+
+  -- | Deprecated alias for 'unitP'. Will be removed in a future version.
+  empty :: p () ()
+  empty = unitP
+
+  -- | Deprecated alias for 'pureP'. Will be removed in a future version.
+  purePP :: a -> p x a
+  purePP = pureP
+
+{-# DEPRECATED empty "use unitP" #-}
+{-# DEPRECATED purePP "use pureP"#-}
 
 class Profunctor p => SumProfunctor p where
   -- Morally we should have 'zero :: p Void Void' but I don't think

@@ -2,6 +2,8 @@
 
 * Rename `ProductProfunctor` to `SemiproductProfunctor`:
   - The `ProductProfunctor` now means "`SemiproductProfunctor` with a unit"
+  - Old `ProductProfunctor#empty` has been deprecated; use `ProductProfunctor#unitP`
+  - Old `ProductProfunctor#purePP` has been deprecated; use `ProductProfunctor#pureP`
 
 # 0.11.1.1
 
