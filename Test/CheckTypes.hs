@@ -3,7 +3,7 @@
 
 module CheckTypes where
 
-import Data.Profunctor.Product (ProductProfunctor)
+import Data.Profunctor.Product (SemiproductProfunctor)
 import Data.Profunctor.Product.Default (Default, def)
 import Data.Profunctor.Product.Adaptor
 
@@ -22,59 +22,59 @@ import DefinitionsUndecidable ()
 -- that only the order in which the product profunctors are combined
 -- can vary.
 
-pData2' :: ProductProfunctor p =>
+pData2' :: SemiproductProfunctor p =>
            Data2 (p a a') (p b b') -> p (Data2 a b) (Data2 a' b')
 pData2' = pData2
 
-pData3' :: ProductProfunctor p =>
+pData3' :: SemiproductProfunctor p =>
            Data3 (p a a') (p b b') (p c c') -> p (Data3 a b c) (Data3 a' b' c')
 pData3' = pData3
 
-pRecord2' :: ProductProfunctor p =>
+pRecord2' :: SemiproductProfunctor p =>
            Record2 (p a a') (p b b') -> p (Record2 a b) (Record2 a' b')
 pRecord2' = pRecord2
 
-pRecord3' :: ProductProfunctor p =>
+pRecord3' :: SemiproductProfunctor p =>
            Record3 (p a a') (p b b') (p c c') -> p (Record3 a b c) (Record3 a' b' c')
 pRecord3' = pRecord3
 
-instanceData2 :: (ProductProfunctor p, Default p a a', Default p b b')
+instanceData2 :: (SemiproductProfunctor p, Default p a a', Default p b b')
                  => p (Data2 a b) (Data2 a' b')
 instanceData2 = def
 
-instanceData3 :: (ProductProfunctor p,
+instanceData3 :: (SemiproductProfunctor p,
                   Default p a a', Default p b b', Default p c c')
                  => p (Data3 a b c) (Data3 a' b' c')
 instanceData3 = def
 
-instanceRecord2 :: (ProductProfunctor p, Default p a a', Default p b b')
+instanceRecord2 :: (SemiproductProfunctor p, Default p a a', Default p b b')
                  => p (Record2 a b) (Record2 a' b')
 instanceRecord2 = def
 
-instanceRecord3 :: (ProductProfunctor p,
+instanceRecord3 :: (SemiproductProfunctor p,
                   Default p a a', Default p b b', Default p c c')
                  => p (Record3 a b c) (Record3 a' b' c')
 instanceRecord3 = def
 
-defaultNameGenerated :: ProductProfunctor p => RecordDefaultName (p x x') (p y y')
+defaultNameGenerated :: SemiproductProfunctor p => RecordDefaultName (p x x') (p y y')
                      -> p (RecordDefaultName x y) (RecordDefaultName x' y')
 defaultNameGenerated = pRecordDefaultName
 
 -- We similarly test the type of the generic adaptor.
 
-pData2G :: ProductProfunctor p =>
+pData2G :: SemiproductProfunctor p =>
            Data2 (p a a') (p b b') -> p (Data2 a b) (Data2 a' b')
 pData2G = genericAdaptor
 
-pData3G :: ProductProfunctor p =>
+pData3G :: SemiproductProfunctor p =>
            Data3 (p a a') (p b b') (p c c') -> p (Data3 a b c) (Data3 a' b' c')
 pData3G = genericAdaptor
 
-pRecord2G :: ProductProfunctor p
+pRecord2G :: SemiproductProfunctor p
           => Record2 (p a a') (p b b') -> p (Record2 a b) (Record2 a' b')
 pRecord2G = pRecord2
 
-pRecord3G :: ProductProfunctor p
+pRecord3G :: SemiproductProfunctor p
           => Record3 (p a a') (p b b') (p c c') -> p (Record3 a b c) (Record3 a' b' c')
 pRecord3G = pRecord3
 

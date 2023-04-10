@@ -1,3 +1,7 @@
+# Unreleased (major)
+
+* Rename `ProductProfunctor` to `SemiProductProfunctor`.
+
 # 0.11.1.1
 
 * No user-visible changes

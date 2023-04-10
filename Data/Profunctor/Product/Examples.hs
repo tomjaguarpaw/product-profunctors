@@ -48,7 +48,7 @@ instance Applicative f => Applicative (Replicator r f a) where
 instance Functor f => P.Profunctor (Replicator r f) where
   dimap _ h (Replicator f) = Replicator ((fmap . fmap) h f)
 
-instance Applicative f=> PP.ProductProfunctor (Replicator r f) where
+instance Applicative f=> PP.SemiproductProfunctor (Replicator r f) where
   purePP = pure
   (****) = (<*>)
 
@@ -93,7 +93,7 @@ instance Applicative (Take a z) where
 instance P.Profunctor (Take a) where
   dimap _ g (Take h) = Take ((fmap . fmap . fmap) g h)
 
-instance PP.ProductProfunctor (Take a) where
+instance PP.SemiproductProfunctor (Take a) where
   purePP = pure
   (****) = (<*>)
 
@@ -132,7 +132,7 @@ instance Applicative f => Applicative (Traverse f a) where
 instance Functor f => P.Profunctor (Traverse f) where
   dimap g h (Traverse f) = Traverse (P.dimap g (fmap h) f)
 
-instance Applicative f => PP.ProductProfunctor (Traverse f) where
+instance Applicative f => PP.SemiproductProfunctor (Traverse f) where
   purePP = pure
   (****) = (<*>)
 
@@ -151,7 +151,7 @@ instance Applicative (Zipper a) where
   pure = Zipper . pure
   f <*> x = Zipper ((<*>) (unZipper f) (unZipper x))
 
-instance PP.ProductProfunctor Zipper where
+instance PP.SemiproductProfunctor Zipper where
   purePP = pure
   (****) = (<*>)
 

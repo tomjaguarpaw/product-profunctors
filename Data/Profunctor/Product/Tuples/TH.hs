@@ -13,7 +13,7 @@ import Language.Haskell.TH
 import Language.Haskell.TH.Datatype.TyVarBndr
 
 import Data.Profunctor (Profunctor (dimap))
-import Data.Profunctor.Product.Class (ProductProfunctor, (***!), empty)
+import Data.Profunctor.Product.Class (SemiproductProfunctor, (***!), empty)
 import Data.Profunctor.Product.Default.Class (Default (def))
 import Control.Applicative (pure)
 
@@ -32,7 +32,7 @@ mkT n = tySynD (tyName n) tyVars tyDef
     applyT n' = foldl (\t v -> t `appT` varT v) (conT (tyName n')) (take n' (tail allNames))
     allNames = [ mkName $ c:show i | i <- [0::Int ..], c <- ['a'..'z'] ]
 
-chain :: ProductProfunctor p => (t -> p a2 b2) -> (p a1 b1, t)
+chain :: SemiproductProfunctor p => (t -> p a2 b2) -> (p a1 b1, t)
       -> p (a1, a2) (b1, b2)
 chain rest (a, as) = a ***! rest as
 
@@ -40,7 +40,7 @@ pTns :: [Int] -> Q [Dec]
 pTns = fmap concat . mapM pTn
 
 productProfunctor :: Name -> Q Pred
-productProfunctor p = [t|ProductProfunctor $(v p)|]
+productProfunctor p = [t|SemiproductProfunctor $(v p)|]
   where v = pure . VarT
 
 default_ :: Name -> Name -> Name -> Q Pred

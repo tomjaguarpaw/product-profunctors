@@ -1,8 +1,29 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 {-# LANGUAGE TemplateHaskell #-}
 
+-- | If @p@ is an instance of 'SemiproductProfunctor' then @p a a'@
+-- represents a sort of process for turning @a@s into @a'@s that can
+-- be "laid out side-by-side" with other values of @p@ to form "wider"
+-- processes.  For example, if I have
+--
+-- @
+-- a :: p a a' -- a process for turning as into a's
+-- b :: p b b' -- a process for turning bs into b's
+-- c :: p c c' -- a process for turning cs into c's
+-- @
+--
+-- then I can combine them using 'p3' to get
+--
+-- @
+-- p3 a b c :: p (a, b, c) (a', b', c')
+-- -- a process for turning (a, b, c)s into (a', b', c')s
+-- @
+--
+-- You would typically compose 'SemiproductProfunctor's using
+-- 'Profunctors''s 'Profunctor.lmap' and 'Applicative''s 'pure',
+-- '<$>' / 'fmap' and '<*>'.
 module Data.Profunctor.Product (-- * @ProductProfunctor@
-                                ProductProfunctor(..),
+                                SemiproductProfunctor(..),
                                 (***$),
                                 -- * @SumProfunctor@
                                 SumProfunctor(..),
@@ -45,7 +66,7 @@ import Data.Profunctor.Product.Flatten
 import Data.Profunctor.Product.Tuples
 import Data.Profunctor.Product.Tuples.TH (pTns, maxTupleSize, pNs)
 
--- ProductProfunctor and ProductContravariant are potentially
+-- SemiproductProfunctor and ProductContravariant are potentially
 -- redundant type classes.  It seems to me that these are equivalent
 -- to Profunctor with Applicative, and Contravariant with Monoid
 -- respectively:
@@ -76,7 +97,7 @@ import Data.Profunctor.Product.Tuples.TH (pTns, maxTupleSize, pNs)
 -- Profunctor+Applicative or Contravariant+Monoid approach we do not
 -- have a guarantee that these operations are polymorphic.
 --
--- Previously I wanted to replace ProductProfunctor and
+-- Previously I wanted to replace SemiproductProfunctor and
 -- ProductContravariant entirely.  This proved difficult as it is not
 -- possible to expand the class constraints to require Applicative and
 -- Monoid respectively.  We can't enforce a constraint 'Applicative (p
@@ -101,53 +122,53 @@ import Data.Profunctor.Product.Tuples.TH (pTns, maxTupleSize, pNs)
 (***$) :: Profunctor p => (b -> c) -> p a b -> p a c
 (***$) = Profunctor.rmap
 
-instance ProductProfunctor (->) where
+instance SemiproductProfunctor (->) where
   purePP = pure
   (****) = (<*>)
 
-instance Arrow arr => ProductProfunctor (WrappedArrow arr) where
+instance Arrow arr => SemiproductProfunctor (WrappedArrow arr) where
   empty  = id
   (***!) = (***)
 
-instance ProductProfunctor Tagged where
+instance SemiproductProfunctor Tagged where
   purePP = pure
   (****) = (<*>)
 
-instance Applicative f => ProductProfunctor (Star f) where
+instance Applicative f => SemiproductProfunctor (Star f) where
   purePP = pure
   (****) = (<*>)
 
-instance Functor f => ProductProfunctor (Costar f) where
+instance Functor f => SemiproductProfunctor (Costar f) where
   purePP = pure
   (****) = (<*>)
 
 -- | @since 0.11.1.0
-instance Monoid r => ProductProfunctor (Forget r) where
+instance Monoid r => SemiproductProfunctor (Forget r) where
   purePP _ = Forget (const mempty)
   Forget f ***! Forget g = Forget $ \(a, a') -> f a <> g a'
 
-instance (ProductProfunctor p, ProductProfunctor q) => ProductProfunctor (Procompose p q) where
+instance (SemiproductProfunctor p, SemiproductProfunctor q) => SemiproductProfunctor (Procompose p q) where
   purePP a = Procompose (purePP a) (purePP ())
   Procompose pf qf **** Procompose pa qa =
     Procompose (lmap fst pf **** lmap snd pa) ((,) ***$ qf **** qa)
 
-instance (Functor f, Applicative g, ProductProfunctor p) => ProductProfunctor (Biff p f g) where
+instance (Functor f, Applicative g, SemiproductProfunctor p) => SemiproductProfunctor (Biff p f g) where
   purePP = Biff . purePP . pure
   Biff abc **** Biff ab = Biff $ (<*>) ***$ abc **** ab
 
-instance Applicative f => ProductProfunctor (Joker f) where
+instance Applicative f => SemiproductProfunctor (Joker f) where
   purePP = Joker . pure
   Joker bc **** Joker b = Joker $ bc <*> b
 
-instance Divisible f => ProductProfunctor (Clown f) where
+instance Divisible f => SemiproductProfunctor (Clown f) where
   purePP _ = Clown conquer
   Clown l **** Clown r = Clown $ divide (\a -> (a, a)) l r
 
-instance (ProductProfunctor p, ProductProfunctor q) => ProductProfunctor (Product p q) where
+instance (SemiproductProfunctor p, SemiproductProfunctor q) => SemiproductProfunctor (Product p q) where
   purePP a = Pair (purePP a) (purePP a)
   Pair l1 l2 **** Pair r1 r2 = Pair (l1 **** r1) (l2 **** r2)
 
-instance (Applicative f, ProductProfunctor p) => ProductProfunctor (Tannen f p) where
+instance (Applicative f, SemiproductProfunctor p) => SemiproductProfunctor (Tannen f p) where
   purePP = Tannen . pure . purePP
   Tannen f **** Tannen a = Tannen $ liftA2 (****) f a
 
@@ -185,7 +206,7 @@ instance (Applicative f, SumProfunctor p) => SumProfunctor (Tannen f p) where
 -- in spirit, a generalisation of @traverse :: (a -> f b) -> [a] -> f
 -- [b]@, but the types need to be shuffled around a bit to make that
 -- work.
-list :: (ProductProfunctor p, SumProfunctor p) => p a b -> p [a] [b]
+list :: (SemiproductProfunctor p, SumProfunctor p) => p a b -> p [a] [b]
 list p = Profunctor.dimap fromList toList (empty +++! (p ***! list p))
   where toList :: Either () (a, [a]) -> [a]
         toList = either (const []) (uncurry (:))

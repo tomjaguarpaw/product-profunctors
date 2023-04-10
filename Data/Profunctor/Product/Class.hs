@@ -76,12 +76,12 @@ import qualified Data.Profunctor as Profunctor
 --    'purePP' = 'Control.Applicative.pure'
 --    ('****') = ('Control.Applicative.<*>')
 -- @
-class Profunctor p => ProductProfunctor p where
+class Profunctor p => SemiproductProfunctor p where
   -- | 'purePP' is the generalisation of @Applicative@'s
   -- 'Control.Applicative.pure'.
   --
   -- (You probably won't need to use this except to define
-  -- 'ProductProfunctor' instances.  In your own code @pure@ should be
+  -- 'SemiproductProfunctor' instances.  In your own code @pure@ should be
   -- sufficient.)
   purePP :: b -> p a b
   purePP b = Profunctor.dimap (const ()) (const b) empty
@@ -90,8 +90,8 @@ class Profunctor p => ProductProfunctor p where
   -- 'Control.Applicative.<*>'.
   --
   -- (You probably won't need to use this except to define
-  -- 'ProductProfunctor' instances.  In your own code @\<*\>@ should
-  -- be sufficient.)
+  -- 'SemiproductProfunctor' instances.  In your own code @\<*\>@
+  -- should be sufficient.)
   (****) :: p a (b -> c) -> p a b -> p a c
   (****) f x = Profunctor.dimap dup (uncurry ($)) (f ***! x)
     where dup y = (y, y)
