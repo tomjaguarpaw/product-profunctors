@@ -138,6 +138,11 @@ class SemiproductProfunctor p => ProductProfunctor p where
 {-# DEPRECATED empty "use unitP" #-}
 {-# DEPRECATED purePP "use pureP"#-}
 
+-- | As redundant as 'Data.Functor.Contravariant.Divisible.conquered'
+-- from "contravariant", but also provided for symmetry.
+conqueredP :: (ProductProfunctor p, Monoid x) => p () x
+conqueredP = conquerP
+
 class Profunctor p => SumProfunctor p where
   -- Morally we should have 'zero :: p Void Void' but I don't think
   -- that would actually be useful

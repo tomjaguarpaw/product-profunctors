@@ -9,6 +9,7 @@
   - Old `ProductProfunctor#empty` has been deprecated; use `ProductProfunctor#unitP`
   - Old `ProductProfunctor#purePP` has been deprecated; use `ProductProfunctor#pureP`
 * Add `divisedP = diviseP id`
+* Add `conqueredP = conquerP` (redundant, but symmetric with `contravariant` interface)
 
 # 0.11.1.1
 
