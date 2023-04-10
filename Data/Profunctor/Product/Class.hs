@@ -3,6 +3,7 @@ module Data.Profunctor.Product.Class where
 import           Data.Profunctor (Profunctor)
 import qualified Data.Profunctor as Profunctor
 import           Data.Semigroup (Semigroup, (<>))
+import           Data.Void (Void, absurd)
 
 -- | 'ProductProfunctor' is a generalization of
 -- 'Control.Applicative.Applicative'.
@@ -144,6 +145,30 @@ conqueredP :: (ProductProfunctor p, Monoid x) => p () x
 conqueredP = conquerP
 
 class Profunctor p => SemisumProfunctor p where
-  -- Morally we should have 'zero :: p Void Void' but I don't think
-  -- that would actually be useful
   (+++!) :: p a b -> p a' b' -> p (Either a a') (Either b b')
+
+-- | 'SemisumProfunctor's with a unit.
+--
+-- You can often write these instances mechanically:
+--
+-- @
+-- instance SumProfunctor P where
+--   concludeP f = 'Data.Bifunctor.Flip.runFlip' $ conclude f -- If you have `instance Conclude ('Data.Bifunctor.Flip.Flip' P a)`
+--   concludeP f = 'Data.Bifunctor.Flip.runFlip' $ 'Data.Functor.Contravariant.Divisible.lose' f -- If you have `instance 'Data.Functor.Contravariant.Divisible.Decidable' ('Data.Bifunctor.Flip.Flip' P a)`
+-- @
+--
+-- Law: @voidP@ is an identity for @('+++!')@, up to @Either@
+-- rearrangement.
+class SemisumProfunctor p => SumProfunctor p where
+  -- | Unit for @('+++!')@.
+  voidP :: p Void x
+  voidP = concludeP id
+
+  -- | Analogue to @conclude@ (from "semigroupoids") or
+  -- 'Data.Functor.Contravariant.Divisible.lose' (from
+  -- "contravariant").
+  --
+  -- Unit for 'decideP'.
+  concludeP :: (a -> Void) -> p a x
+  concludeP f = Profunctor.dimap f absurd voidP
+  {-# MINIMAL voidP | concludeP #-}

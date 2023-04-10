@@ -44,12 +44,14 @@ module Data.Profunctor.Product (-- * @ProductProfunctor@
 import Data.Profunctor (Profunctor, lmap, WrappedArrow, Star(Star), Costar, Forget(Forget))
 import qualified Data.Profunctor as Profunctor
 import Data.Profunctor.Composition (Procompose(..))
-import Data.Functor.Contravariant.Divisible (Divisible(..), Decidable, chosen)
+import Data.Functor.Contravariant.Divisible (Divisible(..), Decidable, chosen, lost)
 import Control.Arrow (Arrow(arr), (***), ArrowChoice, (+++))
 import Control.Applicative (Applicative, liftA2, pure, (<*>), Alternative, (<|>), (<$>))
+import qualified Control.Applicative as Applicative
 
 import Data.Monoid (Monoid, mempty)
 import Data.Tagged
+import Data.Void (absurd)
 
 import Data.Bifunctor.Biff
 import Data.Bifunctor.Clown
@@ -202,30 +204,57 @@ instance (Applicative f, ProductProfunctor p) => ProductProfunctor (Tannen f p) 
 instance SemisumProfunctor (->) where
   f +++! g = either (Left . f) (Right . g)
 
+instance SumProfunctor (->) where
+  voidP = absurd
+
 instance ArrowChoice arr => SemisumProfunctor (WrappedArrow arr) where
   (+++!) = (+++)
 
+instance ArrowChoice arr => SumProfunctor (WrappedArrow arr) where
+  voidP = arr absurd
+
 instance Applicative f => SemisumProfunctor (Star f) where
   Star f +++! Star g = Star $ either (fmap Left . f) (fmap Right . g)
+
+instance Applicative f => SumProfunctor (Star f) where
+  voidP = Star absurd
 
 -- | @since 0.11.1.0
 instance SemisumProfunctor (Forget r) where
   Forget f +++! Forget g = Forget $ either f g
 
+instance SumProfunctor (Forget r) where
+  voidP = Forget absurd
+
 instance (SemisumProfunctor p, SemisumProfunctor q) => SemisumProfunctor (Procompose p q) where
   Procompose pa qa +++! Procompose pb qb = Procompose (pa +++! pb) (qa +++! qb)
+
+instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Procompose p q) where
+  voidP = Procompose voidP voidP
 
 instance Alternative f => SemisumProfunctor (Joker f) where
   Joker f +++! Joker g = Joker $ Left <$> f <|> Right <$> g
 
+instance Alternative f => SumProfunctor (Joker f) where
+  voidP = Joker $ absurd <$> Applicative.empty
+
 instance Decidable f => SemisumProfunctor (Clown f) where
   Clown f +++! Clown g = Clown $ chosen f g
+
+instance Decidable f => SumProfunctor (Clown f) where
+  voidP = Clown lost
 
 instance (SemisumProfunctor p, SemisumProfunctor q) => SemisumProfunctor (Product p q) where
   Pair l1 l2 +++! Pair r1 r2 = Pair (l1 +++! r1) (l2 +++! r2)
 
+instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Product p q) where
+  voidP = Pair voidP voidP
+
 instance (Applicative f, SemisumProfunctor p) => SemisumProfunctor (Tannen f p) where
   Tannen l +++! Tannen r = Tannen $ liftA2 (+++!) l r
+
+instance (Applicative f, SumProfunctor p) => SumProfunctor (Tannen f p) where
+  voidP = Tannen $ pure voidP
 
 -- | A generalisation of @map :: (a -> b) -> [a] -> [b]@.  It is also,
 -- in spirit, a generalisation of @traverse :: (a -> f b) -> [a] -> f
