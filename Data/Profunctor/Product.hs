@@ -47,7 +47,7 @@ import qualified Data.Profunctor as Profunctor
 import Data.Profunctor.Composition (Procompose(..))
 import Data.Functor.Contravariant.Divisible (Divisible(..), Decidable, chosen)
 import Control.Category (id)
-import Control.Arrow (Arrow, (***), ArrowChoice, (+++))
+import Control.Arrow (Arrow(arr), (***), ArrowChoice, (+++))
 import Control.Applicative (Applicative, liftA2, pure, (<*>), Alternative, (<|>), (<$>))
 
 import Data.Monoid (Monoid, mempty)
@@ -122,23 +122,30 @@ import Data.Profunctor.Product.Tuples.TH (pTns, maxTupleSize, pNs)
 (***$) = Profunctor.rmap
 
 instance SemiproductProfunctor (->) where
-  purePP = pure
   (****) = (<*>)
+
+instance ProductProfunctor (->) where
+  pureP = pure
 
 instance Arrow arr => SemiproductProfunctor (WrappedArrow arr) where
-  empty  = id
   (***!) = (***)
 
+instance Arrow arr => ProductProfunctor (WrappedArrow arr) where
+  unitP = arr id
+
 instance SemiproductProfunctor Tagged where
-  purePP = pure
   (****) = (<*>)
+
+instance ProductProfunctor Tagged where
+  pureP = pure
 
 instance Applicative f => SemiproductProfunctor (Star f) where
-  purePP = pure
   (****) = (<*>)
 
+instance Applicative f => ProductProfunctor (Star f) where
+  pureP = pure
+
 instance Functor f => SemiproductProfunctor (Costar f) where
-  purePP = pure
   (****) = (<*>)
 
 -- | @since 0.11.1.0
@@ -146,30 +153,48 @@ instance Monoid r => SemiproductProfunctor (Forget r) where
   purePP _ = Forget (const mempty)
   Forget f ***! Forget g = Forget $ \(a, a') -> f a <> g a'
 
+instance Monoid r => ProductProfunctor (Forget r) where
+  unitP = Forget $ const mempty
+
+instance Functor f => ProductProfunctor (Costar f) where
+  pureP = pure
+
 instance (SemiproductProfunctor p, SemiproductProfunctor q) => SemiproductProfunctor (Procompose p q) where
-  purePP a = Procompose (purePP a) (purePP ())
   Procompose pf qf **** Procompose pa qa =
     Procompose (lmap fst pf **** lmap snd pa) ((,) ***$ qf **** qa)
 
+instance (ProductProfunctor p, ProductProfunctor q) => ProductProfunctor (Procompose p q) where
+  pureP a = Procompose (pureP a) (pureP ())
+
 instance (Functor f, Applicative g, SemiproductProfunctor p) => SemiproductProfunctor (Biff p f g) where
-  purePP = Biff . purePP . pure
   Biff abc **** Biff ab = Biff $ (<*>) ***$ abc **** ab
 
+instance (Functor f, Applicative g, ProductProfunctor p) => ProductProfunctor (Biff p f g) where
+  pureP = Biff . pureP . pure
+
 instance Applicative f => SemiproductProfunctor (Joker f) where
-  purePP = Joker . pure
   Joker bc **** Joker b = Joker $ bc <*> b
 
+instance Applicative f => ProductProfunctor (Joker f) where
+  pureP = Joker . pure
+
 instance Divisible f => SemiproductProfunctor (Clown f) where
-  purePP _ = Clown conquer
   Clown l **** Clown r = Clown $ divide (\a -> (a, a)) l r
 
+instance Divisible f => ProductProfunctor (Clown f) where
+  pureP _ = Clown conquer
+
 instance (SemiproductProfunctor p, SemiproductProfunctor q) => SemiproductProfunctor (Product p q) where
-  purePP a = Pair (purePP a) (purePP a)
   Pair l1 l2 **** Pair r1 r2 = Pair (l1 **** r1) (l2 **** r2)
 
+instance (ProductProfunctor p, ProductProfunctor q) => ProductProfunctor (Product p q) where
+  pureP a = Pair (pureP a) (pureP a)
+
 instance (Applicative f, SemiproductProfunctor p) => SemiproductProfunctor (Tannen f p) where
-  purePP = Tannen . pure . purePP
   Tannen f **** Tannen a = Tannen $ liftA2 (****) f a
+
+instance (Applicative f, ProductProfunctor p) => ProductProfunctor (Tannen f p) where
+  pureP = Tannen . pure . pureP
 
 -- { Sum
 
