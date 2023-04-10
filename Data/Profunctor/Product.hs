@@ -1,27 +1,43 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 {-# LANGUAGE TemplateHaskell #-}
 
--- | If @p@ is an instance of 'SemiproductProfunctor' then @p a a'@
--- represents a sort of process for turning @a@s into @a'@s that can
--- be "laid out side-by-side" with other values of @p@ to form "wider"
--- processes.  For example, if I have
+-- | The classes in this module provide "profunctorial" analogues to
+-- the operations from the 'Applicative' (@Apply@),
+-- 'Data.Functor.Contravariant.Divisible.Divisible' (@Divise@) and
+-- 'Data.Functor.Contravariant.Divisible.Decidable' (@Conclude@) type
+-- classes:
 --
 -- @
--- a :: p a a' -- a process for turning as into a's
--- b :: p b b' -- a process for turning bs into b's
--- c :: p c c' -- a process for turning cs into c's
+-- ('<*>')  :: 'Applicative'           f => f   (a -> b) -> f   a -> f   b
+-- ('****') :: 'SemiproductProfunctor' p => p x (a -> b) -> p x a -> p x b
+--
+-- 'Control.Applicative.liftA2' :: 'Applicative'           f => (a -> b -> c) -> f   a -> f   b -> f   c
+-- 'liftP2' :: 'SemiproductProfunctor' p => (a -> b -> c) -> p x a -> p x b -> p x c
+--
+-- pure  :: 'Applicative'           f => a -> f   a
+-- 'pureP' :: 'SemiproductProfunctor' p => a -> p x a
+--
+-- divide  ::                           'Data.Functor.Contravariant.Divisible.Divisible' f  => (a -> (b, c)) -> f b   -> f c   -> f a -- From contravariant
+-- divise  ::                              Divise f  => (a -> (b, c)) -> f b   -> f c   -> f a -- From semigroupoids
+-- 'diviseP' :: ('Semigroup' x, 'SemiproductProfunctor' p) => (a -> (b, c)) -> p a x -> p b x -> p c x
+--
+-- conquer ::                      'Data.Functor.Contravariant.Divisible.Decidable' f => f a -- From contravariant
+-- 'conquerP' :: ('Monoid' x, 'ProductProfunctor' p) => p a x
+--
+-- choose  :: 'Data.Functor.Contravariant.Divisible.Decidable'         f => (a -> 'Either' b c) -> f b   -> f c   -> f a -- From contravariant
+-- decide  :: Decide            f => (a -> 'Either' b c) -> f b   -> f c   -> f a -- From semigroupoids
+-- 'decideP' :: 'SemisumProfunctor' p => (a -> 'Either' b c) -> p b x -> p c x -> p a x
+--
+-- lose      :: 'Data.Functor.Contravariant.Divisible.Decidable'     f => (a -> 'Void') -> f a -- From contravariant
+-- conclude  :: Conclude      f => (a -> 'Void') -> f a -- From semigroupoids
+-- 'concludeP' :: 'SumProfunctor' p => (a -> 'Void') -> p a x
 -- @
 --
--- then I can combine them using 'p3' to get
---
--- @
--- p3 a b c :: p (a, b, c) (a', b', c')
--- -- a process for turning (a, b, c)s into (a', b', c')s
--- @
---
--- You would typically compose 'SemiproductProfunctor's using
--- 'Profunctors''s 'Profunctor.lmap' and 'Applicative''s 'pure',
--- '<$>' / 'fmap' and '<*>'.
+-- The @(Semi){Sum,Product}Profunctor@ classes also provide more
+-- primitive operations using @Either@ and @(,)@. These can be very
+-- useful with the @<https://hackage.haskell.org/package/generics-eot generics-eot>@
+-- package, which can automatically convert data types that have a
+-- 'Generic' instance into Eithers-of-Tuples.
 module Data.Profunctor.Product (-- * @ProductProfunctor@
                                 SemiproductProfunctor(..),
                                 (***$),
@@ -65,50 +81,6 @@ import Data.Profunctor.Product.Class
 import Data.Profunctor.Product.Flatten
 import Data.Profunctor.Product.Tuples
 import Data.Profunctor.Product.Tuples.TH (pTns, maxTupleSize, pNs)
-
--- Is SemiproductProfunctor potentially a redundant type class?
--- It seems to me that these are equivalent to Profunctor with
--- Applicative, and Contravariant with Monoid respectively:
---
---    import Data.Profunctor
---    import Control.Applicative hiding (empty)
---    import Data.Functor.Contravariant
---    import Data.Monoid
---
---    empty :: (Applicative (p ())) => p () ()
---    empty = pure ()
---
---    (***!) :: (Applicative (p (a, a')), Profunctor p) =>
---                p a b -> p a' b' -> p (a, a') (b, b')
---    p ***! p' = (,) <$> lmap fst p <*> lmap snd p'
---
---    point :: Monoid (f ()) => f ()
---    point = mempty
---
---    (***<) :: (Monoid (f (a, b)), Contravariant f) =>
---                f a -> f b -> f (a, b)
---    p ***< p' = contramap fst p <> contramap snd p'
---
---
--- The only thing that makes me think that they are not *completely*
--- redundant is that (***!) and (***<) have to be defined
--- polymorphically in the type arguments, whereas if we took the
--- Profunctor+Applicative or Contravariant+Monoid approach we do not
--- have a guarantee that these operations are polymorphic.
---
--- Previously I wanted to replace SemiproductProfunctor entirely.
--- This proved difficult as it is not possible to expand the class
--- constraints to require Applicative and Monoid respectively.  We
--- can't enforce a constraint 'Applicative (p a)' where 'a' does not
--- appear in the head.  This seems closely related to the above issue
--- of adhoc implementations.
---
--- There is a potential method of working around this issue using the
--- 'constraints' package:
--- stackoverflow.com/questions/12718268/polymorphic-constraint/12718620
---
--- Still, at least we now have default implementations of the class
--- methods, which makes things simpler.
 
 -- | '***$' is the generalisation of 'Functor''s @\<$\>@.
 --
