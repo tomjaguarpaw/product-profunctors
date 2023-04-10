@@ -158,7 +158,7 @@ instance PP.ProductProfunctor Zipper where
 -- }
 
 -- | A challenge from a Clojurist on Hacker News
--- (https://news.ycombinator.com/item?id=23939350)
+-- (<https://news.ycombinator.com/item?id=23939350>)
 --
 -- @
 -- > cl_map (uncurry (+)) ([1,2,3], [4,5,6])
@@ -167,7 +167,7 @@ instance PP.ProductProfunctor Zipper where
 -- > cl_map (+3) [1,2,3]
 -- [4,5,6]
 --
--- > let max3 (x, y, z) = x `max` y `max` z
+-- > let max3 (x, y, z) = x \`max\` y \`max\` z
 -- > cl_map max3 ([1,20], [3,4], [5,6])
 -- [5,20]
 -- @
