@@ -2,6 +2,7 @@ module Data.Profunctor.Product.Class where
 
 import           Data.Profunctor (Profunctor)
 import qualified Data.Profunctor as Profunctor
+import           Data.Semigroup (Semigroup, (<>))
 
 -- | 'ProductProfunctor' is a generalization of
 -- 'Control.Applicative.Applicative'.
@@ -77,23 +78,31 @@ import qualified Data.Profunctor as Profunctor
 --    ('****') = ('Control.Applicative.<*>')
 -- @
 class Profunctor p => SemiproductProfunctor p where
-  -- | '****' is the generalisation of @Applicative@'s
-  -- 'Control.Applicative.<*>'.
-  --
-  -- (You probably won't need to use this except to define
-  -- 'SemiproductProfunctor' instances.  In your own code @\<*\>@
-  -- should be sufficient.)
-  (****) :: p a (b -> c) -> p a b -> p a c
-  (****) f x = Profunctor.dimap dup (uncurry ($)) (f ***! x)
-    where dup y = (y, y)
-
-  -- | Use @\\f g -> (,) 'Control.Applicative.<$>'
-  -- 'Data.Profunctor.lmap' fst f 'Control.Applicative.<*>'
-  -- 'Data.Profunctor.lmap' snd g@ instead.
-  -- @(***!)@ may be deprecated in a future version.
   (***!) :: p a b -> p a' b' -> p (a, a') (b, b')
-  f ***! g = (,) `Profunctor.rmap` Profunctor.lmap fst f
-                  **** Profunctor.lmap snd g
+  f ***! g = liftP2 (,) (Profunctor.lmap fst f) (Profunctor.lmap snd g)
+
+  -- | '****' is the analogue of @Applicative@'s
+  -- 'Control.Applicative.<*>'.
+  (****) :: p x (a -> b) -> p x a -> p x b
+  (****) f a = Profunctor.dimap dup (uncurry ($)) (f ***! a)
+    where dup x = (x, x)
+
+  -- | Analogue to 'Control.Applicative.liftA2'
+  liftP2 :: (a -> b -> c) -> p x a -> p x b -> p x c
+  liftP2 f p q = Profunctor.rmap f p **** q
+
+  -- | Analogue to @divise@ (from "semigroupoids") or
+  -- 'Data.Functor.Contravariant.Divisible.decide' (from
+  -- "contravariant"). The 'Semigroup' constraint is necessary to
+  -- combine the "output" values.
+  --
+  -- Why didn't we need a constraint when writing the analogues to
+  -- 'Applicative' operations? In the absence of linear types, there
+  -- are only trivial comonoids; we can always produce a function to
+  -- "duplicate" the input.
+  diviseP :: Semigroup x => (a -> (b, c)) -> p b x -> p c x -> p a x
+  diviseP f p q = Profunctor.dimap f (uncurry (<>)) $ p ***! q
+  {-# MINIMAL (***!) | (****) | liftP2 #-}
 
 class SemiproductProfunctor p => ProductProfunctor p where
   -- | Unit for @('***!')@.

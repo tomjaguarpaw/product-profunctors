@@ -2,6 +2,10 @@
 
 * Rename `ProductProfunctor` to `SemiproductProfunctor`:
   - The `ProductProfunctor` now means "`SemiproductProfunctor` with a unit"
+  - Class methods now capture three perspectives: "`Applicative`
+    operations on the output" (`(****)`), "`Divisible` operations on
+    the input" (`diviseP`), and "tupling" (`(***!)`).
+  - Introduce `ProductProfuntor` to represent "`SemiProductProfunctor` with a unit"
   - Old `ProductProfunctor#empty` has been deprecated; use `ProductProfunctor#unitP`
   - Old `ProductProfunctor#purePP` has been deprecated; use `ProductProfunctor#pureP`
 
