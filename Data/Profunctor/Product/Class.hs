@@ -104,6 +104,13 @@ class Profunctor p => SemiproductProfunctor p where
   diviseP f p q = Profunctor.dimap f (uncurry (<>)) $ p ***! q
   {-# MINIMAL (***!) | (****) | liftP2 #-}
 
+-- | Analogue to @divised@ from "semigroupoids" or
+-- 'Data.Functor.Contravariant.Divisible.divided' from
+-- "contravariant".
+divisedP ::
+  (SemiproductProfunctor p, Semigroup x) => p a x -> p b x -> p (a, b) x
+divisedP = diviseP id
+
 class SemiproductProfunctor p => ProductProfunctor p where
   -- | Unit for @('***!')@.
   unitP :: p x ()
