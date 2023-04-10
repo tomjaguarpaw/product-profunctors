@@ -104,7 +104,9 @@ import Data.Profunctor.Product.Tuples.TH (pTns, maxTupleSize, pNs)
 --
 -- (You probably won't need to use this.  @\<$\>@ should be
 -- sufficient.)
-(***$) :: ProductProfunctor p => (b -> c) -> p a b -> p a c
+--
+-- /Since 0.11.1.0:/ Generalised to work on arbitrary 'Profunctor's.
+(***$) :: Profunctor p => (b -> c) -> p a b -> p a c
 (***$) = Profunctor.rmap
 
 instance ProductProfunctor (->) where
