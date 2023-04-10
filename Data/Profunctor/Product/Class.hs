@@ -5,43 +5,16 @@ import qualified Data.Profunctor as Profunctor
 import           Data.Semigroup (Semigroup, (<>))
 import           Data.Void (Void, absurd)
 
--- | 'ProductProfunctor' is a generalization of
--- 'Control.Applicative.Applicative'.
--- It has the usual 'Control.Applicative.Applicative' "output"
--- (covariant) parameter on the right.  Additionally it has an "input"
--- (contravariant) type parameter on the left.
+
+-- | A 'SemiproductProfunctor' is a profunctor whose input and output
+-- values can be combined with @(,)@. ('***!') makes this most
+-- obvious, though ('****') and 'liftP2' are equivalent in power.
 --
--- The methods for 'ProductProfunctor' correspond closely to those for
--- 'Control.Applicative.Applicative' as laid out in the following
--- table.
--- The only difference between them is that the 'ProductProfunctor'
--- has a contravariant type parameter on the left.  We can use the
--- contravariant to compose them in nice ways as described at
--- "Data.Profunctor.Product".
---
--- @
--- | Correspondence between Applicative and ProductProfunctor
--- |
--- |  'Control.Applicative.Applicative' f           'ProductProfunctor' p
--- |
--- |  'Control.Applicative.pure'                    'purePP'
--- |    :: b -> f b             :: b -> p a b
--- |
--- |  ('Control.Applicative.<$>')                   ('Data.Profunctor.Product.***$')
--- |    :: (b -> b')            :: (b -> b')
--- |    -> f b                  -> p a b
--- |    -> f b'                 -> p a b'
--- |
--- |  ('Control.Applicative.<*>')                   ('****')
--- |    :: f (b -> b')          :: p a (b -> b')
--- |    -> f b                  -> p a b
--- |    -> f b'                 -> p a b'
--- @
---
--- If @p@ is an instance of 'ProductProfunctor' then @p a a'@
--- represents a sort of process for turning @a@s into @a'@s that can
--- be "laid out side-by-side" with other values of @p@ to form "wider"
--- processes.  For example, if I have
+-- A value of type @p a x@ with an @instance 'SemiproductProfunctor' p@
+-- often represents some sort of process for turning @a@s into @x@s
+-- that can be "laid out side-by-side" with other similar values of
+-- @p@ to form "wider" processes. For example, if I have three such
+-- encoders:
 --
 -- @
 -- p :: p a x -- a process for turning as into xs
@@ -49,35 +22,31 @@ import           Data.Void (Void, absurd)
 -- r :: p c z -- a process for turning cs into zs
 -- @
 --
--- then I can combine them using 'p3' to get
+-- I can then combine them using 'p3' to get:
 --
 -- @
--- p3 p q r :: p (a, b, c) (x, y, z)
 -- -- a process for turning (a, b, c)s into (x, y, z)s
+-- p3 p q r :: p (a, b, c) (x, y, z)
 -- @
 --
 -- You would typically compose 'ProductProfunctor's using
--- 'Profunctors''s 'Profunctor.lmap' and 'Applicative''s 'pure',
--- '<$>' / 'fmap' and '<*>'.
+-- 'Profunctor'\'s 'lmap', '<$>' \/ 'fmap', and @Apply@ \/
+-- 'Applicative'\'s 'pure' and @\<.\>@ \/ @('<*>')@.
 --
--- It's easy to make instances of 'ProductProfunctor'.  Just make
--- instances
---
--- @
---  instance 'Profunctor' MyProductProfunctor where
---    ...
---
---  instance 'Control.Applicative.Applicative' (MyProductProfunctor a) where
---    ...
--- @
---
--- and then write
+-- You can often write these instances mechancially:
 --
 -- @
---  instance 'ProductProfunctor' MyProductProfunctor where
---    'purePP' = 'Control.Applicative.pure'
---    ('****') = ('Control.Applicative.<*>')
+-- instance SemiproductProfunctor P where
+--   (****) = (\<.\>) -- If you have `instance Apply (P a)`
+--   (****) = ('<*>') -- If you have `instance 'Applicative' (P a)`
 -- @
+--
+-- Laws:
+--
+--  * @('***!')@ is associative up to tuple rearrangement.
+--
+--  * If @p@ is also a 'SemisumProfunctor', @('***!')@ should
+--    distribute over @('+++!')@ up to tuple/@Either@ rearrangement.
 class Profunctor p => SemiproductProfunctor p where
   (***!) :: p a b -> p a' b' -> p (a, a') (b, b')
   f ***! g = liftP2 (,) (Profunctor.lmap fst f) (Profunctor.lmap snd g)
@@ -112,6 +81,18 @@ divisedP ::
   (SemiproductProfunctor p, Semigroup x) => p a x -> p b x -> p (a, b) x
 divisedP = diviseP id
 
+-- | 'SemiproductProfunctor's with a unit.
+--
+-- If you have an 'Applicative' instance for @P a@, you can write this
+-- instance mechanically:
+--
+-- @
+-- instance ProductProfunctor p where
+--   pureP = pure
+-- @
+--
+-- Law: @unitP@ is an identity for @('***!')@, up to tuple
+-- rearrangement.
 class SemiproductProfunctor p => ProductProfunctor p where
   -- | Unit for @('***!')@.
   unitP :: p x ()
