@@ -148,15 +148,15 @@ makeAdaptorAndInstanceInferrable' =
   makeAdaptorAndInstanceI True Nothing
 
 -- | Use 'makeAdaptorAndInstanceInferrable' instead, because it
--- generates instances with better inference properties.  Will be
--- deprecated in version 0.12.
+-- generates instances with better inference properties.
 makeAdaptorAndInstance :: String -> TH.Name -> TH.Q [TH.Dec]
 makeAdaptorAndInstance adaptorNameS =
   makeAdaptorAndInstanceI False (Just adaptorNameS)
+{-# DEPRECATED makeAdaptorAndInstance "Use makeAdaptorAndInstanceInferrable instead" #-}
 
 -- | Use 'makeAdaptorAndInstanceInferrable' instead, because it
--- generates instances with better inference properties.  Will be
--- deprecated in version 0.12.
+-- generates instances with better inference properties.
 makeAdaptorAndInstance' :: TH.Name -> TH.Q [TH.Dec]
 makeAdaptorAndInstance' =
   makeAdaptorAndInstanceI False Nothing
+{-# DEPRECATED makeAdaptorAndInstance' "Use makeAdaptorAndInstanceInferrable' instead" #-}
