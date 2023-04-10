@@ -1,3 +1,7 @@
+# Unreleased (minor bump to 0.11.1.0)
+
+* Generalise `(***$)` to work on `Profunctor` instead of `ProductProfunctor`.
+
 # 0.11.0.3
 
 * Support GHC 9.2
