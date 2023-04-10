@@ -28,7 +28,7 @@ module Data.Profunctor.Product (module Data.Profunctor.Product.Class,
                                 module Data.Profunctor.Product) where
 
 import Prelude hiding (id)
-import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow, Star(Star), Costar)
+import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow, Star(Star), Costar, Forget(Forget))
 import qualified Data.Profunctor as Profunctor
 import Data.Profunctor.Composition (Procompose(..))
 import Data.Functor.Contravariant (Contravariant, contramap)
@@ -129,6 +129,11 @@ instance Functor f => ProductProfunctor (Costar f) where
   purePP = pure
   (****) = (<*>)
 
+-- | @since 0.11.1.0
+instance Monoid r => ProductProfunctor (Forget r) where
+  purePP _ = Forget (const mempty)
+  Forget f ***! Forget g = Forget $ \(a, a') -> f a <> g a'
+
 instance (ProductProfunctor p, ProductProfunctor q) => ProductProfunctor (Procompose p q) where
   purePP a = Procompose (purePP a) (purePP ())
   Procompose pf qf **** Procompose pa qa =
@@ -164,6 +169,10 @@ instance ArrowChoice arr => SumProfunctor (WrappedArrow arr) where
 
 instance Applicative f => SumProfunctor (Star f) where
   Star f +++! Star g = Star $ either (fmap Left . f) (fmap Right . g)
+
+-- | @since 0.11.1.0
+instance SumProfunctor (Forget r) where
+  Forget f +++! Forget g = Forget $ either f g
 
 instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Procompose p q) where
   Procompose pa qa +++! Procompose pb qb = Procompose (pa +++! pb) (qa +++! qb)

@@ -1,6 +1,8 @@
 # Unreleased (minor bump to 0.11.1.0)
 
 * Generalise `(***$)` to work on `Profunctor` instead of `ProductProfunctor`.
+* `instance Monoid r => ProductProfunctor (Forget r)`
+* `instance SumProfunctor (Forget r)`
 
 # 0.11.0.3
 
