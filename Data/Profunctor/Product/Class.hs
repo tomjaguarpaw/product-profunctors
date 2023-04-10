@@ -109,6 +109,22 @@ class Profunctor p => SemiproductProfunctor p where
   f ***! g = (,) `Profunctor.rmap` Profunctor.lmap fst f
                   **** Profunctor.lmap snd g
 
+class SemiproductProfunctor p => ProductProfunctor p where
+  -- | Unit for @('***!')@.
+  unitP :: p () ()
+  unitP = pureP ()
+
+  -- | Analogue to 'pure'.
+  pureP :: a -> p x a
+  pureP a = Profunctor.dimap (const ()) (const a) unitP
+
+  -- | Analogue to 'Data.Functor.Contravariant.Divisible.conquer'
+  -- (from "contravariant"). The 'Monoid' constraint is necessary to
+  -- provide a "default" value to emit.
+  conquerP :: Monoid x => p a x
+  conquerP = pureP mempty
+  {-# MINIMAL unitP | pureP #-}
+
 class Profunctor p => SumProfunctor p where
   -- Morally we should have 'zero :: p Void Void' but I don't think
   -- that would actually be useful

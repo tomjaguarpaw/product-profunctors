@@ -1,6 +1,7 @@
 # Unreleased (major)
 
-* Rename `ProductProfunctor` to `SemiProductProfunctor`.
+* Rename `ProductProfunctor` to `SemiproductProfunctor`:
+  - The `ProductProfunctor` now means "`SemiproductProfunctor` with a unit"
 
 # 0.11.1.1
 
