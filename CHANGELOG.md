@@ -15,6 +15,7 @@
   - Class methods now capture two perspectives: "`Decidable`
     operations on the input (`decideP`)" and "eithering" (`(+++!)`).
 * Add `decidedP = decideP id`
+* Add `concludedP = concludeP id`
 
 # 0.11.1.1
 

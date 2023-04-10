@@ -241,3 +241,10 @@ class SemisumProfunctor p => SumProfunctor p where
   concludeP :: (a -> Void) -> p a x
   concludeP f = Profunctor.dimap f absurd voidP
   {-# MINIMAL voidP | concludeP #-}
+
+-- | Analogue to @concluded@ (from "semigroupoids") or
+-- 'Data.Functor.Contravariant.Divisible.lost'. Potentially more
+-- meaningful than 'concludeP', as it shows that we definitely cannot
+-- receive _anything_ on the input side.
+concludedP :: SumProfunctor p => p Void x
+concludedP = concludeP id
