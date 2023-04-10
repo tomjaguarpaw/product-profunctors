@@ -14,6 +14,7 @@
   - The `SumProfunctor` class now means "`SemisumProfunctor` with a unit"
   - Class methods now capture two perspectives: "`Decidable`
     operations on the input (`decideP`)" and "eithering" (`(+++!)`).
+* Add `decidedP = decideP id`
 
 # 0.11.1.1
 

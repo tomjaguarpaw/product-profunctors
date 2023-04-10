@@ -210,6 +210,12 @@ class Profunctor p => SemisumProfunctor p where
   decideP f p q = Profunctor.dimap f (either id id) $ p +++! q
   {-# MINIMAL (+++!) | decideP #-}
 
+-- | Analogue to @decided@ (from "semigroupoids") or
+-- 'Data.Functor.Contravariant.Divisible.chosen' (from
+-- "contravariant").
+decidedP :: SemisumProfunctor p => p b x -> p c x -> p (Either b c) x
+decidedP = decideP id
+
 -- | 'SemisumProfunctor's with a unit.
 --
 -- You can often write these instances mechanically:
