@@ -28,7 +28,7 @@ module Data.Profunctor.Product (module Data.Profunctor.Product.Class,
                                 module Data.Profunctor.Product) where
 
 import Prelude hiding (id)
-import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow, Star(..), Costar)
+import Data.Profunctor (Profunctor, dimap, lmap, WrappedArrow, Star(Star), Costar)
 import qualified Data.Profunctor as Profunctor
 import Data.Profunctor.Composition (Procompose(..))
 import Data.Functor.Contravariant (Contravariant, contramap)
