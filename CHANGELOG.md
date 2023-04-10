@@ -12,6 +12,8 @@
 * Add `conqueredP = conquerP` (redundant, but symmetric with `contravariant` interface)
 * Rename `SumProfunctor` to `SemisumProfunctor`:
   - The `SumProfunctor` class now means "`SemisumProfunctor` with a unit"
+  - Class methods now capture two perspectives: "`Decidable`
+    operations on the input (`decideP`)" and "eithering" (`(+++!)`).
 
 # 0.11.1.1
 

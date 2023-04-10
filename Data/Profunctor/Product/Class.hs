@@ -144,8 +144,71 @@ class SemiproductProfunctor p => ProductProfunctor p where
 conqueredP :: (ProductProfunctor p, Monoid x) => p () x
 conqueredP = conquerP
 
+-- | A 'SemisumProfunctor' is a profunctor whose input and output
+-- values can be combined with 'Either'.
+--
+-- You can often write these instances mechanically:
+--
+-- @
+-- instance SemisumProfunctor P where
+--   decideP f p q = 'Data.Bifunctor.Flip.runFlip' $ decide f ('Data.Bifunctor.Flip.Flip' p) ('Data.Bifunctor.Flip.Flip' q) -- If you have `instance Decide (Flip P a)`
+--   decideP f p q = 'Data.Bifunctor.Flip.runFlip' $ 'Data.Functor.Contravariant.Divisible.choose' f ('Data.Bifunctor.Flip.Flip' p) ('Data.Bifunctor.Flip.Flip' q) -- If you have `instance 'Data.Functor.Contravariant.Divisible.Decidable' (Flip P a)`
+-- @
+--
+-- Laws:
+--
+--  * @('+++!')@ is associative up to 'Either' rearrangement.
+--
+--  * If @p@ is also a 'SemiproductProfunctor', @('***!')@ should
+--    distribute over @('+++!')@ up to tuple/'Either' rearrangement.
+--
+-- === Where is the 'Control.Applicative.Alternative' analogue?
+--
+-- It is possible to write a version of @('Control.Applicative.<|>')@
+-- that uses 'Either's:
+--
+-- @
+-- alt :: 'Control.Applicative.Alternative' f => f a -> f b -> f ('Either' a b)
+-- alt f g = Left \<$\> f 'Control.Applicative.<|>' Right \<$\> g
+-- @
+--
+-- From this, you might expect 'SemisumProfunctor' to contain an
+-- analogue to @('Control.Applicative.<|>')@ like this:
+--
+-- @
+-- (\<|||!\>) :: 'SemisumProfunctor' p => p x a -> p x a -> p x a
+-- p \<|||!\> q = dimap _____ (either id id) $ p '+++!' q
+--                     ???
+-- @
+--
+-- The type of that hole is @x -> 'Either' x x@, and we cannot choose
+-- a sensible default. We also cannot introduce a typeclass like we
+-- did with 'diviseP', as this would require us to create a strange
+-- comonoid class with 'Either' as the bifunctor:
+--
+-- @
+-- -- Yuck:
+-- class ComonoidE w where
+--   comappendE :: w -> Either w w
+--   comemptyE :: w -> 'Void'
+-- @
+--
+-- There are no @ComonoidE@ instances because we can never define a
+-- @comemptyE@: 'Void' is uninhabited. Even if we restrict ourselves
+-- to a @Cosemigroup@ class, it seems unlikely that it will have any
+-- useful instances, so we do not bother defining an
+-- 'Control.Applicative.Alternative'-style interface from a
+-- 'SemisumProfunctor'.
 class Profunctor p => SemisumProfunctor p where
   (+++!) :: p a b -> p a' b' -> p (Either a a') (Either b b')
+  (+++!) p q = decideP id (Profunctor.rmap Left p) (Profunctor.rmap Right q)
+
+  -- | Analogue to @decide@ (from "semigroupoids") or
+  -- 'Data.Functor.Contravariant.Divisible.choose' (from
+  -- "contravariant").
+  decideP :: (a -> Either b c) -> p b x -> p c x -> p a x
+  decideP f p q = Profunctor.dimap f (either id id) $ p +++! q
+  {-# MINIMAL (+++!) | decideP #-}
 
 -- | 'SemisumProfunctor's with a unit.
 --
