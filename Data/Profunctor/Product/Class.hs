@@ -143,7 +143,7 @@ class SemiproductProfunctor p => ProductProfunctor p where
 conqueredP :: (ProductProfunctor p, Monoid x) => p () x
 conqueredP = conquerP
 
-class Profunctor p => SumProfunctor p where
+class Profunctor p => SemisumProfunctor p where
   -- Morally we should have 'zero :: p Void Void' but I don't think
   -- that would actually be useful
   (+++!) :: p a b -> p a' b' -> p (Either a a') (Either b b')

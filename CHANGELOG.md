@@ -10,6 +10,7 @@
   - Old `ProductProfunctor#purePP` has been deprecated; use `ProductProfunctor#pureP`
 * Add `divisedP = diviseP id`
 * Add `conqueredP = conquerP` (redundant, but symmetric with `contravariant` interface)
+* Rename `SumProfunctor` to `SemisumProfunctor`
 
 # 0.11.1.1
 

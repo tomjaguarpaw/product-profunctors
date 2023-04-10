@@ -18,7 +18,7 @@ module DefinitionsUndecidable where
 -- It's a bit sad that these need UndecidableInstances
 
 import GHC.Generics (Generic)
-import Data.Profunctor.Product (SemiproductProfunctor, SumProfunctor)
+import Data.Profunctor.Product (SemiproductProfunctor, SemisumProfunctor)
 import Data.Profunctor.Product.Default
   (Default, DefaultFields', DefaultConstraints, DefaultConstraints')
 
@@ -30,7 +30,7 @@ data PolyProduct a b c  = PolyProduct a b c           deriving Generic
 instance (SemiproductProfunctor p, DefaultFields' p MonomorphicProduct)
          => Default p MonomorphicProduct MonomorphicProduct
 
-instance (SumProfunctor p, DefaultFields' p MonomorphicSum)
+instance (SemisumProfunctor p, DefaultFields' p MonomorphicSum)
          => Default p MonomorphicSum MonomorphicSum
 
 instance (DefaultConstraints' p MonomorphicBoth)
@@ -65,7 +65,7 @@ checkDFMonomorphicSum = (Sub Dict, Sub Dict)
 
 checkDCMonomorphicBoth
   :: DefaultConstraints' p MonomorphicBoth :<=>:
-     (SemiproductProfunctor p, SumProfunctor p, Default p Int Int, Default p Bool Bool, Default p Char Char)
+     (SemiproductProfunctor p, SemisumProfunctor p, Default p Int Int, Default p Bool Bool, Default p Char Char)
 checkDCMonomorphicBoth = (Sub Dict, Sub Dict)
 
 checkDCPolyProduct

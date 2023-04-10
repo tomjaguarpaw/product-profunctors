@@ -54,10 +54,10 @@ instance (SemiproductProfunctor p, Default p a a', Default p b b', Default p c c
 instance (SemiproductProfunctor p, Default p a a', Default p b b', Default p c c')
       => Default p (RecordGeneric a b c) (RecordGeneric a' b' c')
 
-instance (SumProfunctor p, Default p a a', Default p b b')
+instance (SemisumProfunctor p, Default p a a', Default p b b')
       => Default p (SumGeneric a b) (SumGeneric a' b')
 
-instance (SemiproductProfunctor p, SumProfunctor p, Default p a a', Default p b b', Default p c c')
+instance (SemiproductProfunctor p, SemisumProfunctor p, Default p a a', Default p b b', Default p c c')
       => Default p (ProductAndSumGeneric a b c) (ProductAndSumGeneric a' b' c')
 
 data Data2Inferrable a b = Data2Inferrable a b

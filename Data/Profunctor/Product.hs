@@ -199,39 +199,39 @@ instance (Applicative f, ProductProfunctor p) => ProductProfunctor (Tannen f p) 
 
 -- { Sum
 
-instance SumProfunctor (->) where
+instance SemisumProfunctor (->) where
   f +++! g = either (Left . f) (Right . g)
 
-instance ArrowChoice arr => SumProfunctor (WrappedArrow arr) where
+instance ArrowChoice arr => SemisumProfunctor (WrappedArrow arr) where
   (+++!) = (+++)
 
-instance Applicative f => SumProfunctor (Star f) where
+instance Applicative f => SemisumProfunctor (Star f) where
   Star f +++! Star g = Star $ either (fmap Left . f) (fmap Right . g)
 
 -- | @since 0.11.1.0
-instance SumProfunctor (Forget r) where
+instance SemisumProfunctor (Forget r) where
   Forget f +++! Forget g = Forget $ either f g
 
-instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Procompose p q) where
+instance (SemisumProfunctor p, SemisumProfunctor q) => SemisumProfunctor (Procompose p q) where
   Procompose pa qa +++! Procompose pb qb = Procompose (pa +++! pb) (qa +++! qb)
 
-instance Alternative f => SumProfunctor (Joker f) where
+instance Alternative f => SemisumProfunctor (Joker f) where
   Joker f +++! Joker g = Joker $ Left <$> f <|> Right <$> g
 
-instance Decidable f => SumProfunctor (Clown f) where
+instance Decidable f => SemisumProfunctor (Clown f) where
   Clown f +++! Clown g = Clown $ chosen f g
 
-instance (SumProfunctor p, SumProfunctor q) => SumProfunctor (Product p q) where
+instance (SemisumProfunctor p, SemisumProfunctor q) => SemisumProfunctor (Product p q) where
   Pair l1 l2 +++! Pair r1 r2 = Pair (l1 +++! r1) (l2 +++! r2)
 
-instance (Applicative f, SumProfunctor p) => SumProfunctor (Tannen f p) where
+instance (Applicative f, SemisumProfunctor p) => SemisumProfunctor (Tannen f p) where
   Tannen l +++! Tannen r = Tannen $ liftA2 (+++!) l r
 
 -- | A generalisation of @map :: (a -> b) -> [a] -> [b]@.  It is also,
 -- in spirit, a generalisation of @traverse :: (a -> f b) -> [a] -> f
 -- [b]@, but the types need to be shuffled around a bit to make that
 -- work.
-list :: (ProductProfunctor p, SumProfunctor p) => p a b -> p [a] [b]
+list :: (ProductProfunctor p, SemisumProfunctor p) => p a b -> p [a] [b]
 list p = Profunctor.dimap fromList toList (unitP +++! (p ***! list p))
   where toList :: Either () (a, [a]) -> [a]
         toList = either (const []) (uncurry (:))
