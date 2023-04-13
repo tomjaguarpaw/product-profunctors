@@ -1,3 +1,7 @@
+# 0.11.1.1
+
+* No user-visible changes
+
 # 0.11.1.0
 
 * Generalise `(***$)` to work on `Profunctor` instead of `ProductProfunctor`.
