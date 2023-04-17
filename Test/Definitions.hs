@@ -48,16 +48,16 @@ $(makeAdaptorAndInstance' ''RecordDefaultName)
 instance Unzippable Data2
 instance Unzippable Data3
 
-instance (ProductProfunctor p, Default p a a', Default p b b', Default p c c')
+instance (SemiproductProfunctor p, Default p a a', Default p b b', Default p c c')
       => Default p (DataGeneric a b c) (DataGeneric a' b' c')
 
-instance (ProductProfunctor p, Default p a a', Default p b b', Default p c c')
+instance (SemiproductProfunctor p, Default p a a', Default p b b', Default p c c')
       => Default p (RecordGeneric a b c) (RecordGeneric a' b' c')
 
-instance (SumProfunctor p, Default p a a', Default p b b')
+instance (SemisumProfunctor p, Default p a a', Default p b b')
       => Default p (SumGeneric a b) (SumGeneric a' b')
 
-instance (ProductProfunctor p, SumProfunctor p, Default p a a', Default p b b', Default p c c')
+instance (SemiproductProfunctor p, SemisumProfunctor p, Default p a a', Default p b b', Default p c c')
       => Default p (ProductAndSumGeneric a b c) (ProductAndSumGeneric a' b' c')
 
 data Data2Inferrable a b = Data2Inferrable a b
@@ -71,9 +71,11 @@ newtype Arrow a b = Arrow { unArrow :: a -> b }
 instance Profunctor Arrow where
   dimap f g = Arrow . dimap f g . unArrow
 
-instance ProductProfunctor Arrow where
-  purePP = Arrow . purePP
+instance SemiproductProfunctor Arrow where
   f **** g = Arrow (unArrow f **** unArrow g)
+
+instance ProductProfunctor Arrow where
+  pureP = Arrow . pureP
 
 data Unit = Unit
 

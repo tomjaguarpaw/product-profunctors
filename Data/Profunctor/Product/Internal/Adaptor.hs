@@ -13,7 +13,7 @@
 module Data.Profunctor.Product.Internal.Adaptor where
 
 import           Data.Profunctor         (Profunctor, dimap, lmap)
-import           Data.Profunctor.Product (ProductProfunctor, (****), (***$))
+import           Data.Profunctor.Product (SemiproductProfunctor, (****), (***$))
 import           GHC.Generics            (from, to,
                                           M1(M1), K1(K1), (:*:)((:*:)),
                                           Generic, Rep)
@@ -23,9 +23,9 @@ import           GHC.Generics            (from, to,
 -- | Generic adaptor.
 --
 -- @
--- 'genericAdaptor' :: 'ProductProfunctor' p =>
+-- 'genericAdaptor' :: 'SemiproductProfunctor' p =>
 --                   'Adaptor' p (Foo (p a a') (p b b') (p c c'))
--- 'genericAdaptor' :: 'ProductProfunctor' p =>
+-- 'genericAdaptor' :: 'SemiproductProfunctor' p =>
 --                   Foo (p a a') (p b b') (p c c') -> p (Foo a b c) (Foo a' b' c')
 -- @
 genericAdaptor :: GAdaptable p a b c => a -> p b c
@@ -105,7 +105,7 @@ class Profunctor p => GAdaptor p f | f -> p where
   gAdaptor :: f a -> p (GUnzip 'Fst f a) (GUnzip 'Snd f a)
 
 instance
-  (ProductProfunctor p, GAdaptor p f, GAdaptor p g)
+  (SemiproductProfunctor p, GAdaptor p f, GAdaptor p g)
   => GAdaptor p (f :*: g) where
   gAdaptor (f :*: g) = (:*:)
     ***$ lmap pfst (gAdaptor f)

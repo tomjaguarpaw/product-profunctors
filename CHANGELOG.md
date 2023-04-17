@@ -1,3 +1,22 @@
+# Unreleased (major)
+
+* Rename `ProductProfunctor` to `SemiproductProfunctor`:
+  - The `ProductProfunctor` now means "`SemiproductProfunctor` with a unit"
+  - Class methods now capture three perspectives: "`Applicative`
+    operations on the output" (`(****)`), "`Divisible` operations on
+    the input" (`diviseP`), and "tupling" (`(***!)`).
+  - Introduce `ProductProfuntor` to represent "`SemiProductProfunctor` with a unit"
+  - Old `ProductProfunctor#empty` has been deprecated; use `ProductProfunctor#unitP`
+  - Old `ProductProfunctor#purePP` has been deprecated; use `ProductProfunctor#pureP`
+* Add `divisedP = diviseP id`
+* Add `conqueredP = conquerP` (redundant, but symmetric with `contravariant` interface)
+* Rename `SumProfunctor` to `SemisumProfunctor`:
+  - The `SumProfunctor` class now means "`SemisumProfunctor` with a unit"
+  - Class methods now capture two perspectives: "`Decidable`
+    operations on the input (`decideP`)" and "eithering" (`(+++!)`).
+* Add `decidedP = decideP id`
+* Add `concludedP = concludeP id`
+
 # 0.11.1.1
 
 * No user-visible changes

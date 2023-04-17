@@ -162,7 +162,7 @@ instanceDefinition side tyName' numTyVars numConVars adaptorName' conName =
             pure (productProfunctor_p' : typeMatch' ++ default_p_as0_as1)
 
         productProfunctor_p :: Q Pred
-        productProfunctor_p = classP ''ProductProfunctor [p]
+        productProfunctor_p = classP ''SemiproductProfunctor [p]
 
         (typeMatch, pArg0, pArg1) = case side of
             Nothing ->         ([],                       tyName0, tyName1)
@@ -191,7 +191,7 @@ adaptorSig tyName' numTyVars n = fmap (SigD n) adaptorType
   where p = mkName "p"
         adaptorType = ForallT scope <$> adaptorCxt <*> adaptorAfterCxt
         adaptorAfterCxt = [t| $before -> $after |]
-        adaptorCxt = fmap (:[]) (classP ''ProductProfunctor [pType])
+        adaptorCxt = fmap (:[]) (classP ''SemiproductProfunctor [pType])
         before = foldl (liftA2 AppT) (pure (ConT tyName')) pArgs
         pType = pure $ VarT p
         pArgs = map pApp tyVars
@@ -356,7 +356,7 @@ toTuple conName = xTuple patCon retCon
 Note that we can also do the instance definition like this, but it would
 require pulling the to/fromTuples to the top level
 
-instance (ProductProfunctor p, Default p a a', Default p b b',
+instance (SemiproductProfunctor p, Default p a a', Default p b b',
           Default p c c', Default p d d', Default p e e',
           Default p f f', Default p g g', Default p h h')
          => Default p (LedgerRow' a b c d e f g h)
