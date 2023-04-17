@@ -1,3 +1,10 @@
+# Unreleased (major)
+
+* `Data.Profunctor.Product.TH.makeAdaptorAndInstance` is deprecated in
+  favor of `makeAdaptorAndInstanceInferrable`
+* `Data.Profunctor.Product.TH.makeAdaptorAndInstance'` is deprecated in
+  favor of `makeAdaptorAndInstanceInferrable'`
+
 # 0.11.1.1
 
 * No user-visible changes
