@@ -29,7 +29,7 @@ library
                  , contravariant >= 0.4 && < 1.6
                  , tagged >= 0.0 && < 1
                  , template-haskell < 2.21
-                 , th-abstraction >= 0.4 && < 0.5
+                 , th-abstraction >= 0.4 && < 0.6
   exposed-modules: Data.Profunctor.Product,
                    Data.Profunctor.Product.Adaptor
                    Data.Profunctor.Product.Default,
