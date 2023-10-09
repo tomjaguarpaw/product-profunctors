@@ -6,6 +6,7 @@ module Data.Profunctor.Product.Default.Class where
 import GHC.Exts (Constraint)
 import GHC.Generics
 
+import Data.Kind (Type)
 import Data.Profunctor (Profunctor, dimap)
 import Data.Profunctor.Product.Class
 
@@ -64,7 +65,7 @@ type DefaultConstraints' p a = DefaultConstraints p a a
 --
 -- > Defaults '[p a a', p b b', p c c'] =
 -- >   (Default p a a', Default p b b', Default p c c')
-type family Defaults (as :: [*]) :: Constraint
+type family Defaults (as :: [Type]) :: Constraint
 type instance Defaults '[] = ()
 type instance Defaults (p a a' ': as) = (Default p a a', Defaults as)
 
@@ -101,7 +102,7 @@ instance (SumProfunctor p, GDefault p f f', GDefault p g g') => GDefault p (f :+
         L1 x -> Left  x
         R1 x -> Right x
 
-type family GDefPCnstr (p :: * -> * -> *) (f :: * -> *) :: Constraint
+type family GDefPCnstr (p :: Type -> Type -> Type) (f :: Type -> Type) :: Constraint
 type instance GDefPCnstr p U1 = ProductProfunctor p
 type instance GDefPCnstr p (M1 i c f) = GDefPCnstr p f
 type instance GDefPCnstr p (K1 i c) = Profunctor p
