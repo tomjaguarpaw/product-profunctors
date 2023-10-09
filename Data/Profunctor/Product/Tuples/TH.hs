@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeOperators #-}
 module Data.Profunctor.Product.Tuples.TH
   ( mkTs
   , pTns
