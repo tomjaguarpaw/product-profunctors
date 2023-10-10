@@ -1,3 +1,5 @@
+Support GHC 9.8
+
 # 0.11.1.1
 
 * No user-visible changes
