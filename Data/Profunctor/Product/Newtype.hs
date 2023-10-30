@@ -11,13 +11,13 @@ pNewtype = P.dimap field constructor
 
 -- when you have a newtype that wraps a newtype
 -- templateTemplate = pNewtype2 $ requiredTableField "id"
-pNewtype2 :: (Profunctor p, Newtype t1, Newtype t2) => p a b -> p (t1 (t2 a))(t1 (t2 b))
-pNewtype2 = dimap (field . field) (constructor . constructor)
+pNewtype2 :: (P.Profunctor p, Newtype t1, Newtype t2) => p a b -> p (t1 (t2 a))(t1 (t2 b))
+pNewtype2 = P.dimap (field . field) (constructor . constructor)
 
 -- tableId :: (Newtype t) => (TableFields (Maybe (t (Field SqlUuid))) (t (Field SqlUuid)))
 -- tableId = fpNewtype $ optionalTableField "id"
-fpNewtype :: (Functor f, Profunctor p, Newtype t) => p (f a) b -> p (f (t a)) (t b)
-fpNewtype = dimap (field <$>) constructor
+fpNewtype :: (Functor f, P.Profunctor p, Newtype t) => p (f a) b -> p (f (t a)) (t b)
+fpNewtype = P.dimap (field <$>) constructor
 
 mapNewtype :: (Newtype t) => (a -> b) -> t a -> t b
 mapNewtype f = constructor . f . field
