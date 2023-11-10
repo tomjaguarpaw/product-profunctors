@@ -28,7 +28,7 @@ import           GHC.Generics            (from, to,
 -- 'genericAdaptor' :: 'ProductProfunctor' p =>
 --                   Foo (p a a') (p b b') (p c c') -> p (Foo a b c) (Foo a' b' c')
 -- @
-genericAdaptor :: GAdaptable p a b c => a -> p b c
+genericAdaptor :: GAdaptable p a => Adaptor p a
 genericAdaptor a = dimap from to (gAdaptor (from a))
 
 -- | A type synonym to shorten the signature of an adaptor.
@@ -44,10 +44,10 @@ type Adaptor p a = a -> p (Unzip 'Fst a) (Unzip 'Snd a)
 
 -- | A constraint synonym on generic types for which an adaptor can be
 -- defined generically.
-type GAdaptable p a b c =
-  ( Generic a, Generic b, Generic c
-  , GUnzip 'Fst (Rep a) ~ Rep b
-  , GUnzip 'Snd (Rep a) ~ Rep c
+type GAdaptable p a =
+  ( Generic a, Generic (Unzip 'Fst a), Generic (Unzip 'Snd a)
+  , GUnzip 'Fst (Rep a) ~ Rep (Unzip 'Fst a)
+  , GUnzip 'Snd (Rep a) ~ Rep (Unzip 'Snd a)
   , GAdaptor p (Rep a)
   )
 
