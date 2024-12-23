@@ -24,6 +24,9 @@ jobs:
           - "9.8.1"
           - "9.10.1"
           - "9.12.1"
+        include:
+        - os: windows-latest
+        - os: macOS-latest
 
     steps:
     - uses: actions/checkout@v4
