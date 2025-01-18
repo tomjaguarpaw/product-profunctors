@@ -9,13 +9,13 @@
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
-module DefinitionsUndecidable where
-
 -- | We define the data types and generate the TH in a separate module
 -- because we want to ensure that no external names are required to be
 -- imported.
 --
 -- It's a bit sad that these need UndecidableInstances
+
+module DefinitionsUndecidable where
 
 import GHC.Generics (Generic)
 import Data.Profunctor.Product (ProductProfunctor, SumProfunctor)
